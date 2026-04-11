@@ -1,0 +1,107 @@
+.subjects-grid{
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fill,minmax(220px,1fr));
+
+  gap:16px;
+
+  margin-top:20px;
+
+}
+
+.subject-card{
+
+  padding:14px;
+
+}
+
+.subject-title{
+
+  font-weight:700;
+
+  font-size:16px;
+
+}
+
+.subject-description{
+
+  font-size:13px;
+
+  margin-top:6px;
+
+  color:var(--muted);
+
+}
+
+.subject-author{
+
+  margin-top:10px;
+
+  font-size:11px;
+
+  color:var(--muted);
+
+}
+
+.subject-form{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
+}
+
+.subject-table-card{
+  overflow-x:auto;
+}
+
+.subject-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.subject-table th{
+  text-align:left;
+  padding:12px;
+  font-size:13px;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+}
+
+.subject-table td{
+  padding:14px 12px;
+  border-bottom:1px solid var(--border);
+}
+
+.subject-code{
+  font-weight:600;
+  color:var(--accent);
+}
+
+.subject-actions{
+  display:flex;
+  gap:8px;
+}
+
+.icon-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px;
+  border-radius:6px;
+  background:transparent;
+  border:1px solid var(--border);
+  cursor:pointer;
+}
+
+.icon-btn:hover{
+  background:var(--card2);
+}
+
+.icon-btn.danger{
+  color:#ef4444;
+}

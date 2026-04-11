@@ -1,0 +1,293 @@
+/* =========================================
+   FOLLOWERS / FOLLOWING LISTS
+========================================= */
+
+.followers-list,
+.following-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+
+/* Loading States */
+.followers-loading,
+.following-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.follower-skeleton,
+.following-skeleton {
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, 
+    var(--bg2) 0%, 
+    var(--card) 50%, 
+    var(--bg2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Empty States */
+.followers-empty,
+.following-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  margin: 20px 0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px 0;
+}
+
+.empty-subtext {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Error States */
+.followers-error,
+.following-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--danger);
+  margin: 20px 0;
+}
+
+.error-text {
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+}
+
+.retry-btn {
+  padding: 8px 24px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  opacity: 0.9;
+}
+
+/* Load More Button */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 8px;
+}
+
+.load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* =========================================
+   FOLLOW BUTTON
+========================================= */
+
+.follow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--accent);
+  color: white;
+  white-space: nowrap;
+}
+
+.follow-btn:hover:not(:disabled) {
+  background: var(--accent-hover, #2563eb);
+  transform: scale(1.02);
+}
+
+.follow-btn.following {
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.follow-btn.following:hover:not(:disabled) {
+  background: var(--danger);
+  color: white;
+  border-color: transparent;
+}
+
+.follow-btn.following:hover .follow-btn-icon {
+  transform: rotate(45deg);
+}
+
+/* Follow Button Sizes */
+.follow-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: 80px;
+}
+
+.follow-btn-md {
+  padding: 8px 16px;
+  font-size: 14px;
+  min-width: 100px;
+}
+
+.follow-btn-lg {
+  padding: 12px 24px;
+  font-size: 16px;
+  min-width: 120px;
+}
+
+.follow-btn-icon {
+  font-size: 1.2em;
+  transition: transform 0.2s ease;
+}
+
+/* Follow Button Spinner */
+.follow-btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.follow-btn.following .follow-btn-spinner {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--text);
+}
+
+.follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .followers-list,
+  .following-list {
+    gap: 4px;
+  }
+  
+  .empty-icon {
+    font-size: 40px;
+  }
+  
+  .empty-text {
+    font-size: 15px;
+  }
+  
+  .empty-subtext {
+    font-size: 13px;
+  }
+  
+  .load-more-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .follow-btn-sm {
+    min-width: 60px;
+    padding: 4px 8px;
+  }
+  
+  .follow-btn-md {
+    min-width: 80px;
+    padding: 6px 12px;
+  }
+  
+  .follow-btn-lg {
+    min-width: 100px;
+    padding: 10px 20px;
+  }
+}

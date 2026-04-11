@@ -1,0 +1,423 @@
+/* =========================================
+   CLASS TABLE
+========================================= */
+
+.class-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.class-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.class-table thead {
+  background: var(--bg2);
+}
+
+.class-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 14px 16px;
+  color: var(--muted);
+}
+
+.class-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.class-table tbody tr:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.class-actions {
+  display: flex;
+  gap: 8px;
+}
+
+
+/* =========================================
+   CLASS CARD (DISCOVER PAGE)
+========================================= */
+
+.class-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 20px;
+  border-radius: 10px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+
+  transition: all 0.2s ease;
+}
+
+.class-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.class-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.class-code {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.class-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.class-description {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.class-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.class-feedback {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.class-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* INPUTS */
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  border: 1px solid var(--border);
+  background: var(--card);
+
+  font-size: 14px;
+
+  transition: all 0.2s ease;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* INPUT FOCUS */
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(60,120,255,0.15);
+}
+
+
+/* =========================================
+   FORM ACTIONS
+========================================= */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(10, 10, 10, 0.45);
+  backdrop-filter: blur(3px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: 12px;
+
+  padding: 26px 28px;
+
+  width: 440px;
+  max-width: 92%;
+
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.15),
+    0 4px 10px rgba(0,0,0,0.06);
+
+  animation: modalFade 0.2s ease;
+}
+
+.modal h2 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   MODAL ANIMATION
+========================================= */
+
+@keyframes modalFade {
+
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+}
+.class-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.class-badge{
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:6px;
+  background:rgba(0,200,120,0.15);
+  color:#00c878;
+  font-weight:600;
+}
+
+/* ================================
+   HORIZONTAL CLASS CARD
+================================ */
+
+.class-row-card{
+  display:grid;
+  grid-template-columns: 2fr 1fr auto;
+  align-items:center;
+
+  padding:18px 22px;
+  border-radius:12px;
+
+  background:var(--card);
+  border:1px solid var(--border);
+
+  gap:20px;
+}
+
+.class-row-card:hover{
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* LEFT */
+
+.class-row-left{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.class-meta-row{
+  display:flex;
+  gap:16px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* CENTER */
+
+.class-row-middle{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* RIGHT */
+
+.class-row-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* BADGE */
+
+.class-badge{
+  background:rgba(0,200,120,0.15);
+  color:#00c878;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:600;
+}
+
+/* FEEDBACK */
+
+.class-feedback{
+  grid-column:1 / -1;
+  font-size:13px;
+  margin-top:6px;
+  color:var(--accent);
+}
+
+/* =========================================
+   CLASS VIEW MODAL
+========================================= */
+
+.class-view-modal{
+  width:700px;
+  max-width:95%;
+}
+
+.class-view-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.class-view-sub{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.class-view-info{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:20px;
+}
+
+.class-view-modules{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:12px;
+}
+
+.class-module-card{
+  padding:14px;
+  border-radius:8px;
+  background:var(--bg2);
+  text-align:center;
+  font-weight:500;
+  border:1px solid var(--border);
+}
+/* =================================
+   CLASS MODAL TABS
+================================ */
+
+.class-tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.tab{
+  padding:8px 14px;
+  border-radius:6px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--accent);
+  color:white;
+}
+
+.class-tab-content{
+  margin-top:10px;
+}
+
+.member-card{
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  margin-bottom:6px;
+}
+
+/* =====================================
+   CLASS MEMBERS
+===================================== */
+
+.members-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:12px;
+}
+
+.member-card{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+}
+
+.member-name{
+  font-weight:600;
+  margin-bottom:4px;
+}
+
+.member-role{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.members-loading,
+.members-empty{
+  font-size:14px;
+  color:var(--muted);
+}

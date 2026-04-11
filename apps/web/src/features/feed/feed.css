@@ -1,0 +1,346 @@
+/* ===============================
+   FEED COMPOSER
+=============================== */
+
+.feed-composer{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:12px;
+
+}
+
+.feed-textarea{
+
+  width:100%;
+
+  min-height:80px;
+
+  resize:none;
+
+  padding:12px;
+
+  border-radius:12px;
+
+  border:1px solid var(--border);
+
+  background:var(--bg2);
+
+  color:var(--text);
+
+  font-size:14px;
+
+}
+
+.feed-textarea:focus{
+
+  outline:none;
+
+  border-color:var(--accent);
+
+}
+
+.feed-composer-actions{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+}
+
+.media-upload{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:6px;
+
+  padding:6px 10px;
+
+  border-radius:8px;
+
+  border:1px solid var(--border);
+
+  background:var(--bg2);
+
+  cursor:pointer;
+
+}
+
+.media-upload:hover{
+
+  background:var(--chip);
+
+}
+
+/* ===============================
+   FEED LIST
+=============================== */
+
+.feed-list{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:16px;
+
+}
+
+/* Loading */
+
+.feed-loading{
+
+  text-align:center;
+
+  padding:20px;
+
+  font-weight:700;
+
+}
+
+/* Empty state */
+
+.feed-empty{
+
+  text-align:center;
+
+  padding:24px;
+
+  font-weight:700;
+
+  color:var(--muted);
+
+}
+
+/* ===============================
+   POST ACTIONS
+=============================== */
+
+.post-actions{
+
+  display:flex;
+
+  gap:14px;
+
+  padding-top:6px;
+
+  border-top:1px solid var(--border);
+
+}
+
+/* buttons */
+
+.post-action-btn{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:6px;
+
+  padding:6px 10px;
+
+  border-radius:8px;
+
+  border:none;
+
+  background:transparent;
+
+  cursor:pointer;
+
+  font-size:13px;
+
+  color:var(--muted);
+
+  transition:.15s ease;
+
+}
+
+/* hover */
+
+.post-action-btn:hover{
+
+  background:var(--bg2);
+
+}
+
+/* active */
+
+.post-action-btn.active{
+
+  color:var(--accent);
+
+}
+
+/* ===============================
+   FEED POST
+=============================== */
+
+.feed-post{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+
+/* Header */
+
+.post-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+
+/* Avatar */
+
+.post-avatar{
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  object-fit:cover;
+}
+
+
+/* Author */
+
+.post-author{
+  display:flex;
+  flex-direction:column;
+}
+
+.post-author-name{
+  font-weight:800;
+  font-size:14px;
+}
+
+.post-time{
+  font-size:12px;
+  color:var(--muted);
+}
+
+
+/* Content */
+
+.post-content{
+  font-size:14px;
+  line-height:1.5;
+}
+
+
+/* Attachments */
+
+.post-attachments{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.post-image{
+  width:100%;
+  border-radius:12px;
+}
+
+
+/* Stats */
+
+.post-stats{
+  display:flex;
+  gap:16px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ===============================
+   COMMENTS
+=============================== */
+
+.post-comments{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* composer */
+
+.comment-composer{
+  display:flex;
+  gap:8px;
+}
+
+.comment-input{
+  flex:1;
+  height:36px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  padding:0 10px;
+  background:var(--bg2);
+  color:var(--text);
+}
+
+/* comment item */
+
+.comment-item{
+  display:flex;
+  gap:8px;
+}
+
+.comment-avatar{
+  width:28px;
+  height:28px;
+  border-radius:999px;
+}
+
+.comment-body{
+  display:flex;
+  flex-direction:column;
+}
+
+.comment-author{
+  font-weight:700;
+  font-size:13px;
+}
+
+.comment-text{
+  font-size:13px;
+}
+
+.comment-time{
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* ===============================
+   LEARNER DASHBOARD
+=============================== */
+
+.learner-dashboard{
+
+  display:flex;
+
+  justify-content:center;
+
+  width:100%;
+
+}
+
+.feed-container{
+
+  width:100%;
+
+  max-width:720px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:16px;
+
+}

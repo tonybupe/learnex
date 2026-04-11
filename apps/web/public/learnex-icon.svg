@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160">
+
+  <!-- Orbit -->
+  <ellipse
+    cx="110"
+    cy="80"
+    rx="100"
+    ry="60"
+    fill="none"
+    stroke="#0f2c6d"
+    stroke-width="12"
+  />
+
+  <!-- Inner orbit -->
+  <ellipse
+    cx="110"
+    cy="80"
+    rx="75"
+    ry="40"
+    fill="none"
+    stroke="#0f2c6d"
+    stroke-width="8"
+  />
+
+  <!-- Orbit nodes -->
+  <circle cx="30" cy="110" r="10" fill="#0f2c6d"/>
+  <circle cx="150" cy="40" r="10" fill="#0f2c6d"/>
+
+  <!-- Center red dot -->
+  <circle cx="110" cy="80" r="22" fill="#ff0000"/>
+
+</svg>

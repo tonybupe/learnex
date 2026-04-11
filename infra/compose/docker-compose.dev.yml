@@ -1,0 +1,68 @@
+
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: learnex_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-learnex}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - learnex_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: learnex_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: learnex_api
+    restart: unless-stopped
+    env_file:
+      - ../../apps/api/.env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../apps/api:/app
+      - ../../apps/api/uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+    container_name: learnex_worker
+    restart: unless-stopped
+    env_file:
+      - ../../apps/api/.env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../apps/api:/app
+    command: celery -A app.tasks.celery_app.celery_app worker --loglevel=info
+
+  nginx:
+    image: nginx:stable
+    container_name: learnex_nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    volumes:
+      - ../docker/nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  learnex_postgres_data:
