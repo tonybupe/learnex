@@ -149,9 +149,9 @@ export function useFeed(options: UseFeedOptions = {}): UseFeedReturn {
       if (response.data) {
         if (isLoadMore) {
           setPosts(prev => {
-            const newPosts = [...prev, ...response.data]
-            console.log('[useFeed] Appending posts, new total:', newPosts.length)
-            return newPosts
+            const ids = new Set(prev.map((p: any) => p.id))
+            const fresh = response.data.filter((p: any) => !ids.has(p.id))
+            return [...prev, ...fresh]
           })
         } else {
           setPosts(response.data)
@@ -221,7 +221,7 @@ export function useFeed(options: UseFeedOptions = {}): UseFeedReturn {
   // Add new post to the beginning of feed
   const addPost = useCallback((post: Post) => {
     console.log('[useFeed] Adding new post:', post.id)
-    setPosts(prev => [post, ...prev])
+    setPosts(prev => [post, ...prev.filter((p: any) => p.id !== post.id)])
     setTotal(prev => prev + 1)
   }, [])
 
