@@ -652,6 +652,31 @@ def list_comments(
 # ❤️ REACTIONS
 # =========================================================
 
+
+@router.delete(
+    "/{post_id}/comments/{comment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a comment",
+)
+def delete_comment_route(
+    post_id: int,
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a comment on a post."""
+    comment = db.query(PostComment).filter(
+        PostComment.id == comment_id,
+        PostComment.post_id == post_id,
+    ).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail='Comment not found')
+    if comment.author_id != current_user.id and current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail='Not authorized')
+    db.delete(comment)
+    db.commit()
+    return None
+
 @router.post(
     "/{post_id}/reactions",
     response_model=PostActionResponse,
