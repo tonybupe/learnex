@@ -4,102 +4,130 @@ import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Search, Send, Plus, MessageCircle, Users, MoreVertical, Phone, Video, ArrowLeft, Check, CheckCheck, Trash2, Edit2, X } from "lucide-react"
-import { UserAvatar } from "@/components/ui/UserAvatar"
+import { Search, Send, Plus, MessageCircle, Users, ArrowLeft, CheckCheck, Trash2, Edit2, X, UserPlus } from "lucide-react"
 
-interface Participant { user_id: number; role: string; user?: { id: number; full_name: string; email: string; role: string; profile?: { avatar_url?: string } } }
-interface Message { id: number; conversation_id: number; sender_id: number; content: string; message_type: string; is_edited: boolean; is_deleted: boolean; created_at: string; updated_at: string; sender?: { id: number; full_name: string; profile?: { avatar_url?: string } } }
-interface Conversation { id: number; title?: string; conversation_type: string; class_id?: number; is_active: boolean; created_at: string; updated_at: string; participants?: Participant[] }
+interface User { id: number; full_name: string; email: string; role: string; profile?: { avatar_url?: string } }
+interface Participant { user_id: number; role: string; user?: User }
+interface Message { id: number; conversation_id: number; sender_id: number; content: string; message_type: string; is_edited: boolean; is_deleted: boolean; created_at: string; sender?: { id: number; full_name: string } }
+interface Conversation { id: number; title?: string; conversation_type: string; class_id?: number; is_active: boolean; updated_at: string; participants?: Participant[] }
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000"
+const WS_BASE = (import.meta.env.VITE_WS_URL || "ws://localhost:8000")
+
+function Avatar({ name, size = 40, color = "var(--accent)" }: { name: string; size?: number; color?: string }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: size * 0.4, flexShrink: 0 }}>
+      {name[0]?.toUpperCase()}
+    </div>
+  )
+}
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr)
+  const diff = Date.now() - d.getTime()
+  if (diff < 86400000) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  if (diff < 604800000) return d.toLocaleDateString([], { weekday: "short" })
+  return d.toLocaleDateString([], { month: "short", day: "numeric" })
+}
+
+function groupByDate(msgs: Message[]) {
+  const groups: { date: string; msgs: Message[] }[] = []
+  msgs.forEach(msg => {
+    const d = new Date(msg.created_at)
+    const today = new Date()
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
+    let label = d.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })
+    if (d.toDateString() === today.toDateString()) label = "Today"
+    else if (d.toDateString() === yesterday.toDateString()) label = "Yesterday"
+    const last = groups[groups.length - 1]
+    if (last?.date === label) last.msgs.push(msg)
+    else groups.push({ date: label, msgs: [msg] })
+  })
+  return groups
+}
 
 export default function MessagesPage() {
-  const user = useAuthStore(s => s.user)
+  const me = useAuthStore(s => s.user)
   const queryClient = useQueryClient()
-  const [activeConvId, setActiveConvId] = useState<number | null>(null)
-  const [messageText, setMessageText] = useState("")
+  const [activeId, setActiveId] = useState<number | null>(null)
+  const [text, setText] = useState("")
   const [search, setSearch] = useState("")
-  const [editingMsg, setEditingMsg] = useState<Message | null>(null)
+  const [showUsers, setShowUsers] = useState(false)
+  const [userSearch, setUserSearch] = useState("")
+  const [editMsg, setEditMsg] = useState<Message | null>(null)
   const [editText, setEditText] = useState("")
-  const [showNewDM, setShowNewDM] = useState(false)
-  const [dmUserId, setDmUserId] = useState("")
-  const [mobileShowChat, setMobileShowChat] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [mobileChat, setMobileChat] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
+  // Fetch all users for DM picker
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ["users-list"],
+    queryFn: async () => {
+      const res = await api.get("/users")
+      return (Array.isArray(res.data) ? res.data : []) as User[]
+    },
+    retry: false,
+  })
+
   // Fetch conversations
-  const { data: conversations = [], isLoading: convsLoading } = useQuery({
+  const { data: convs = [], isLoading: convsLoading } = useQuery({
     queryKey: ["conversations"],
     queryFn: async () => {
       const res = await api.get(endpoints.messaging.list)
-      return Array.isArray(res.data) ? res.data as Conversation[] : []
+      return (Array.isArray(res.data) ? res.data : []) as Conversation[]
     },
-    refetchInterval: 15000,
+    refetchInterval: 20000,
     retry: false,
   })
 
-  // Fetch messages for active conversation
+  // Fetch messages
   const { data: messages = [], isLoading: msgsLoading } = useQuery({
-    queryKey: ["messages", activeConvId],
+    queryKey: ["messages", activeId],
     queryFn: async () => {
-      const res = await api.get(endpoints.messaging.messages(activeConvId!))
-      return Array.isArray(res.data) ? res.data as Message[] : []
+      const res = await api.get(endpoints.messaging.messages(activeId!))
+      return (Array.isArray(res.data) ? res.data : []) as Message[]
     },
-    enabled: !!activeConvId,
-    refetchInterval: false,
+    enabled: !!activeId,
     retry: false,
   })
 
-  // WebSocket connection for active conversation
+  // WebSocket
   useEffect(() => {
-    if (!activeConvId || !user) return
+    if (!activeId) return
     const token = localStorage.getItem("learnex_access_token")
-    const ws = new WebSocket(`${WS_URL}/api/v1/messaging/ws/${activeConvId}?token=${token}`)
+    const ws = new WebSocket(`${WS_BASE}/api/v1/messaging/ws/${activeId}?token=${token}`)
     wsRef.current = ws
-
-    ws.onmessage = (event) => {
+    ws.onmessage = e => {
       try {
-        const msg = JSON.parse(event.data)
-        if (msg.id) {
-          queryClient.setQueryData(["messages", activeConvId], (old: Message[] = []) => {
-            if (old.find(m => m.id === msg.id)) return old
-            return [...old, msg]
-          })
-          queryClient.invalidateQueries({ queryKey: ["conversations"] })
+        const msg = JSON.parse(e.data) as Message
+        if (msg?.id) {
+          queryClient.setQueryData(["messages", activeId], (old: Message[] = []) =>
+            old.find(m => m.id === msg.id) ? old : [...old, msg]
+          )
         }
       } catch {}
     }
-
     return () => { ws.close(); wsRef.current = null }
-  }, [activeConvId, user])
+  }, [activeId])
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  // Scroll to bottom
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages.length])
 
-  // Mark as read when opening conversation
+  // Mark read
   useEffect(() => {
-    if (activeConvId) {
-      api.post(endpoints.messaging.markRead(activeConvId), {}).catch(() => {})
-    }
-  }, [activeConvId])
+    if (activeId) api.post(endpoints.messaging.markRead(activeId), {}).catch(() => {})
+  }, [activeId])
 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await api.post(endpoints.messaging.sendMessage(activeConvId!), {
-        content, message_type: "text"
-      })
+      const res = await api.post(endpoints.messaging.sendMessage(activeId!), { content, message_type: "text" })
       return res.data as Message
     },
-    onSuccess: (msg) => {
-      queryClient.setQueryData(["messages", activeConvId], (old: Message[] = []) => [...old, msg])
+    onSuccess: msg => {
+      queryClient.setQueryData(["messages", activeId], (old: Message[] = []) => [...old, msg])
       queryClient.invalidateQueries({ queryKey: ["conversations"] })
-      // Broadcast via WebSocket
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify(msg))
-      }
+      wsRef.current?.readyState === WebSocket.OPEN && wsRef.current.send(JSON.stringify(msg))
     },
   })
 
@@ -108,21 +136,15 @@ export default function MessagesPage() {
       const res = await api.patch(endpoints.messaging.editMessage(id), { content })
       return res.data as Message
     },
-    onSuccess: (msg) => {
-      queryClient.setQueryData(["messages", activeConvId], (old: Message[] = []) =>
-        old.map(m => m.id === msg.id ? msg : m)
-      )
-      setEditingMsg(null); setEditText("")
+    onSuccess: msg => {
+      queryClient.setQueryData(["messages", activeId], (old: Message[] = []) => old.map(m => m.id === msg.id ? msg : m))
+      setEditMsg(null); setEditText("")
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => api.delete(endpoints.messaging.deleteMessage(id)),
-    onSuccess: (_, id) => {
-      queryClient.setQueryData(["messages", activeConvId], (old: Message[] = []) =>
-        old.filter(m => m.id !== id)
-      )
-    },
+    onSuccess: (_, id) => queryClient.setQueryData(["messages", activeId], (old: Message[] = []) => old.filter(m => m.id !== id)),
   })
 
   const startDMMutation = useMutation({
@@ -130,176 +152,124 @@ export default function MessagesPage() {
       const res = await api.post(endpoints.messaging.startDirect, { recipient_user_id: userId })
       return res.data as Conversation
     },
-    onSuccess: (conv) => {
+    onSuccess: conv => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] })
-      setActiveConvId(conv.id)
-      setShowNewDM(false)
-      setDmUserId("")
-      setMobileShowChat(true)
+      setActiveId(conv.id); setShowUsers(false); setMobileChat(true)
     },
   })
 
   const handleSend = useCallback(() => {
-    const text = messageText.trim()
-    if (!text || !activeConvId) return
-    setMessageText("")
-    sendMutation.mutate(text)
-  }, [messageText, activeConvId, sendMutation])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() }
-  }, [handleSend])
+    const t = text.trim()
+    if (!t || !activeId) return
+    setText(""); sendMutation.mutate(t)
+  }, [text, activeId])
 
   const getConvName = (conv: Conversation) => {
     if (conv.title) return conv.title
-    if (conv.conversation_type === "direct" && conv.participants) {
-      const other = conv.participants.find(p => p.user_id !== user?.id)
+    if (conv.conversation_type === "direct") {
+      const other = conv.participants?.find(p => p.user_id !== me?.id)
       return other?.user?.full_name ?? "Direct Message"
     }
-    return `Conversation #${conv.id}`
+    return `Group Chat #${conv.id}`
   }
 
-  const getConvAvatar = (conv: Conversation) => {
-    if (conv.conversation_type === "direct" && conv.participants) {
-      const other = conv.participants.find(p => p.user_id !== user?.id)
-      return other?.user
-    }
-    return null
-  }
+  const activeConv = convs.find(c => c.id === activeId)
+  const filteredConvs = convs.filter(c => getConvName(c).toLowerCase().includes(search.toLowerCase()))
+  const filteredUsers = allUsers.filter(u => u.id !== me?.id && (u.full_name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase())))
 
-  const activeConv = conversations.find(c => c.id === activeConvId)
-  const filteredConvs = conversations.filter(c =>
-    getConvName(c).toLowerCase().includes(search.toLowerCase())
-  )
-
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr)
-    const now = new Date()
-    const diff = now.getTime() - d.getTime()
-    if (diff < 86400000) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    if (diff < 604800000) return d.toLocaleDateString([], { weekday: "short" })
-    return d.toLocaleDateString([], { month: "short", day: "numeric" })
-  }
-
-  const groupMessagesByDate = (msgs: Message[]) => {
-    const groups: { date: string; messages: Message[] }[] = []
-    msgs.forEach(msg => {
-      const date = new Date(msg.created_at).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })
-      const last = groups[groups.length - 1]
-      if (last && last.date === date) last.messages.push(msg)
-      else groups.push({ date, messages: [msg] })
-    })
-    return groups
-  }
+  const COLORS = ["var(--accent)", "var(--accent2)", "var(--success)", "#f59e0b", "#ef4444", "#8b5cf6"]
+  const colorFor = (id: number) => COLORS[id % COLORS.length]
 
   return (
     <AppShell>
-      <div style={{ display: "flex", height: "calc(100vh - 64px)", background: "var(--bg)", overflow: "hidden", borderRadius: 16, border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+      <div style={{ height: "calc(100vh - 80px)", display: "flex", borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--shadow2)" }}>
 
-        {/* LEFT PANEL — Conversation List */}
-        <div style={{
-          width: 320, flexShrink: 0, borderRight: "1px solid var(--border)",
-          display: "flex", flexDirection: "column", background: "var(--card)",
-          ...(mobileShowChat ? { display: "none" } : {})
-        }}
-          className="messages-sidebar">
+        {/* ── SIDEBAR ── */}
+        <div style={{ width: 300, flexShrink: 0, background: "var(--card)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column" }}>
 
           {/* Header */}
-          <div style={{ padding: "16px", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>Messages</h2>
-              <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 12px" }}
-                onClick={() => setShowNewDM(!showNewDM)}>
-                <Plus size={14} /> New
+          <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontWeight: 800, fontSize: 18 }}>💬 Messages</span>
+              <button onClick={() => setShowUsers(!showUsers)} title="New message"
+                style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid var(--border)", background: showUsers ? "var(--accent)" : "transparent", color: showUsers ? "white" : "var(--muted)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+                <UserPlus size={16} />
               </button>
             </div>
-
-            {/* Search */}
             <div style={{ position: "relative" }}>
-              <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
-              <input className="audit-control" value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search conversations..."
-                style={{ paddingLeft: 32, fontSize: 13 }} />
+              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+              <input className="audit-control" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search..." style={{ paddingLeft: 30, fontSize: 13, height: 36 }} />
             </div>
           </div>
 
-          {/* New DM Form */}
-          {showNewDM && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", background: "var(--bg2)" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--accent)" }}>Start Direct Message</div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <input className="audit-control" type="number" value={dmUserId}
-                  onChange={e => setDmUserId(e.target.value)}
-                  placeholder="Enter user ID..."
-                  style={{ flex: 1, fontSize: 13 }} />
-                <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 12px" }}
-                  onClick={() => dmUserId && startDMMutation.mutate(Number(dmUserId))}
-                  disabled={startDMMutation.isPending}>
-                  {startDMMutation.isPending ? "..." : "Go"}
-                </button>
+          {/* User picker for new DM */}
+          {showUsers && (
+            <div style={{ borderBottom: "1px solid var(--border)", background: "var(--bg2)" }}>
+              <div style={{ padding: "8px 12px 4px" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", marginBottom: 6 }}>Start new conversation</div>
+                <div style={{ position: "relative" }}>
+                  <Search size={12} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                  <input className="audit-control" value={userSearch} onChange={e => setUserSearch(e.target.value)}
+                    placeholder="Search users..." style={{ paddingLeft: 26, fontSize: 12, height: 30 }} autoFocus />
+                </div>
+              </div>
+              <div style={{ maxHeight: 200, overflowY: "auto", padding: "4px 8px 8px" }}>
+                {filteredUsers.slice(0, 10).map(u => (
+                  <div key={u.id} onClick={() => startDMMutation.mutate(u.id)}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 8px", borderRadius: 10, cursor: "pointer", transition: "background 0.15s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--card)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <Avatar name={u.full_name} size={32} color={colorFor(u.id)} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.full_name}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{u.role}</div>
+                    </div>
+                    {startDMMutation.isPending && <div className="spinner" style={{ width: 14, height: 14 }} />}
+                  </div>
+                ))}
+                {filteredUsers.length === 0 && <div style={{ fontSize: 12, color: "var(--muted)", padding: "8px 8px" }}>No users found</div>}
               </div>
             </div>
           )}
 
-          {/* Conversations List */}
+          {/* Conversation List */}
           <div style={{ flex: 1, overflowY: "auto" }}>
-            {convsLoading && (
-              <div style={{ padding: 24, textAlign: "center", color: "var(--muted)", fontSize: 13 }}>
-                Loading...
+            {convsLoading && [1,2,3].map(i => (
+              <div key={i} style={{ padding: "12px 16px", display: "flex", gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--border)" }} />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, justifyContent: "center" }}>
+                  <div style={{ height: 12, background: "var(--border)", borderRadius: 4, width: "60%" }} />
+                  <div style={{ height: 10, background: "var(--border)", borderRadius: 4, width: "80%" }} />
+                </div>
               </div>
-            )}
+            ))}
             {!convsLoading && filteredConvs.length === 0 && (
               <div style={{ padding: 32, textAlign: "center" }}>
-                <MessageCircle size={36} style={{ color: "var(--muted)", marginBottom: 12 }} />
-                <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>No conversations yet</p>
-                <p style={{ color: "var(--muted)", fontSize: 12, margin: "4px 0 0" }}>Start a new message above</p>
+                <div style={{ fontSize: 40, marginBottom: 10 }}>💬</div>
+                <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 6 }}>No conversations yet</div>
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>Click the icon above to start chatting</div>
               </div>
             )}
             {filteredConvs.map(conv => {
-              const isActive = conv.id === activeConvId
-              const convUser = getConvAvatar(conv)
+              const isActive = conv.id === activeId
+              const name = getConvName(conv)
               const isGroup = conv.conversation_type !== "direct"
               return (
-                <div key={conv.id}
-                  onClick={() => { setActiveConvId(conv.id); setMobileShowChat(true) }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
-                    cursor: "pointer", transition: "background 0.15s",
-                    background: isActive ? "color-mix(in srgb, var(--accent) 10%, var(--card))" : "transparent",
-                    borderLeft: isActive ? "3px solid var(--accent)" : "3px solid transparent",
-                  }}
+                <div key={conv.id} onClick={() => { setActiveId(conv.id); setMobileChat(true) }}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer", borderLeft: `3px solid ${isActive ? "var(--accent)" : "transparent"}`, background: isActive ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "transparent", transition: "all 0.15s" }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--bg2)" }}
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent" }}>
-
-                  {/* Avatar */}
-                  <div style={{ position: "relative", flexShrink: 0 }}>
-                    {isGroup ? (
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, var(--accent), var(--accent2))", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
-                        <Users size={20} />
-                      </div>
-                    ) : (
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--chip)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "var(--accent)" }}>
-                        {getConvName(conv)[0]?.toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
+                  {isGroup
+                    ? <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, var(--accent), var(--accent2))", display: "flex", alignItems: "center", justifyContent: "center", color: "white", flexShrink: 0 }}><Users size={18} /></div>
+                    : <Avatar name={name} size={40} color={colorFor(conv.id)} />
+                  }
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
-                      <span style={{ fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {getConvName(conv)}
-                      </span>
-                      <span style={{ fontSize: 11, color: "var(--muted)", flexShrink: 0, marginLeft: 8 }}>
-                        {formatTime(conv.updated_at)}
-                      </span>
-                    </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {isGroup ? `${conv.conversation_type} chat` : "Direct message"}
-                      </span>
+                      <span style={{ fontWeight: 600, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+                      <span style={{ fontSize: 11, color: "var(--muted)", flexShrink: 0, marginLeft: 6 }}>{formatTime(conv.updated_at)}</span>
                     </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)" }}>{conv.conversation_type}</div>
                   </div>
                 </div>
               )
@@ -307,139 +277,124 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* RIGHT PANEL — Chat Window */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg2)", position: "relative" }}
-          className={mobileShowChat ? "mobile-show" : ""}>
+        {/* ── CHAT AREA ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg2)", position: "relative", minWidth: 0 }}>
 
-          {!activeConvId ? (
-            /* Empty State */
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
-              <div style={{ fontSize: 72, marginBottom: 16 }}>💬</div>
-              <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "var(--text)" }}>Your Messages</h3>
-              <p style={{ margin: 0, fontSize: 14 }}>Select a conversation to start chatting</p>
-              <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={() => setShowNewDM(true)}>
-                <Plus size={16} /> Start New Conversation
+          {!activeId ? (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--muted)", gap: 12 }}>
+              <div style={{ fontSize: 80 }}>💬</div>
+              <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--text)" }}>Learnex Messages</h3>
+              <p style={{ margin: 0, fontSize: 14, textAlign: "center", maxWidth: 300 }}>Select a conversation from the left or start a new one by clicking the <strong>+</strong> icon</p>
+              <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => setShowUsers(true)}>
+                <UserPlus size={16} /> Start Conversation
               </button>
             </div>
           ) : (
             <>
               {/* Chat Header */}
-              <div style={{ padding: "12px 20px", borderBottom: "1px solid var(--border)", background: "var(--card)", display: "flex", alignItems: "center", gap: 12 }}>
-                <button className="btn" style={{ display: "none" }} onClick={() => setMobileShowChat(false)}
-                  id="back-btn">
-                  <ArrowLeft size={16} />
+              <div style={{ padding: "12px 20px", background: "var(--card)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
+                <button onClick={() => { setMobileChat(false); setActiveId(null) }}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex", alignItems: "center" }}>
+                  <ArrowLeft size={20} />
                 </button>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--accent2))", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>
-                  {activeConv ? getConvName(activeConv)[0]?.toUpperCase() : "?"}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>{activeConv ? getConvName(activeConv) : ""}</div>
-                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                    {activeConv?.participants?.length ?? 0} participants · {activeConv?.conversation_type}
-                  </div>
-                </div>
+                {activeConv && (
+                  <>
+                    {activeConv.conversation_type !== "direct"
+                      ? <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, var(--accent), var(--accent2))", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}><Users size={18} /></div>
+                      : <Avatar name={getConvName(activeConv)} size={40} color={colorFor(activeConv.id)} />
+                    }
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: 15 }}>{getConvName(activeConv)}</div>
+                      <div style={{ fontSize: 12, color: "var(--success)" }}>● online</div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Messages Area */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 2 }}>
-                {msgsLoading && (
-                  <div style={{ textAlign: "center", color: "var(--muted)", padding: 32, fontSize: 13 }}>Loading messages...</div>
-                )}
+              {/* Messages */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4 }}>
+                {msgsLoading && <div style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>Loading messages...</div>}
                 {!msgsLoading && messages.length === 0 && (
-                  <div style={{ textAlign: "center", color: "var(--muted)", padding: 48 }}>
+                  <div style={{ textAlign: "center", color: "var(--muted)", padding: 60 }}>
                     <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
-                    <p style={{ fontSize: 14 }}>No messages yet. Say hello!</p>
+                    <p>No messages yet — say hello!</p>
                   </div>
                 )}
 
-                {groupMessagesByDate(messages).map(group => (
+                {groupByDate(messages).map(group => (
                   <div key={group.date}>
-                    {/* Date Divider */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0 8px" }}>
+                    {/* Date divider */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "12px 0 8px" }}>
                       <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-                      <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, padding: "4px 10px", background: "var(--card)", borderRadius: 999, border: "1px solid var(--border)" }}>
-                        {group.date}
-                      </span>
+                      <span style={{ fontSize: 11, color: "var(--muted)", padding: "3px 10px", background: "var(--card)", borderRadius: 999, border: "1px solid var(--border)", fontWeight: 600 }}>{group.date}</span>
                       <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
                     </div>
 
-                    {group.messages.map((msg, idx) => {
-                      const isMe = msg.sender_id === user?.id
-                      const prevMsg = group.messages[idx - 1]
-                      const showAvatar = !isMe && (!prevMsg || prevMsg.sender_id !== msg.sender_id)
-                      const showName = showAvatar
-
+                    {group.msgs.map((msg, idx) => {
+                      const isMe = msg.sender_id === me?.id
+                      const prev = group.msgs[idx - 1]
+                      const showName = !isMe && msg.sender_id !== prev?.sender_id
                       return (
-                        <div key={msg.id}
-                          style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom: 2, gap: 8, alignItems: "flex-end" }}>
-
-                          {/* Other's avatar */}
+                        <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom: 3, gap: 8, alignItems: "flex-end" }}>
                           {!isMe && (
-                            <div style={{ width: 28, flexShrink: 0, display: "flex", alignItems: "flex-end" }}>
-                              {showAvatar && (
-                                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 11, fontWeight: 800 }}>
-                                  {(msg.sender?.full_name ?? "U")[0]}
-                                </div>
-                              )}
+                            <div style={{ width: 28, flexShrink: 0 }}>
+                              {showName && <Avatar name={msg.sender?.full_name ?? "U"} size={28} color={colorFor(msg.sender_id)} />}
                             </div>
                           )}
 
-                          {/* Message bubble */}
-                          <div style={{ maxWidth: "65%", position: "relative" }}
-                            onMouseEnter={e => { const actions = e.currentTarget.querySelector<HTMLElement>(".msg-actions"); if (actions) actions.style.opacity = "1" }}
-                            onMouseLeave={e => { const actions = e.currentTarget.querySelector<HTMLElement>(".msg-actions"); if (actions) actions.style.opacity = "0" }}>
+                          <div style={{ maxWidth: "62%", position: "relative" }}
+                            onMouseEnter={e => { const a = e.currentTarget.querySelector<HTMLElement>(".ma"); if (a) a.style.display = "flex" }}
+                            onMouseLeave={e => { const a = e.currentTarget.querySelector<HTMLElement>(".ma"); if (a) a.style.display = "none" }}>
 
-                            {showName && !isMe && (
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 3, paddingLeft: 4 }}>
-                                {msg.sender?.full_name ?? "Unknown"}
+                            {showName && (
+                              <div style={{ fontSize: 11, fontWeight: 700, color: colorFor(msg.sender_id), marginBottom: 3, paddingLeft: 4 }}>
+                                {msg.sender?.full_name}
                               </div>
                             )}
 
-                            <div style={{
-                              padding: "8px 12px",
-                              borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                              background: isMe ? "linear-gradient(135deg, var(--accent), var(--accent2))" : "var(--card)",
-                              color: isMe ? "white" : "var(--text)",
-                              fontSize: 14, lineHeight: 1.5,
-                              border: isMe ? "none" : "1px solid var(--border)",
-                              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                              wordBreak: "break-word",
-                            }}>
-                              {msg.is_deleted
-                                ? <em style={{ opacity: 0.6, fontSize: 13 }}>Message deleted</em>
-                                : editingMsg?.id === msg.id
-                                  ? (
-                                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                      <input value={editText} onChange={e => setEditText(e.target.value)}
-                                        onKeyDown={e => { if (e.key === "Enter") editMutation.mutate({ id: msg.id, content: editText }); if (e.key === "Escape") { setEditingMsg(null); setEditText("") } }}
-                                        style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: 8, padding: "4px 8px", color: "white", fontSize: 13, flex: 1 }}
-                                        autoFocus />
-                                      <button onClick={() => editMutation.mutate({ id: msg.id, content: editText })} style={{ background: "rgba(255,255,255,0.3)", border: "none", borderRadius: 6, padding: "4px 8px", color: "white", cursor: "pointer", fontSize: 12 }}>Save</button>
-                                      <button onClick={() => { setEditingMsg(null); setEditText("") }} style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}><X size={14} /></button>
-                                    </div>
-                                  )
+                            {editMsg?.id === msg.id ? (
+                              <div style={{ display: "flex", gap: 6, alignItems: "center", background: "var(--card)", borderRadius: 12, padding: "8px 10px", border: "2px solid var(--accent)" }}>
+                                <input value={editText} onChange={e => setEditText(e.target.value)}
+                                  onKeyDown={e => { if (e.key === "Enter") editMutation.mutate({ id: msg.id, content: editText }); if (e.key === "Escape") { setEditMsg(null) } }}
+                                  style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 14, outline: "none" }}
+                                  autoFocus />
+                                <button onClick={() => editMutation.mutate({ id: msg.id, content: editText })}
+                                  style={{ background: "var(--accent)", border: "none", borderRadius: 6, padding: "4px 8px", color: "white", cursor: "pointer", fontSize: 12 }}>Save</button>
+                                <button onClick={() => setEditMsg(null)}
+                                  style={{ background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer" }}><X size={14} /></button>
+                              </div>
+                            ) : (
+                              <div style={{
+                                padding: "8px 14px",
+                                borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                                background: isMe ? "linear-gradient(135deg, var(--accent), var(--accent2))" : "var(--card)",
+                                color: isMe ? "white" : "var(--text)",
+                                fontSize: 14, lineHeight: 1.6, wordBreak: "break-word",
+                                border: isMe ? "none" : "1px solid var(--border)",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                              }}>
+                                {msg.is_deleted
+                                  ? <em style={{ opacity: 0.5, fontSize: 13 }}>🚫 Message deleted</em>
                                   : msg.content
-                              }
-                            </div>
+                                }
+                              </div>
+                            )}
 
-                            {/* Time + status */}
-                            <div style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", alignItems: "center", gap: 4, marginTop: 2, paddingLeft: 4, paddingRight: 4 }}>
+                            <div style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", alignItems: "center", gap: 4, marginTop: 2, paddingLeft: 4 }}>
                               {msg.is_edited && <span style={{ fontSize: 10, color: "var(--muted)" }}>edited</span>}
                               <span style={{ fontSize: 10, color: "var(--muted)" }}>{formatTime(msg.created_at)}</span>
-                              {isMe && <CheckCheck size={12} style={{ color: "var(--accent)" }} />}
+                              {isMe && !msg.is_deleted && <CheckCheck size={11} style={{ color: "var(--accent2)" }} />}
                             </div>
 
-                            {/* Actions */}
-                            {!msg.is_deleted && isMe && (
-                              <div className="msg-actions" style={{ position: "absolute", top: 0, right: isMe ? "100%" : "auto", left: isMe ? "auto" : "100%", opacity: 0, transition: "opacity 0.15s", display: "flex", gap: 4, background: "var(--card)", borderRadius: 8, padding: "4px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", marginRight: isMe ? 8 : 0, marginLeft: isMe ? 0 : 8 }}>
-                                <button onClick={() => { setEditingMsg(msg); setEditText(msg.content) }}
-                                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: "4px", borderRadius: 6, color: "var(--muted)" }}
-                                  title="Edit">
+                            {/* Hover actions */}
+                            {isMe && !msg.is_deleted && !editMsg && (
+                              <div className="ma" style={{ display: "none", position: "absolute", top: 0, right: "calc(100% + 6px)", gap: 4, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 6px", boxShadow: "var(--shadow2)", alignItems: "center" }}>
+                                <button onClick={() => { setEditMsg(msg); setEditText(msg.content) }}
+                                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted)", padding: "3px", borderRadius: 6, display: "flex" }} title="Edit">
                                   <Edit2 size={13} />
                                 </button>
-                                <button onClick={() => { if (window.confirm("Delete this message?")) deleteMutation.mutate(msg.id) }}
-                                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: "4px", borderRadius: 6, color: "var(--danger)" }}
-                                  title="Delete">
+                                <button onClick={() => window.confirm("Delete?") && deleteMutation.mutate(msg.id)}
+                                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--danger)", padding: "3px", borderRadius: 6, display: "flex" }} title="Delete">
                                   <Trash2 size={13} />
                                 </button>
                               </div>
@@ -450,34 +405,22 @@ export default function MessagesPage() {
                     })}
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
+                <div ref={bottomRef} />
               </div>
 
-              {/* Input Area */}
-              <div style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", background: "var(--card)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ flex: 1, position: "relative" }}>
-                    <input
-                      ref={inputRef}
-                      className="audit-control"
-                      value={messageText}
-                      onChange={e => setMessageText(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Type a message..."
-                      style={{ paddingRight: 48, borderRadius: 24, fontSize: 14 }}
-                    />
-                  </div>
-                  <button
-                    onClick={handleSend}
-                    disabled={!messageText.trim() || sendMutation.isPending}
-                    style={{
-                      width: 44, height: 44, borderRadius: "50%", border: "none", flexShrink: 0,
-                      background: messageText.trim() ? "linear-gradient(135deg, var(--accent), var(--accent2))" : "var(--border)",
-                      color: "white", cursor: messageText.trim() ? "pointer" : "not-allowed",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.2s",
-                    }}>
-                    <Send size={18} />
+              {/* Input */}
+              <div style={{ padding: "12px 20px", background: "var(--card)", borderTop: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", borderRadius: 28, border: "1px solid var(--border)", padding: "6px 6px 6px 16px", transition: "border-color 0.15s" }}
+                  onFocusCapture={e => e.currentTarget.style.borderColor = "var(--accent)"}
+                  onBlurCapture={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                  <input ref={inputRef} value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+                    placeholder="Type a message..."
+                    style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 14, outline: "none", lineHeight: 1.5 }} />
+                  <button onClick={handleSend} disabled={!text.trim() || sendMutation.isPending}
+                    style={{ width: 38, height: 38, borderRadius: "50%", border: "none", flexShrink: 0, cursor: text.trim() ? "pointer" : "not-allowed", background: text.trim() ? "linear-gradient(135deg, var(--accent), var(--accent2))" : "var(--border)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
+                    {sendMutation.isPending ? <div className="spinner-small" /> : <Send size={16} />}
                   </button>
                 </div>
               </div>
@@ -485,17 +428,6 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .messages-sidebar { display: flex !important; width: 100% !important; position: absolute; z-index: 10; height: 100%; }
-          .mobile-show .messages-sidebar { display: none !important; }
-          #back-btn { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .messages-sidebar { display: flex !important; }
-        }
-      `}</style>
     </AppShell>
   )
 }
