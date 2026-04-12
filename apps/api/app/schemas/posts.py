@@ -37,6 +37,11 @@ class PostAuthorMiniResponse(BaseModel):
             }
         return v
     
+    attachments: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="List of attachment data dicts"
+    )
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -81,6 +86,11 @@ class PostCreate(BaseModel):
         description="Post status (draft, published, archived)"
     )
     
+    attachments: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="List of attachment data dicts"
+    )
+
     model_config = ConfigDict(from_attributes=True)
 
 
