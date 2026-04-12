@@ -59,6 +59,7 @@ export function useComments(
   useEffect(() => {
     isMountedRef.current = true
     return () => {
+      initialLoadDoneRef.current = false
       isMountedRef.current = false
     }
   }, [])
