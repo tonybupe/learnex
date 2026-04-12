@@ -36,6 +36,7 @@ export default function FeedSection() {
 
   const handlePostCreated = useCallback((post: any) => {
     if (post) {
+      // Add to feed immediately, dedup handles if reload also fetches it
       addPost(post)
       toast.success("Post shared!")
     }
