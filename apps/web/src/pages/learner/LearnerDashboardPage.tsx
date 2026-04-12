@@ -13,7 +13,9 @@ function StatCard({ title, value, icon, color }: {
 }) {
   return (
     <div className="kpi stat-card">
-      <div className="stat-icon" style={{ color: color || "var(--accent)" }}>{icon}</div>
+      <div className="stat-icon" style={{ color: color || "var(--accent)", background: `${color || "var(--accent)"}18`, borderRadius: 10, padding: 10 }}>
+        {icon}
+      </div>
       <div>
         <div className="kpi-sub">{title}</div>
         <div className="kpi-value">{value}</div>
@@ -25,10 +27,7 @@ function StatCard({ title, value, icon, color }: {
 export default function LearnerDashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["learner-dashboard"],
-    queryFn: async () => {
-      const res = await api.get("/analytics/dashboard/learner")
-      return res.data
-    },
+    queryFn: async () => (await api.get("/analytics/dashboard/learner")).data,
     retry: false,
     staleTime: 60000,
   })
@@ -36,29 +35,58 @@ export default function LearnerDashboardPage() {
   return (
     <AppShell>
       <div className="dashboard-stack">
+
+        {/* Header */}
         <LearnerDashboardHeader />
 
-        {/* Stats */}
+        {/* Stats Row */}
         <div className="stats-grid">
-          <StatCard title="Enrolled Classes" value={isLoading ? "..." : data?.enrolled_classes ?? 0} icon={<BookOpen size={20} />} color="var(--accent)" />
-          <StatCard title="Lessons Completed" value={isLoading ? "..." : data?.completed_lessons ?? 0} icon={<GraduationCap size={20} />} color="var(--accent2)" />
-          <StatCard title="Quizzes Taken" value={isLoading ? "..." : data?.quizzes_taken ?? 0} icon={<CheckSquare size={20} />} color="var(--success)" />
-          <StatCard title="Avg. Quiz Score" value={isLoading ? "..." : `${data?.average_quiz_score ?? 0}%`} icon={<Star size={20} />} color="#f59e0b" />
+          <StatCard
+            title="Enrolled Classes"
+            value={isLoading ? "..." : data?.enrolled_classes ?? 0}
+            icon={<BookOpen size={20} />}
+            color="#cb26e4"
+          />
+          <StatCard
+            title="Lessons Completed"
+            value={isLoading ? "..." : data?.completed_lessons ?? 0}
+            icon={<GraduationCap size={20} />}
+            color="#38bdf8"
+          />
+          <StatCard
+            title="Quizzes Taken"
+            value={isLoading ? "..." : data?.quizzes_taken ?? 0}
+            icon={<CheckSquare size={20} />}
+            color="#22c55e"
+          />
+          <StatCard
+            title="Avg. Quiz Score"
+            value={isLoading ? "..." : `${data?.average_quiz_score ?? 0}%`}
+            icon={<Star size={20} />}
+            color="#f59e0b"
+          />
         </div>
 
+        {/* Quick Actions */}
         <LearnerQuickActions />
 
-        <div className="dashboard-grid">
-          <div className="dashboard-main">
-            <div className="card">
-              <div className="card-head"><span className="card-title">📚 Class Feed</span></div>
-              <FeedSection />
+        {/* Main Content Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start" }}>
+
+          {/* Feed */}
+          <div className="card">
+            <div className="card-head">
+              <span className="card-title">📚 Class Feed</span>
             </div>
+            <FeedSection />
           </div>
-          <div className="dashboard-sidebar">
+
+          {/* Right Sidebar */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <LearnerUpcoming />
             <LearnerActivity />
           </div>
+
         </div>
       </div>
     </AppShell>
