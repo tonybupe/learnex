@@ -8,9 +8,8 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 0 0 40px;
+  max-width: 100%;
+  padding: 0 0 20px;
 }
 
 /* New Posts Banner */
@@ -639,4 +638,24 @@
   font-weight: 700;
   user-select: none;
   flex-shrink: 0;
+}
+/* Fix feed posts visibility */
+.feed-post {
+  opacity: 1 !important;
+}
+
+.feed-list-container,
+.feed-list {
+  width: 100%;
+  overflow: visible;
+}
+
+/* When feed is inside a card */
+.card .feed-section {
+  margin: 0;
+  padding: 0;
+}
+
+.card .feed-section .tabs-bar {
+  margin-bottom: 12px;
 }
