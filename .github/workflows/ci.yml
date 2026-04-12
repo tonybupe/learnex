@@ -65,9 +65,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: docker/setup-buildx-action@v3.10.0
-      - name: Build API image
+      - name: Build API image (production)
         run: |
           docker build \
             -f infra/docker/api.Dockerfile \
+            --target production \
             -t learnex-api:ci \
+            .
+      - name: Build Worker image (production)
+        run: |
+          docker build \
+            -f infra/docker/worker.Dockerfile \
+            --target production \
+            -t learnex-worker:ci \
             .
