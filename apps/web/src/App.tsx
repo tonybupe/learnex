@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+﻿import { Routes, Route, Navigate } from "react-router-dom"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { queryClient } from "@/lib/queryClient"
 import AuthGuard from "@/features/auth/AuthGuard"
@@ -24,7 +24,7 @@ import SettingsPage from "@/features/users/pages/SettingsPage"
 import ClassesPage from "@/pages/classes/ClassesPage"
 import DiscoverClassesPage from "@/pages/classes/DiscoverClassesPage"
 import SubjectsPage from "@/pages/subjects/SubjectsPage"
-import { FeedSection as FeedPage } from "@/pages/shared/FeedSection"
+import FeedPage from "@/pages/shared/FeedSection"
 
 const ALL_ROLES = ["admin", "teacher", "learner"] as const
 
@@ -79,7 +79,7 @@ export default function App() {
           </AuthGuard>
         } />
 
-        {/* Shared — all roles */}
+        {/* Shared â€” all roles */}
         <Route path="/feed" element={
           <AuthGuard allowedRoles={[...ALL_ROLES]}>
             <FeedPage />
