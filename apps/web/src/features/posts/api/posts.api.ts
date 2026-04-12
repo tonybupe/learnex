@@ -435,6 +435,8 @@ export async function getComments(
     throw transformApiError(apiError)
   }
 }
+
+export async function postComment(
   postId: number,
   content: string
 ): Promise<Comment> {
