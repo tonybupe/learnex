@@ -1,158 +1,84 @@
-// components/comments/PostComments.tsx
-import { useCallback, useRef, useEffect } from "react"
+import { useCallback } from "react"
 import { useComments } from "../../hooks/useComments"
 import { useToast } from "@/features/posts/hooks/useToast"
-
 import CommentComposer from "./CommentComposer"
-import CommentList from "./CommentList"
+import CommentItem from "./CommentItem"
 
 type Props = {
   postId: number
   onCommentAdded?: () => void
   onCommentDeleted?: () => void
-  autoFocus?: boolean
 }
 
-export default function PostComments({ 
-  postId, 
-  onCommentAdded, 
-  onCommentDeleted,
-  autoFocus = false 
-}: Props) {
-  const { 
-    comments, 
-    loading, 
-    loadingMore,
-    hasMore,
-    error,
-    addComment, 
-    deleteComment,
-    loadMore,
-    reload 
-  } = useComments(postId, {
-    initialLimit: 10,
-    autoLoad: true,
-    enablePolling: false,
-  })
-  
-  const commentsContainerRef = useRef<HTMLDivElement>(null)
+export default function PostComments({ postId, onCommentAdded, onCommentDeleted }: Props) {
   const toast = useToast()
-  
-  // Handle comment added
+  const {
+    comments, loading, loadingMore, hasMore,
+    error, addComment, deleteComment, loadMore, reload,
+  } = useComments(postId, { initialLimit: 10, autoLoad: true })
+
   const handleAddComment = useCallback(async (content: string) => {
     const success = await addComment(content)
-    if (success) {
-      onCommentAdded?.()
-      
-      // Scroll to new comment if it's at the top (newest first)
-      if (commentsContainerRef.current) {
-        setTimeout(() => {
-          commentsContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-        }, 100)
-      }
-    }
+    if (success) onCommentAdded?.()
     return success
   }, [addComment, onCommentAdded])
-  
-  // Handle comment deleted
+
   const handleDeleteComment = useCallback(async (commentId: number) => {
     const success = await deleteComment(commentId)
-    if (success) {
-      onCommentDeleted?.()
-      toast.success('Comment deleted', { duration: 2000 })
-    }
+    if (success) { onCommentDeleted?.(); toast.success("Comment deleted") }
     return success
   }, [deleteComment, onCommentDeleted, toast])
-  
-  // Handle retry on error
-  const handleRetry = useCallback(() => {
-    reload()
-  }, [reload])
-  
-  // Auto-scroll to comments when opened
-  useEffect(() => {
-    if (autoFocus && commentsContainerRef.current) {
-      setTimeout(() => {
-        const commentInput = document.querySelector<HTMLInputElement>('.comment-composer input')
-        commentInput?.focus()
-      }, 100)
-    }
-  }, [autoFocus])
-  
-  // Handle infinite scroll for comments
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!commentsContainerRef.current) return
-      
-      const { scrollTop, scrollHeight, clientHeight } = commentsContainerRef.current
-      // Load more when scrolled to bottom (with 100px threshold)
-      if (scrollHeight - scrollTop - clientHeight < 100 && hasMore && !loadingMore) {
-        loadMore()
-      }
-    }
-    
-    const container = commentsContainerRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll)
-      return () => container.removeEventListener('scroll', handleScroll)
-    }
-  }, [hasMore, loadingMore, loadMore])
-  
-  // Show error state
-  if (error && comments.length === 0) {
-    return (
-      <div className="comments-error">
-        <div className="error-icon">💬</div>
-        <p>Failed to load comments</p>
-        <p className="error-message">{error}</p>
-        <button onClick={handleRetry} className="retry-btn">
-          Try Again
-        </button>
-      </div>
-    )
-  }
-  
+
+  if (error && comments.length === 0) return (
+    <div className="comments-error">
+      <p>Failed to load comments</p>
+      <button className="retry-btn" onClick={reload}>Try Again</button>
+    </div>
+  )
+
   return (
-    <div className="post-comments" ref={commentsContainerRef}>
-      {/* Comment Composer */}
-      <CommentComposer 
-        onSubmit={handleAddComment} 
-        autoFocus={autoFocus}
-        disabled={loading}
-      />
-      
-      {/* Comments List */}
-      <CommentList
-        comments={comments}
-        loading={loading}
-        loadingMore={loadingMore}
-        hasMore={hasMore}
-        onDelete={handleDeleteComment}
-        onLoadMore={loadMore}
-      />
-      
-      {/* Loading More Indicator */}
-      {loadingMore && (
-        <div className="comments-loading-more">
-          <div className="spinner-small" />
-          <span>Loading more comments...</span>
+    <div className="post-comments">
+      {/* Main Composer */}
+      <CommentComposer onSubmit={handleAddComment} />
+
+      {/* Loading */}
+      {loading && comments.length === 0 && (
+        <div className="comments-loading-more" style={{ padding: "16px 0" }}>
+          <div className="spinner" />
+          <span>Loading comments...</span>
         </div>
       )}
-      
-      {/* End of Comments */}
-      {!hasMore && comments.length > 0 && (
-        <div className="comments-end">
-          <span>✨ End of comments ✨</span>
-        </div>
-      )}
-      
-      {/* Empty State */}
-      {!loading && comments.length === 0 && !error && (
+
+      {/* Empty */}
+      {!loading && comments.length === 0 && (
         <div className="comments-empty">
-          <div className="empty-icon">💭</div>
-          <p>No comments yet</p>
-          <p className="empty-subtitle">Be the first to share your thoughts!</p>
+          <p>💭 No comments yet — be first!</p>
         </div>
+      )}
+
+      {/* Comment List */}
+      <div className="comment-list">
+        {comments.map(comment => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            onDelete={handleDeleteComment}
+            onReply={handleAddComment}
+            depth={0}
+          />
+        ))}
+      </div>
+
+      {/* Load More */}
+      {hasMore && (
+        <button
+          className="load-more-btn"
+          onClick={loadMore}
+          disabled={loadingMore}
+          style={{ width: "100%", marginTop: 8, padding: "8px", border: "1px solid var(--border)", borderRadius: 8, background: "transparent", color: "var(--muted)", cursor: "pointer", fontSize: 13 }}
+        >
+          {loadingMore ? "Loading..." : "Load more comments"}
+        </button>
       )}
     </div>
   )

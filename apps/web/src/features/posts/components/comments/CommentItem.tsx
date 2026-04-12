@@ -1,283 +1,115 @@
-// components/comments/CommentItem.tsx
-import { memo, useState, useCallback, useRef, useEffect } from "react"
+import { memo, useState, useCallback } from "react"
 import type { Comment } from "../../types/post.types"
 import { UserAvatar } from "@/components/ui/UserAvatar"
 import { useAuthStore } from "@/features/auth/auth.store"
-import { useToast } from "@/features/posts/hooks/useToast" // ✅ Fixed import path
-import { canDeleteComment, getUserRole } from "@/utils/user"
+import { canDeleteComment } from "@/utils/user"
 import { formatPostDate } from "../../types/post.types"
 
 type Props = {
   comment: Comment
   onDelete?: (commentId: number) => Promise<boolean>
-  isDeleting?: boolean
-  onReply?: (commentId: number, authorName: string) => void
-  isHighlighted?: boolean
-  animationDelay?: number // ✅ Add animationDelay prop
+  onReply?: (content: string) => Promise<boolean>
+  depth?: number
 }
 
-function CommentItem({ 
-  comment, 
-  onDelete, 
-  isDeleting: externalDeleting = false,
-  onReply,
-  isHighlighted = false,
-  animationDelay = 0 // ✅ Default to 0
-}: Props) {
-  // =========================================
-  // STATE
-  // =========================================
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  
-  // =========================================
-  // REFS
-  // =========================================
-  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const itemRef = useRef<HTMLDivElement>(null)
-  
-  // =========================================
-  // HOOKS
-  // =========================================
-  const currentUser = useAuthStore((state) => state.user)
-  const toast = useToast()
-  
-  // =========================================
-  // DERIVED STATE
-  // =========================================
+function CommentItem({ comment, onDelete, onReply, depth = 0 }: Props) {
+  const [showReply, setShowReply] = useState(false)
+  const [replyText, setReplyText] = useState("")
+  const [replyLoading, setReplyLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const currentUser = useAuthStore(s => s.user)
   const canDelete = canDeleteComment(currentUser, comment.author.id)
-  const isLoading = isDeleting || externalDeleting
   const isOwner = currentUser?.id === comment.author.id
-  const formattedDate = formatPostDate(comment.created_at)
-  const userRole = getUserRole(comment.author)
-  
-  // Animation style with delay
-  const animationStyle = {
-    animation: `commentFadeIn 0.3s ease ${animationDelay}s forwards`,
-    opacity: 0,
-    transform: 'translateY(8px)',
-  }
-  
-  // =========================================
-  // EFFECTS
-  // =========================================
-  
-  // Auto-hide delete confirmation after timeout
-  useEffect(() => {
-    if (showDeleteConfirm) {
-      confirmTimeoutRef.current = setTimeout(() => {
-        setShowDeleteConfirm(false)
-      }, 3000)
-    }
-    
-    return () => {
-      if (confirmTimeoutRef.current) {
-        clearTimeout(confirmTimeoutRef.current)
-      }
-    }
-  }, [showDeleteConfirm])
-  
-  // Scroll into view if highlighted
-  useEffect(() => {
-    if (isHighlighted && itemRef.current) {
-      itemRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      // Add temporary highlight class
-      itemRef.current.classList.add('highlighted')
-      setTimeout(() => {
-        itemRef.current?.classList.remove('highlighted')
-      }, 2000)
-    }
-  }, [isHighlighted])
-  
-  // =========================================
-  // HANDLERS
-  // =========================================
-  
-  /**
-   * Handle comment deletion with confirmation
-   */
+
   const handleDelete = useCallback(async () => {
-    if (!canDelete) {
-      toast.warning("You don't have permission to delete this comment")
-      return
-    }
-    
-    // If already in confirmation mode, execute delete
-    if (showDeleteConfirm) {
-      setIsDeleting(true)
-      
-      try {
-        if (onDelete) {
-          const success = await onDelete(comment.id)
-          if (success) {
-            toast.success("Comment deleted", { duration: 2000 })
-          } else {
-            toast.error("Failed to delete comment")
-          }
-        }
-      } catch (err) {
-        toast.error("Failed to delete comment")
-      } finally {
-        setIsDeleting(false)
-        setShowDeleteConfirm(false)
-      }
-    } else {
-      // Show confirmation first
-      setShowDeleteConfirm(true)
-    }
-  }, [canDelete, comment.id, onDelete, showDeleteConfirm, toast])
-  
-  /**
-   * Cancel delete confirmation
-   */
-  const cancelDelete = useCallback(() => {
-    setShowDeleteConfirm(false)
-  }, [])
-  
-  /**
-   * Handle reply to comment
-   */
-  const handleReply = useCallback(() => {
-    if (onReply) {
-      onReply(comment.id, comment.author.full_name)
-    }
-  }, [comment.id, comment.author.full_name, onReply])
-  
-  /**
-   * Handle keydown events for accessibility
-   */
+    if (!confirmDelete) { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 3000); return }
+    setDeleting(true)
+    await onDelete?.(comment.id)
+    setDeleting(false)
+    setConfirmDelete(false)
+  }, [confirmDelete, comment.id, onDelete])
+
+  const handleReplySubmit = useCallback(async () => {
+    const text = replyText.trim()
+    if (!text || replyLoading) return
+    setReplyLoading(true)
+    const content = `@${comment.author.full_name} ${text}`
+    const success = await onReply?.(content)
+    if (success) { setReplyText(""); setShowReply(false) }
+    setReplyLoading(false)
+  }, [replyText, replyLoading, comment.author.full_name, onReply])
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Delete' && canDelete && !isLoading) {
-      e.preventDefault()
-      handleDelete()
-    }
-    if (e.key === 'r' && onReply) {
-      e.preventDefault()
-      handleReply()
-    }
-  }, [canDelete, isLoading, handleDelete, onReply, handleReply])
-  
-  // =========================================
-  // RENDER
-  // =========================================
-  
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleReplySubmit() }
+    if (e.key === "Escape") { setShowReply(false); setReplyText("") }
+  }, [handleReplySubmit])
+
   return (
-    <div 
-      ref={itemRef}
-      className={`comment-item ${isLoading ? 'deleting' : ''} ${isHovered ? 'hovered' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="article"
-      aria-label={`Comment by ${comment.author.full_name}`}
-      style={animationStyle}
-      data-comment-id={comment.id}
-    >
-      {/* Avatar */}
-      <UserAvatar 
-        user={comment.author} 
-        size="sm" 
-        className="comment-avatar"
-        withTooltip
-      />
-      
-      {/* Comment Content */}
-      <div className="comment-content">
-        <div className="comment-header">
-          <div className="comment-author-info">
-            <span className="comment-author">{comment.author.full_name}</span>
-            <span className="comment-date" title={new Date(comment.created_at).toLocaleString()}>
-              {formattedDate}
-            </span>
-          </div>
-          
-          {/* Role Badge */}
-          {comment.author.role !== 'learner' && (
-            <span className={`role-badge ${comment.author.role}`}>
-              {userRole}
+    <div className={`comment-item ${depth > 0 ? "comment-reply-item" : ""}`}>
+      <UserAvatar user={comment.author} size="xs" />
+
+      <div className="comment-bubble">
+        <div className="comment-name">
+          {comment.author.full_name}
+          {comment.author.role !== "learner" && (
+            <span className={`role-badge ${comment.author.role}`} style={{ marginLeft: 6 }}>
+              {comment.author.role}
             </span>
           )}
         </div>
-        
-        <p className="comment-text">{comment.content}</p>
-        
-        {/* Comment Actions */}
-        <div className="comment-footer">
-          {onReply && isHovered && !isLoading && (
+        <div className="comment-text">{comment.content}</div>
+        <div className="comment-meta">
+          <span>{formatPostDate(comment.created_at)}</span>
+          {onReply && depth === 0 && (
             <button
-              type="button"
-              className="comment-reply"
-              onClick={handleReply}
-              aria-label={`Reply to ${comment.author.full_name}`}
+              className="comment-delete"
+              style={{ color: "var(--accent2)", fontWeight: 700 }}
+              onClick={() => { setShowReply(v => !v); setReplyText("") }}
             >
-              <span className="reply-icon">↩️</span>
-              <span>Reply</span>
+              Reply
             </button>
           )}
+          {canDelete && (
+            confirmDelete
+              ? <>
+                  <button className="comment-delete" style={{ color: "var(--danger)" }} onClick={handleDelete} disabled={deleting}>Confirm?</button>
+                  <button className="comment-delete" onClick={() => setConfirmDelete(false)}>Cancel</button>
+                </>
+              : <button className="comment-delete" onClick={handleDelete} disabled={deleting}>
+                  {deleting ? "..." : isOwner ? "Delete" : "🗑️"}
+                </button>
+          )}
         </div>
-      </div>
-      
-      {/* Delete Button */}
-      {canDelete && (
-        <div className="comment-actions">
-          {showDeleteConfirm ? (
-            <div 
-              className="delete-confirm"
-              role="dialog"
-              aria-label="Confirm delete"
-            >
-              <span className="confirm-text">Delete?</span>
-              <button 
-                onClick={handleDelete} 
-                className="confirm-yes"
-                disabled={isLoading}
-                aria-label="Confirm delete comment"
+
+        {/* Inline Reply Composer */}
+        {showReply && (
+          <div className="comment-composer" style={{ marginTop: 8 }}>
+            <UserAvatar user={currentUser} size="xs" />
+            <div className="comment-input-container">
+              <input
+                className="comment-input"
+                value={replyText}
+                onChange={e => setReplyText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Reply to ${comment.author.full_name}...`}
+                autoFocus
+                maxLength={500}
+              />
+              <button
+                className={`comment-submit ${replyText.trim() ? "active" : ""}`}
+                onClick={handleReplySubmit}
+                disabled={!replyText.trim() || replyLoading}
               >
-                Yes
-              </button>
-              <button 
-                onClick={cancelDelete} 
-                className="confirm-no"
-                disabled={isLoading}
-                aria-label="Cancel delete"
-              >
-                No
+                {replyLoading ? <span className="spinner-small" style={{ borderTopColor: "var(--accent)" }} /> : "➤"}
               </button>
             </div>
-          ) : (
-            <button
-              onClick={handleDelete}
-              className={`comment-delete ${isOwner ? 'owner' : ''}`}
-              disabled={isLoading}
-              aria-label="Delete comment"
-              title="Delete comment (Delete key)"
-            >
-              {isLoading ? (
-                <span className="spinner-small" />
-              ) : (
-                <span>🗑️</span>
-              )}
-            </button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-// Custom comparison for memoization
-const areEqual = (prevProps: Props, nextProps: Props): boolean => {
-  return (
-    prevProps.comment.id === nextProps.comment.id &&
-    prevProps.comment.content === nextProps.comment.content &&
-    prevProps.comment.is_liked === nextProps.comment.is_liked &&
-    prevProps.comment.likes_count === nextProps.comment.likes_count &&
-    prevProps.isDeleting === nextProps.isDeleting &&
-    prevProps.isHighlighted === nextProps.isHighlighted &&
-    prevProps.animationDelay === nextProps.animationDelay
-  )
-}
-
-export default memo(CommentItem, areEqual)
+export default memo(CommentItem)

@@ -659,3 +659,23 @@
 .card .feed-section .tabs-bar {
   margin-bottom: 12px;
 }
+/* Reply item indentation */
+.comment-reply-item {
+  margin-left: 40px;
+  position: relative;
+}
+.comment-reply-item::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 16px;
+  width: 16px;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Comment animation fix */
+.comment-item {
+  opacity: 1 !important;
+  transform: none !important;
+}
