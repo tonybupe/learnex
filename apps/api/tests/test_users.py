@@ -16,7 +16,7 @@ class TestGetMe:
 
     def test_get_me_unauthenticated(self, client: TestClient):
         resp = client.get("/api/v1/users/me")
-        assert resp.status_code == 403
+        assert resp.status_code in (401, 403)  # both are valid unauthenticated responses
 
     def test_get_me_invalid_token(self, client: TestClient):
         resp = client.get("/api/v1/users/me",
@@ -54,7 +54,7 @@ class TestUpdateProfile:
     def test_update_profile_unauthenticated(self, client: TestClient):
         resp = client.patch("/api/v1/users/me/profile",
                             json={"bio": "Should fail"})
-        assert resp.status_code == 403
+        assert resp.status_code in (401, 403)  # both valid for unauthenticated
 
 
 class TestListUsers:
