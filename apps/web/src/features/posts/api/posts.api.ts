@@ -423,18 +423,18 @@ export async function getComments(
         limit: params?.limit ?? DEFAULT_LIMIT,
       },
     })
-    
-    return transformPaginatedResponse(response.data, transformComment)
+    // API returns plain array
+    const raw = Array.isArray(response.data) ? response.data : (response.data?.data ?? [])
+    const data = raw.map((c: any) => transformComment(c))
+    return {
+      data,
+      metadata: { page: params?.page ?? 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1, has_next_page: false, prev_page: null },
+    }
   } catch (error) {
-    const apiError = handleApiError(error, 'Failed to load comments')
+    const apiError = handleApiError(error, "Failed to load comments")
     throw transformApiError(apiError)
   }
 }
-
-/**
- * Create a comment
- */
-export async function postComment(
   postId: number,
   content: string
 ): Promise<Comment> {
