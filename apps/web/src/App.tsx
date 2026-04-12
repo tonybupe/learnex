@@ -29,6 +29,7 @@ import LessonsPage from "@/pages/lessons/LessonsPage"
 import QuizzesPage from "@/pages/quizzes/QuizzesPage"
 import LiveSessionsPage from "@/pages/live-sessions/LiveSessionsPage"
 import DiscoverPage from "@/pages/discover/DiscoverPage"
+import AnalyticsPage from "@/pages/analytics/AnalyticsPage"
 
 const ALL_ROLES = ["admin", "teacher", "learner"] as const
 
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/lessons" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><LessonsPage /></AuthGuard>} />
         <Route path="/quizzes" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><QuizzesPage /></AuthGuard>} />
         <Route path="/live-sessions" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><LiveSessionsPage /></AuthGuard>} />
+        <Route path="/analytics" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><AnalyticsPage /></AuthGuard>} />
         <Route path="/discover" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><DiscoverPage /></AuthGuard>} />
         <Route path="/profile/:userId" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ProfilePage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SettingsPage /></AuthGuard>} />

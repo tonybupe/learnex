@@ -21,6 +21,7 @@ export default function Sidebar() {
     { label: "Messages", icon: MessageCircle, path: "/messages" },
     { label: "Saved", icon: Bookmark, path: "/saved" },
     { label: "Discover", icon: Search, path: "/discover" },
+    { label: "Analytics", icon: BarChart2, path: "/analytics" },
   ]
 
   return (
