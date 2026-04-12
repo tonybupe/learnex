@@ -39,55 +39,33 @@ export default function LearnerDashboardPage() {
         {/* Header */}
         <LearnerDashboardHeader />
 
-        {/* Stats Row */}
+        {/* Stats */}
         <div className="stats-grid">
-          <StatCard
-            title="Enrolled Classes"
-            value={isLoading ? "..." : data?.enrolled_classes ?? 0}
-            icon={<BookOpen size={20} />}
-            color="#cb26e4"
-          />
-          <StatCard
-            title="Lessons Completed"
-            value={isLoading ? "..." : data?.completed_lessons ?? 0}
-            icon={<GraduationCap size={20} />}
-            color="#38bdf8"
-          />
-          <StatCard
-            title="Quizzes Taken"
-            value={isLoading ? "..." : data?.quizzes_taken ?? 0}
-            icon={<CheckSquare size={20} />}
-            color="#22c55e"
-          />
-          <StatCard
-            title="Avg. Quiz Score"
-            value={isLoading ? "..." : `${data?.average_quiz_score ?? 0}%`}
-            icon={<Star size={20} />}
-            color="#f59e0b"
-          />
+          <StatCard title="Enrolled Classes"   value={isLoading ? "..." : data?.enrolled_classes ?? 0}   icon={<BookOpen size={20} />}     color="#cb26e4" />
+          <StatCard title="Lessons Completed"  value={isLoading ? "..." : data?.completed_lessons ?? 0}  icon={<GraduationCap size={20} />} color="#38bdf8" />
+          <StatCard title="Quizzes Taken"      value={isLoading ? "..." : data?.quizzes_taken ?? 0}      icon={<CheckSquare size={20} />}   color="#22c55e" />
+          <StatCard title="Avg. Quiz Score"    value={isLoading ? "..." : `${data?.average_quiz_score ?? 0}%`} icon={<Star size={20} />}  color="#f59e0b" />
         </div>
 
         {/* Quick Actions */}
         <LearnerQuickActions />
 
-        {/* Main Content Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start" }}>
+        {/* Upcoming + Activity side by side */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <LearnerUpcoming />
+          <LearnerActivity />
+        </div>
 
-          {/* Feed */}
-          <div className="card">
-            <div className="card-head">
-              <span className="card-title">📚 Class Feed</span>
-            </div>
+        {/* Feed — full width */}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="card-head" style={{ padding: "14px 18px" }}>
+            <span className="card-title">📚 Class Feed</span>
+          </div>
+          <div style={{ padding: "0 18px 18px" }}>
             <FeedSection />
           </div>
-
-          {/* Right Sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <LearnerUpcoming />
-            <LearnerActivity />
-          </div>
-
         </div>
+
       </div>
     </AppShell>
   )
