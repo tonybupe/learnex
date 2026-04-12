@@ -50,8 +50,10 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements.txt
+      - name: Remove any stale pytest config
+        run: rm -f pytest.ini setup.cfg
       - name: Run tests
-        run: pytest tests/ -v --tb=short --timeout=30 2>&1
+        run: python -m pytest tests/ -v --tb=short -p no:warnings --override-ini="addopts=" 2>&1
 
   build:
     name: Docker Build
