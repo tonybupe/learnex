@@ -47,11 +47,12 @@ jobs:
       - uses: actions/setup-python@v5.4.0
         with:
           python-version: "3.12"
+      - name: Show requirements.txt contents
+        run: cat requirements.txt
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install --no-cache-dir -r requirements.txt
       - name: Run tests with coverage
-        run: |
-          pytest --cov=app --cov-report=term-missing --cov-fail-under=50 -v
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=50 -v
 
   build:
     name: Docker Build
