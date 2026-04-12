@@ -67,7 +67,8 @@ export default function QuizTaker({ quiz, onExit }: Props) {
       setAttemptId(res.data.attempt_id)
       setPhase("taking")
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Failed to start quiz")
+      const detail = err?.response?.data?.detail || "Failed to start quiz"
+      setError(detail === "Maximum attempts reached" ? "You have used all your attempts for this quiz." : detail)
     } finally { setLoading(false) }
   }
 

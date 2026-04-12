@@ -38,4 +38,3 @@ class LiveSession(Base, TimestampMixin):
     subject = relationship("Subject")
     teacher = relationship("User")
     lesson = relationship("Lesson")
-    attendances = relationship("SessionAttendance", back_populates="session", cascade="all, delete-orphan")
