@@ -73,6 +73,7 @@ export function useFeed(options: UseFeedOptions = {}): UseFeedReturn {
     console.log('[useFeed] Component mounted')
     return () => {
       console.log('[useFeed] Component unmounting')
+      initialLoadDoneRef.current = false
       isMountedRef.current = false
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current)
