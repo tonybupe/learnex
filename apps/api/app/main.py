@@ -1,9 +1,8 @@
 ﻿# app/main.py
-from pathlib import Path
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -35,15 +34,14 @@ app = FastAPI(
 )
 
 # CORS
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,18 +50,24 @@ app.add_middleware(
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60, redis_url=settings.redis_url)
 
-# Uploads - safe creation, skip if not possible
-try:
-    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
-    app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
-except (PermissionError, OSError):
-    logging.warning(f"Could not create upload dir {settings.upload_dir} - uploads disabled")
-
 # API Routes
 app.include_router(api_router, prefix="/api/v1")
 
 # WebSocket
 app.include_router(websocket_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Mount uploads directory on startup - safe for testing environments."""
+    from pathlib import Path
+    from fastapi.staticfiles import StaticFiles
+    upload_dir = settings.upload_dir
+    try:
+        Path(upload_dir).mkdir(parents=True, exist_ok=True)
+        app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
+    except Exception as e:
+        logging.warning(f"Uploads disabled: {e}")
 
 
 @app.get("/api/v1/websocket/stats")
