@@ -43,6 +43,7 @@ jobs:
       POSTGRES_PORT: 5432
       REDIS_HOST: localhost
       REDIS_PORT: 6379
+      UPLOAD_DIR: /tmp/learnex_uploads
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-python@v5.4.0
@@ -50,6 +51,8 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements.txt
+      - name: Create upload directory
+        run: mkdir -p /tmp/learnex_uploads
       - name: Remove any stale pytest config
         run: rm -f pytest.ini setup.cfg
       - name: Run tests
