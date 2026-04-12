@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.deps import get_current_user, require_roles
 from app.models.quiz import Quiz
 from app.models.quiz_attempt import QuizAttempt
+from app.models.quiz_question import QuizQuestion
 from app.models.user import User
 from app.schemas.quizzes import (
     QuizActionResponse,
@@ -19,7 +20,6 @@ from app.schemas.quizzes import (
     QuizSubmissionRequest,
     QuizUpdate,
 )
-
 from app.services.notification_service import notify_quiz_published
 from app.services.quiz_service import add_question, create_quiz, start_attempt, submit_attempt, update_quiz
 
@@ -28,7 +28,7 @@ router = APIRouter()
 
 def quiz_query(db: Session):
     return db.query(Quiz).options(
-        joinedload(Quiz.questions).joinedload("options")
+        joinedload(Quiz.questions).joinedload(QuizQuestion.options)
     )
 
 
@@ -77,10 +77,8 @@ def update_quiz_route(
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-
     if current_user.role == "teacher" and quiz.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only update your own quizzes")
-
     try:
         updated = update_quiz(db, quiz, payload)
         return quiz_query(db).filter(Quiz.id == updated.id).first()
@@ -97,10 +95,8 @@ def delete_quiz(
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-
     if current_user.role == "teacher" and quiz.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only delete your own quizzes")
-
     db.delete(quiz)
     db.commit()
     return QuizActionResponse(message="Quiz deleted successfully")
@@ -116,16 +112,14 @@ def add_question_route(
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-
     if current_user.role == "teacher" and quiz.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="You can only manage your own quiz questions")
-
     try:
         question = add_question(db, quiz, payload)
         return (
-            db.query(type(question))
-            .options(joinedload(type(question).options))
-            .filter(type(question).id == question.id)
+            db.query(QuizQuestion)
+            .options(joinedload(QuizQuestion.options))
+            .filter(QuizQuestion.id == question.id)
             .first()
         )
     except ValueError as exc:
@@ -141,7 +135,6 @@ def start_quiz_attempt(
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-
     try:
         attempt = start_attempt(db, quiz, current_user)
         return QuizAttemptStartResponse(
@@ -163,15 +156,17 @@ def submit_quiz_attempt(
     quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
     if not quiz:
         raise HTTPException(status_code=404, detail="Quiz not found")
-
     attempt = (
         db.query(QuizAttempt)
-        .filter(QuizAttempt.id == attempt_id, QuizAttempt.quiz_id == quiz_id, QuizAttempt.learner_id == current_user.id)
+        .filter(
+            QuizAttempt.id == attempt_id,
+            QuizAttempt.quiz_id == quiz_id,
+            QuizAttempt.learner_id == current_user.id,
+        )
         .first()
     )
     if not attempt:
         raise HTTPException(status_code=404, detail="Quiz attempt not found")
-
     try:
         return submit_attempt(db, quiz, attempt, payload)
     except ValueError as exc:
@@ -186,7 +181,10 @@ def my_quiz_attempts(
 ):
     return (
         db.query(QuizAttempt)
-        .filter(QuizAttempt.quiz_id == quiz_id, QuizAttempt.learner_id == current_user.id)
+        .filter(
+            QuizAttempt.quiz_id == quiz_id,
+            QuizAttempt.learner_id == current_user.id,
+        )
         .order_by(QuizAttempt.created_at.desc())
         .all()
     )
