@@ -8,10 +8,12 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
+  full_name: string
   email: string
+  phone_number: string
+  sex: "male" | "female" | "other"
   password: string
-  name: string
-  role?: "learner" | "teacher"
+  role: "learner" | "teacher" | "admin"
 }
 
 export interface LoginResponse {
@@ -19,81 +21,33 @@ export interface LoginResponse {
   token_type: string
 }
 
-export interface RegisterResponse {
-  access_token: string
-  token_type: string
-  user: AuthUser
+// Register returns the created user (201) - no token
+export type RegisterResponse = AuthUser
+
+// =========================================================
+// LOGIN
+// =========================================================
+export async function loginUser(credentials: LoginCredentials): Promise<LoginResponse> {
+  const response = await api.post<LoginResponse>(endpoints.auth.login, credentials)
+  localStorage.setItem("learnex_access_token", response.data.access_token)
+  return response.data
 }
 
-
 // =========================================================
-// 🔐 LOGIN
+// REGISTER
 // =========================================================
-
-export async function loginUser(
-  credentials: LoginCredentials
-): Promise<LoginResponse> {
-  const response = await api.post<LoginResponse>(
-    endpoints.auth.login,
-    credentials
-  )
-
-  const data = response.data
-
-  // 🔥 SAVE TOKEN IMMEDIATELY
-  localStorage.setItem("learnex_access_token", data.access_token)
-
-  return data
+export async function registerUser(data: RegisterData): Promise<RegisterResponse> {
+  const response = await api.post<RegisterResponse>(endpoints.auth.register, data)
+  return response.data
 }
 
-
 // =========================================================
-// 📝 REGISTER
+// GET CURRENT USER
 // =========================================================
-
-export async function registerUser(
-  data: RegisterData
-): Promise<RegisterResponse> {
-  const response = await api.post<RegisterResponse>(
-    endpoints.auth.register,
-    data
-  )
-
-  const res = response.data
-
-  // 🔥 SAVE TOKEN
-  localStorage.setItem("token", res.access_token)
-
-  return res
-}
-
-
-// =========================================================
-// 👤 GET CURRENT USER
-// =========================================================
-
 export async function getMe(): Promise<AuthUser> {
-  try {
-    const response = await api.get<AuthUser>(
-      endpoints.users.me
-    )
-
-    return response.data
-
-  } catch (error: any) {
-    console.error("❌ getMe failed:", error?.response?.data || error.message)
-
-    // 🔥 REMOVE INVALID TOKEN
-    localStorage.removeItem("token")
-
-    throw new Error("Failed to fetch current user")
-  }
+  const response = await api.get<AuthUser>(endpoints.users.me)
+  return response.data
 }
-
-
-// =========================================================
-// 🔁 ALIASES
-// =========================================================
 
 export const login = loginUser
 export const register = registerUser

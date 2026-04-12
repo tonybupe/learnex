@@ -1,103 +1,91 @@
-// features/auth/useAuth.ts
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "./auth.store";
-import { login as loginApi, register as registerApi, getMe } from "./auth.api";
-import type { LoginCredentials, RegisterData } from "./auth.api";
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "./auth.store"
+import { login as loginApi, register as registerApi, getMe } from "./auth.api"
+import type { LoginCredentials, RegisterData } from "./auth.api"
+
+const ROLE_ROUTES = {
+  admin: "/admin/dashboard",
+  teacher: "/teacher/dashboard",
+  learner: "/learner/dashboard",
+} as const
 
 export function useAuth() {
-  const navigate = useNavigate();
-  const { 
-    accessToken, 
-    user, 
-    isAuthenticated, 
-    isLoading,
-    setSession, 
-    clearSession,
-    setLoading 
-  } = useAuthStore();
+  const navigate = useNavigate()
+  const {
+    accessToken, user, isAuthenticated, isLoading,
+    setSession, clearSession, setLoading,
+  } = useAuthStore()
 
-  // Load user on mount if token exists
+  // Rehydrate user from token on mount
   useEffect(() => {
     const loadUser = async () => {
       if (accessToken && !user && !isLoading) {
-        setLoading(true);
+        setLoading(true)
         try {
-          const userData = await getMe();
-          setSession(accessToken, userData);
-        } catch (error) {
-          console.error("Failed to load user:", error);
-          clearSession();
-          localStorage.removeItem("learnex_access_token");
+          const userData = await getMe()
+          setSession(accessToken, userData)
+        } catch {
+          clearSession()
+          localStorage.removeItem("learnex_access_token")
         } finally {
-          setLoading(false);
+          setLoading(false)
         }
       }
-    };
+    }
+    loadUser()
+  }, [accessToken, user, isLoading, setSession, clearSession, setLoading])
 
-    loadUser();
-  }, [accessToken, user, isLoading, setSession, clearSession, setLoading]);
-
+  // LOGIN — get token, then fetch user
   const login = async (credentials: LoginCredentials) => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await loginApi(credentials);
-      const { access_token } = response;
-      
-      localStorage.setItem("learnex_access_token", access_token);
-      
-      const userData = await getMe();
-      
-      setSession(access_token, userData);
-      
-      const routes = {
-        admin: "/admin/dashboard",
-        teacher: "/teacher/dashboard",
-        learner: "/learner/dashboard",
-      };
-      navigate(routes[userData.role] || "/");
-      
-      return { success: true };
+      const { access_token } = await loginApi(credentials)
+      const userData = await getMe()
+      setSession(access_token, userData)
+      navigate(ROLE_ROUTES[userData.role] ?? "/")
+      return { success: true }
     } catch (error) {
-      clearSession();
-      localStorage.removeItem("learnex_access_token");
-      return { success: false, error };
+      clearSession()
+      localStorage.removeItem("learnex_access_token")
+      return { success: false, error }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
+  // REGISTER — create account, then login automatically
   const register = async (data: RegisterData) => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await registerApi(data);
-      const { access_token, user } = response;
-      
-      localStorage.setItem("learnex_access_token", access_token);
-      setSession(access_token, user);
-      
-      const routes = {
-        admin: "/admin/dashboard",
-        teacher: "/teacher/dashboard",
-        learner: "/learner/dashboard",
-      };
-      navigate(routes[user.role] || "/");
-      
-      return { success: true };
+      // Step 1: Register (returns user, no token)
+      await registerApi(data)
+
+      // Step 2: Auto-login
+      const { access_token } = await loginApi({
+        email: data.email,
+        password: data.password,
+      })
+
+      // Step 3: Fetch full user profile
+      const userData = await getMe()
+      setSession(access_token, userData)
+      navigate(ROLE_ROUTES[userData.role] ?? "/")
+      return { success: true }
     } catch (error) {
-      clearSession();
-      localStorage.removeItem("learnex_access_token");
-      return { success: false, error };
+      clearSession()
+      localStorage.removeItem("learnex_access_token")
+      return { success: false, error }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const logout = () => {
-    localStorage.removeItem("learnex_access_token");
-    clearSession();
-    navigate("/auth/login");
-  };
+    localStorage.removeItem("learnex_access_token")
+    clearSession()
+    navigate("/auth/login")
+  }
 
   return {
     user,
@@ -107,15 +95,14 @@ export function useAuth() {
     login,
     register,
     logout,
-    isAdmin: isAuthenticated && user?.role === 'admin',
-    isTeacher: isAuthenticated && user?.role === 'teacher',
-    isLearner: isAuthenticated && user?.role === 'learner',
+    isAdmin: user?.role === "admin",
+    isTeacher: user?.role === "teacher",
+    isLearner: user?.role === "learner",
     role: user?.role,
-  };
+  }
 }
 
-// Export auth keys for query invalidation if needed
 export const authKeys = {
   all: ["auth"] as const,
   me: () => [...authKeys.all, "me"] as const,
-};
+}
