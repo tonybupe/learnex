@@ -1,9 +1,8 @@
 ﻿# app/main.py
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import HTTPException, Depends
 import logging
 
 from app.api.v1.router import api_router
@@ -21,7 +20,6 @@ from app.websocket.routes import router as websocket_router
 from app.websocket.manager import manager
 from app.deps import get_current_user
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s - %(message)s",
@@ -51,13 +49,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request logging + rate limiting
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60, redis_url=settings.redis_url)
 
-# Uploads
-Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+# Uploads - safe creation, skip if not possible
+try:
+    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+except (PermissionError, OSError):
+    logging.warning(f"Could not create upload dir {settings.upload_dir} - uploads disabled")
 
 # API Routes
 app.include_router(api_router, prefix="/api/v1")
