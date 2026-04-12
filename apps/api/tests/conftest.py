@@ -1,10 +1,28 @@
 ﻿"""Shared pytest fixtures using SQLite in-memory database."""
+import os
 import pytest
+
+# Set ALL environment variables BEFORE any app imports
+os.environ["APP_NAME"] = "Learnex Test"
+os.environ["APP_ENV"] = "test"
+os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only-32chars"
+os.environ["POSTGRES_DB"] = "learnex_test"
+os.environ["POSTGRES_USER"] = "postgres"
+os.environ["POSTGRES_PASSWORD"] = "postgres"
+os.environ["POSTGRES_HOST"] = "localhost"
+os.environ["POSTGRES_PORT"] = "5432"
+os.environ["REDIS_HOST"] = "localhost"
+os.environ["REDIS_PORT"] = "6379"
+os.environ["UPLOAD_DIR"] = "/tmp/learnex_uploads"
+os.environ["MEDIA_BASE_URL"] = "http://localhost:8000/uploads"
+
+# Create upload dir
+os.makedirs("/tmp/learnex_uploads", exist_ok=True)
+
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
-# Use SQLite for tests - no Postgres needed
 TEST_DATABASE_URL = "sqlite:///./test_learnex.db"
 
 engine = create_engine(
@@ -12,7 +30,6 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 
-# Enable foreign keys for SQLite
 @event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
@@ -20,17 +37,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Override settings BEFORE importing app
-import os
-os.environ.setdefault("APP_NAME", "Learnex Test")
-os.environ.setdefault("APP_ENV", "test")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-for-testing-only-32chars")
-os.environ.setdefault("POSTGRES_DB", "learnex_test")
-os.environ.setdefault("POSTGRES_USER", "postgres")
-os.environ.setdefault("POSTGRES_PASSWORD", "postgres")
-os.environ.setdefault("POSTGRES_HOST", "localhost")
-os.environ.setdefault("REDIS_HOST", "localhost")
 
 from app.core.database import Base, get_db
 from app.main import app
@@ -49,7 +55,6 @@ def setup_database():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
-    import os
     if os.path.exists("test_learnex.db"):
         os.remove("test_learnex.db")
 
