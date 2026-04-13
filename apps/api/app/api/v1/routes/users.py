@@ -1,39 +1,33 @@
+import os
+import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-import uuid, os
-from app.core.config import settings
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.deps import get_current_user, require_roles
 from app.models.follow import Follow
 from app.models.user import User
 from app.models.user_profile import UserProfile
 from app.schemas.user import PublicUserResponse, UserResponse
-from app.schemas.user_profile import (
-    UserProfileResponse,
-    UpdateUserProfileRequest,
-)
+from app.schemas.user_profile import UserProfileResponse, UpdateUserProfileRequest
 
 router = APIRouter()
 
 
 # =========================================================
-# 🔧 HELPERS
+# HELPERS
 # =========================================================
 
 def ensure_profile(db: Session, user_id: int) -> UserProfile:
-    profile = db.query(UserProfile).filter(
-        UserProfile.user_id == user_id
-    ).first()
-
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
     if not profile:
         profile = UserProfile(user_id=user_id)
         db.add(profile)
         db.commit()
         db.refresh(profile)
-
     return profile
 
 
@@ -42,6 +36,7 @@ def serialize_profile(profile: UserProfile) -> dict:
         "id": profile.id,
         "user_id": profile.user_id,
         "avatar_url": profile.avatar_url,
+        "cover_url": profile.cover_url,
         "bio": profile.bio,
         "date_of_birth": profile.date_of_birth,
         "location": profile.location,
@@ -58,85 +53,64 @@ def serialize_profile(profile: UserProfile) -> dict:
 
 
 def get_follow_stats(db: Session, user_id: int):
-    followers_count = db.query(Follow).filter(
-        Follow.following_id == user_id
-    ).count()
-
-    following_count = db.query(Follow).filter(
-        Follow.follower_id == user_id
-    ).count()
-
+    followers_count = db.query(Follow).filter(Follow.following_id == user_id).count()
+    following_count = db.query(Follow).filter(Follow.follower_id == user_id).count()
     return followers_count, following_count
 
 
 def build_user_response(db: Session, user: User) -> UserResponse:
     profile = ensure_profile(db, user.id)
     followers_count, following_count = get_follow_stats(db, user.id)
-
     return UserResponse(
-        id=user.id,
-        full_name=user.full_name,
-        email=user.email,
-        phone_number=user.phone_number,
-        sex=user.sex,
-        role=user.role,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
-        profile=serialize_profile(profile),  
-        followers_count=followers_count,
-        following_count=following_count,
+        id=user.id, full_name=user.full_name, email=user.email,
+        phone_number=user.phone_number, sex=user.sex, role=user.role,
+        is_active=user.is_active, is_verified=user.is_verified,
+        created_at=user.created_at, updated_at=user.updated_at,
+        profile=serialize_profile(profile),
+        followers_count=followers_count, following_count=following_count,
     )
 
 
 def build_public_user_response(db: Session, user: User) -> PublicUserResponse:
     profile = ensure_profile(db, user.id)
     followers_count, following_count = get_follow_stats(db, user.id)
-
     return PublicUserResponse(
-        id=user.id,
-        full_name=user.full_name,
-        email=user.email,
-        phone_number=user.phone_number,
-        sex=user.sex,
-        role=user.role,
-        is_active=user.is_active,
-        is_verified=user.is_verified,
-        followers_count=followers_count,
-        following_count=following_count,
-        profile=serialize_profile(profile), 
+        id=user.id, full_name=user.full_name, email=user.email,
+        phone_number=user.phone_number, sex=user.sex, role=user.role,
+        is_active=user.is_active, is_verified=user.is_verified,
+        followers_count=followers_count, following_count=following_count,
+        profile=serialize_profile(profile),
     )
 
 
+def save_upload(file_bytes: bytes, filename: str) -> str:
+    """Save uploaded file and return relative URL."""
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    ext = filename.rsplit(".", 1)[-1] if "." in filename else "jpg"
+    unique_name = f"{uuid.uuid4().hex}.{ext}"
+    file_path = os.path.join(settings.upload_dir, unique_name)
+    with open(file_path, "wb") as f:
+        f.write(file_bytes)
+    return f"/uploads/{unique_name}"
+
+
 # =========================================================
-# 👤 CURRENT USER
+# CURRENT USER
 # =========================================================
 
 @router.get("/me", response_model=UserResponse)
-def get_me(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def get_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return build_user_response(db, current_user)
 
 
 # =========================================================
-# 📄 MY PROFILE
+# MY PROFILE
 # =========================================================
 
 @router.get("/me/profile", response_model=UserProfileResponse)
-def get_my_profile(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    profile = ensure_profile(db, current_user.id)
-    return profile
+def get_my_profile(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return ensure_profile(db, current_user.id)
 
-
-# =========================================================
-# ✏️ UPDATE MY PROFILE
-# =========================================================
 
 @router.patch("/me/profile", response_model=UserProfileResponse)
 def update_my_profile(
@@ -145,20 +119,67 @@ def update_my_profile(
     current_user: User = Depends(get_current_user),
 ):
     profile = ensure_profile(db, current_user.id)
-
-    update_data = payload.model_dump(exclude_unset=True)
-
-    for key, value in update_data.items():
+    for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(profile, key, value)
-
     db.commit()
     db.refresh(profile)
-
     return profile
 
 
 # =========================================================
-# 👥 LIST USERS (ADMIN ONLY)
+# UPLOAD AVATAR
+# =========================================================
+
+@router.post("/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    allowed = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"}
+    ct = file.content_type or ""
+    if ct not in allowed:
+        raise HTTPException(status_code=400, detail=f"Only image files allowed. Got: {ct}")
+
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 10MB.")
+
+    url = save_upload(content, file.filename or "avatar.jpg")
+    profile = ensure_profile(db, current_user.id)
+    profile.avatar_url = url
+    db.commit()
+    return {"avatar_url": url, "message": "Avatar updated successfully"}
+
+
+# =========================================================
+# UPLOAD COVER PHOTO
+# =========================================================
+
+@router.post("/me/cover")
+async def upload_cover(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    allowed = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"}
+    ct = file.content_type or ""
+    if ct not in allowed:
+        raise HTTPException(status_code=400, detail=f"Only image files allowed. Got: {ct}")
+
+    content = await file.read()
+    if len(content) > 20 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max 20MB.")
+
+    url = save_upload(content, file.filename or "cover.jpg")
+    profile = ensure_profile(db, current_user.id)
+    profile.cover_url = url
+    db.commit()
+    return {"cover_url": url, "message": "Cover photo updated successfully"}
+
+
+# =========================================================
+# LIST USERS (ADMIN ONLY)
 # =========================================================
 
 @router.get("", response_model=List[UserResponse])
@@ -171,7 +192,7 @@ def list_users(
 
 
 # =========================================================
-# 👤 PUBLIC USER PROFILE
+# PUBLIC USER PROFILE
 # =========================================================
 
 @router.get("/{user_id}", response_model=PublicUserResponse)
@@ -181,11 +202,6 @@ def get_user_profile(
     current_user: User = Depends(get_current_user),
 ):
     user = db.query(User).filter(User.id == user_id).first()
-
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return build_public_user_response(db, user)
