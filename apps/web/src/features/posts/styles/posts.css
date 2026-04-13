@@ -679,3 +679,365 @@
   opacity: 1 !important;
   transform: none !important;
 }
+/* =========================================
+   X (TWITTER)-INSPIRED COMMENTS
+========================================= */
+
+.x-comment {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.x-comment-reply {
+  margin-left: 46px;
+  padding: 6px 0;
+}
+
+.x-thread-line {
+  position: absolute;
+  left: -27px;
+  top: -6px;
+  bottom: 50%;
+  width: 2px;
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.x-comment-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.x-avatar-line {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  background: var(--border);
+  margin-top: 4px;
+  border-radius: 999px;
+}
+
+.x-comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.x-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.x-comment-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+}
+.x-comment-name:hover { text-decoration: underline; }
+
+.x-comment-role {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.x-comment-time {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.x-comment-delete {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; padding: 2px; display: flex; align-items: center;
+  border-radius: 4px; transition: color 0.15s;
+  opacity: 0;
+}
+.x-comment:hover .x-comment-delete { opacity: 1; }
+.x-comment-delete:hover { color: var(--danger); }
+
+.x-comment-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  word-break: break-word;
+  margin-bottom: 6px;
+}
+
+.x-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.x-comment-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.x-comment-action:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.x-comment-action.liked { color: var(--danger); }
+
+.x-reply-composer {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+
+.x-reply-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: none;
+}
+.x-reply-input::placeholder { color: var(--muted); }
+
+.x-reply-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* =========================================
+   POST ACTIONS — X style
+========================================= */
+.post-actions {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-top: 1px solid var(--border);
+  gap: 0;
+}
+
+.post-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.post-action:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.post-action.active { color: var(--accent2); }
+.post-action.liked { color: var(--danger); }
+.post-action.liked:hover { color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+.action-count { font-size: 12px; font-weight: 700; }
+
+/* =========================================
+   COMPOSER
+========================================= */
+.composer {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.composer.active { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.composer-inner {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.composer-avatar { flex-shrink: 0; }
+
+.composer-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.composer-textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  min-height: 24px;
+}
+.composer-textarea::placeholder { color: var(--muted); }
+
+/* Media Grid */
+.composer-media-grid {
+  display: grid;
+  gap: 4px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.composer-media-grid.grid-1 { grid-template-columns: 1fr; }
+.composer-media-grid.grid-2 { grid-template-columns: 1fr 1fr; }
+
+.composer-media-item {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: var(--bg2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.composer-media-preview {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+.composer-media-loading {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.composer-media-done {
+  position: absolute; top: 6px; left: 6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--success); color: white;
+  font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.composer-media-remove {
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(0,0,0,0.65); border: none; color: white;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.composer-media-remove:hover { background: rgba(0,0,0,0.85); }
+
+.composer-media-error {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--danger); color: white;
+  font-size: 11px; padding: 4px 8px; font-weight: 600;
+}
+
+/* Toolbar */
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.composer-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.composer-tool {
+  width: 34px; height: 34px;
+  border-radius: 50%; border: none;
+  background: transparent; color: var(--accent);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.composer-tool:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* Camera Modal */
+.camera-modal {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.camera-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+}
+.camera-container {
+  position: relative; width: 100%; max-width: 480px;
+  background: #000; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+.camera-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: rgba(0,0,0,0.7);
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  color: white;
+}
+.camera-close {
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.camera-close:hover { background: rgba(255,255,255,0.25); }
+.camera-video { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; }
+.camera-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 20px; display: flex; justify-content: center;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+}
+.camera-capture {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 4px solid white; background: rgba(255,255,255,0.2);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.camera-capture:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
+.capture-btn-inner {
+  width: 44px; height: 44px; border-radius: 50%; background: white;
+}
+
+/* Post header avatar fix */
+.post-header { padding: 14px 16px 10px; }
+.post-header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+.post-info { flex: 1; }
+.post-name { font-size: 15px; font-weight: 800; line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.post-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.post-header-actions { display: flex; gap: 4px; }
+.post-delete { width: 30px; height: 30px; border-radius: 50%; border: none; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 14px; }
+.post-delete:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+
+/* Post comments section */
+.post-comments {
+  border-top: 1px solid var(--border);
+  padding: 0 16px 12px;
+}

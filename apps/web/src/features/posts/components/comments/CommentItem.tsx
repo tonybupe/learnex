@@ -1,108 +1,147 @@
 import { memo, useState, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 import type { Comment } from "../../types/post.types"
-import { UserAvatar } from "@/components/ui/UserAvatar"
+import { formatPostDate } from "../../types/post.types"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { canDeleteComment } from "@/utils/user"
-import { formatPostDate } from "../../types/post.types"
+import { Heart, Trash2 } from "lucide-react"
 
 type Props = {
   comment: Comment
-  onDelete?: (commentId: number) => Promise<boolean>
+  onDelete?: (id: number) => Promise<boolean>
   onReply?: (content: string) => Promise<boolean>
   depth?: number
 }
 
-function CommentItem({ comment, onDelete, onReply, depth = 0 }: Props) {
+function getBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1","") || "http://localhost:8000"
+}
+function resolveAvatar(url?: string | null) {
+  if (!url) return null
+  if (url.startsWith("http")) return url
+  return `${getBaseUrl()}${url}`
+}
+
+function Avatar({ user, size = 36, onClick }: { user: any; size?: number; onClick?: () => void }) {
+  const colors = ["#cb26e4","#38bdf8","#22c55e","#f59e0b","#ef4444","#8b5cf6"]
+  const color = colors[(user?.full_name?.charCodeAt(0) ?? 0) % colors.length]
+  const url = resolveAvatar(user?.profile?.avatar_url)
+  return (
+    <div onClick={onClick} style={{ cursor: onClick ? "pointer" : "default", flexShrink: 0 }}>
+      {url ? (
+        <img src={url} alt={user?.full_name}
+          style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", display: "block" }}
+          onError={e => { (e.target as HTMLImageElement).style.display = "none" }} />
+      ) : (
+        <div style={{ width: size, height: size, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: size * 0.38 }}>
+          {user?.full_name?.[0]?.toUpperCase() ?? "?"}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CommentItemComponent({ comment, onDelete, onReply, depth = 0 }: Props) {
+  const navigate = useNavigate()
+  const currentUser = useAuthStore(s => s.user)
   const [showReply, setShowReply] = useState(false)
   const [replyText, setReplyText] = useState("")
   const [replyLoading, setReplyLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
 
-  const currentUser = useAuthStore(s => s.user)
-  const canDelete = canDeleteComment(currentUser, comment.author.id)
-  const isOwner = currentUser?.id === comment.author.id
+  const canDel = canDeleteComment(currentUser, comment.author.id)
+  const isOwn = currentUser?.id === comment.author.id
 
   const handleDelete = useCallback(async () => {
-    if (!confirmDelete) { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 3000); return }
+    if (!window.confirm("Delete this comment?")) return
     setDeleting(true)
     await onDelete?.(comment.id)
     setDeleting(false)
-    setConfirmDelete(false)
-  }, [confirmDelete, comment.id, onDelete])
+  }, [comment.id, onDelete])
 
   const handleReplySubmit = useCallback(async () => {
     const text = replyText.trim()
     if (!text || replyLoading) return
     setReplyLoading(true)
-    const content = `@${comment.author.full_name} ${text}`
-    const success = await onReply?.(content)
+    const success = await onReply?.(`@${comment.author.full_name} ${text}`)
     if (success) { setReplyText(""); setShowReply(false) }
     setReplyLoading(false)
   }, [replyText, replyLoading, comment.author.full_name, onReply])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleReplySubmit() }
-    if (e.key === "Escape") { setShowReply(false); setReplyText("") }
-  }, [handleReplySubmit])
-
   return (
-    <div className={`comment-item ${depth > 0 ? "comment-reply-item" : ""}`}>
-      <UserAvatar user={comment.author} size="xs" />
+    <div className={`x-comment ${depth > 0 ? "x-comment-reply" : ""}`}>
+      {/* Thread line for replies */}
+      {depth > 0 && <div className="x-thread-line" />}
 
-      <div className="comment-bubble">
-        <div className="comment-name">
-          {comment.author.full_name}
+      {/* Avatar */}
+      <div className="x-comment-avatar">
+        <Avatar user={comment.author} size={depth > 0 ? 28 : 36}
+          onClick={() => navigate(`/profile/${comment.author.id}`)} />
+        {/* Vertical thread line below avatar */}
+        {showReply && <div className="x-avatar-line" />}
+      </div>
+
+      {/* Content */}
+      <div className="x-comment-body">
+        {/* Header */}
+        <div className="x-comment-header">
+          <span className="x-comment-name"
+            onClick={() => navigate(`/profile/${comment.author.id}`)}
+            style={{ cursor: "pointer" }}>
+            {comment.author.full_name}
+          </span>
           {comment.author.role !== "learner" && (
-            <span className={`role-badge ${comment.author.role}`} style={{ marginLeft: 6 }}>
-              {comment.author.role}
-            </span>
+            <span className="x-comment-role">{comment.author.role}</span>
+          )}
+          <span className="x-comment-time">{formatPostDate(comment.created_at)}</span>
+          {canDel && (
+            <button className="x-comment-delete" onClick={handleDelete} disabled={deleting}
+              title="Delete comment">
+              <Trash2 size={12} />
+            </button>
           )}
         </div>
-        <div className="comment-text">{comment.content}</div>
-        <div className="comment-meta">
-          <span>{formatPostDate(comment.created_at)}</span>
+
+        {/* Text */}
+        <div className="x-comment-text">{comment.content}</div>
+
+        {/* Actions */}
+        <div className="x-comment-actions">
+          <button className={`x-comment-action ${liked ? "liked" : ""}`}
+            onClick={() => { setLiked(l => !l); setLikeCount(c => liked ? c-1 : c+1) }}>
+            <Heart size={13} fill={liked ? "currentColor" : "none"} />
+            {likeCount > 0 && <span>{likeCount}</span>}
+          </button>
+
           {onReply && depth === 0 && (
-            <button
-              className="comment-delete"
-              style={{ color: "var(--accent2)", fontWeight: 700 }}
-              onClick={() => { setShowReply(v => !v); setReplyText("") }}
-            >
+            <button className="x-comment-action"
+              onClick={() => { setShowReply(v => !v); if (!showReply) setTimeout(() => document.getElementById(`reply-${comment.id}`)?.focus(), 100) }}>
               Reply
             </button>
           )}
-          {canDelete && (
-            confirmDelete
-              ? <>
-                  <button className="comment-delete" style={{ color: "var(--danger)" }} onClick={handleDelete} disabled={deleting}>Confirm?</button>
-                  <button className="comment-delete" onClick={() => setConfirmDelete(false)}>Cancel</button>
-                </>
-              : <button className="comment-delete" onClick={handleDelete} disabled={deleting}>
-                  {deleting ? "..." : isOwner ? "Delete" : "🗑️"}
-                </button>
-          )}
         </div>
 
-        {/* Inline Reply Composer */}
+        {/* Reply Composer */}
         {showReply && (
-          <div className="comment-composer" style={{ marginTop: 8 }}>
-            <UserAvatar user={currentUser} size="xs" />
-            <div className="comment-input-container">
-              <input
-                className="comment-input"
-                value={replyText}
-                onChange={e => setReplyText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={`Reply to ${comment.author.full_name}...`}
-                autoFocus
-                maxLength={500}
-              />
-              <button
-                className={`comment-submit ${replyText.trim() ? "active" : ""}`}
-                onClick={handleReplySubmit}
-                disabled={!replyText.trim() || replyLoading}
-              >
-                {replyLoading ? <span className="spinner-small" style={{ borderTopColor: "var(--accent)" }} /> : "➤"}
+          <div className="x-reply-composer">
+            <input
+              id={`reply-${comment.id}`}
+              className="x-reply-input"
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleReplySubmit() } if (e.key === "Escape") { setShowReply(false); setReplyText("") } }}
+              placeholder={`Reply to ${comment.author.full_name}...`}
+              maxLength={500}
+            />
+            <div className="x-reply-actions">
+              <span style={{ fontSize: 11, color: "var(--muted)" }}>{replyText.length}/500</span>
+              <button className="btn" style={{ fontSize: 12, padding: "4px 12px" }}
+                onClick={() => { setShowReply(false); setReplyText("") }}>Cancel</button>
+              <button className="btn btn-primary" style={{ fontSize: 12, padding: "4px 14px" }}
+                onClick={handleReplySubmit} disabled={!replyText.trim() || replyLoading}>
+                {replyLoading ? "..." : "Reply"}
               </button>
             </div>
           </div>
@@ -112,4 +151,4 @@ function CommentItem({ comment, onDelete, onReply, depth = 0 }: Props) {
   )
 }
 
-export default memo(CommentItem)
+export default memo(CommentItemComponent)

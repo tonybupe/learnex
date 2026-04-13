@@ -1,403 +1,299 @@
-// components/feed/FeedComposer.tsx
-import { useState, useCallback, useRef, ChangeEvent, useEffect } from "react"
-import { createPost, uploadMedia, type CreatePostPayload } from "../../api/posts.api"
+import { useState, useCallback, useRef, useEffect } from "react"
+import { createPost, uploadMedia } from "../../api/posts.api"
 import { useToast } from "@/features/posts/hooks/useToast"
 import { useAuthStore } from "@/features/auth/auth.store"
-import { UserAvatar } from "@/components/ui/UserAvatar"
+import { Image, Video, Camera, X, Send, FileText, Smile } from "lucide-react"
+
+function getBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1","") || "http://localhost:8000"
+}
+function resolveAvatar(url?: string | null) {
+  if (!url) return null
+  if (url.startsWith("http")) return url
+  return `${getBaseUrl()}${url}`
+}
 
 type Props = {
   onCreated?: (post: any) => void
-  classId?: number
-  subjectId?: number
-  postType?: 'text' | 'note' | 'lesson' | 'image' | 'video' | 'link' | 'announcement'
   placeholder?: string
-  maxLength?: number
 }
 
-export default function FeedComposer({ 
-  onCreated, 
-  classId, 
-  subjectId,
-  postType = 'text',
-  placeholder = "Share something with your class...",
-  maxLength = 5000
-}: Props) {
+interface MediaFile {
+  file: File
+  preview: string
+  type: "image" | "video" | "file"
+  uploading: boolean
+  uploaded?: boolean
+  url?: string
+  error?: string
+}
+
+export default function FeedComposer({ onCreated, placeholder = "What's on your mind?" }: Props) {
   const [content, setContent] = useState("")
-  const [file, setFile] = useState<File | null>(null)
-  const [filePreview, setFilePreview] = useState<string | null>(null)
+  const [media, setMedia] = useState<MediaFile[]>([])
   const [active, setActive] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [charCount, setCharCount] = useState(0)
-  
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  
-  const toast = useToast()
-  const currentUser = useAuthStore((state) => state.user)
+  const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
 
-  // Update character count
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const toast = useToast()
+  const user = useAuthStore(s => s.user)
+
+  const colors = ["#cb26e4","#38bdf8","#22c55e","#f59e0b","#ef4444","#8b5cf6"]
+  const avatarColor = colors[(user?.full_name?.charCodeAt(0) ?? 0) % colors.length]
+  const avatarUrl = resolveAvatar((user as any)?.profile?.avatar_url)
+
+  // Auto-resize textarea
   useEffect(() => {
-    setCharCount(content.length)
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = "auto"
+    ta.style.height = Math.min(ta.scrollHeight, 200) + "px"
   }, [content])
 
-  // Handle file selection with preview
-  const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0] || null
-    
-    if (selectedFile) {
-      // Validate file size
-      const maxSize = selectedFile.type.startsWith('video/') ? 50 * 1024 * 1024 : 10 * 1024 * 1024
-      if (selectedFile.size > maxSize) {
-        const errorMsg = `File too large. Max ${maxSize / (1024 * 1024)}MB`
-        setError(errorMsg)
-        toast.error(errorMsg)
-        e.target.value = ''
-        return
-      }
-      
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime']
-      if (!allowedTypes.includes(selectedFile.type)) {
-        const errorMsg = 'Invalid file type. Only images and MP4/MOV videos are allowed'
-        setError(errorMsg)
-        toast.error(errorMsg)
-        e.target.value = ''
-        return
-      }
-      
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(selectedFile)
-      setFilePreview(previewUrl)
-      setFile(selectedFile)
-      setError(null)
-      
-      // Auto-focus on textarea
-      textareaRef.current?.focus()
-    } else {
-      clearFile()
+  // Clean up camera on unmount
+  useEffect(() => {
+    return () => { cameraStream?.getTracks().forEach(t => t.stop()) }
+  }, [cameraStream])
+
+  const addFiles = useCallback((files: File[]) => {
+    const newMedia: MediaFile[] = []
+    for (const file of files) {
+      if (media.length + newMedia.length >= 4) { toast.warning("Max 4 files per post"); break }
+      const isImage = file.type.startsWith("image/")
+      const isVideo = file.type.startsWith("video/")
+      if (!isImage && !isVideo) { toast.error(`Unsupported file: ${file.name}`); continue }
+      const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024
+      if (file.size > maxSize) { toast.error(`${file.name} too large`); continue }
+      newMedia.push({ file, preview: URL.createObjectURL(file), type: isVideo ? "video" : "image", uploading: false })
     }
+    setMedia(prev => [...prev, ...newMedia])
+    setActive(true)
+  }, [media.length, toast])
+
+  const removeMedia = useCallback((idx: number) => {
+    setMedia(prev => {
+      URL.revokeObjectURL(prev[idx].preview)
+      return prev.filter((_, i) => i !== idx)
+    })
+  }, [])
+
+  // Open camera
+  const openCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+      setCameraStream(stream)
+      setCameraOpen(true)
+      setTimeout(() => { if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play() } }, 100)
+    } catch { toast.error("Camera not available") }
   }, [toast])
 
-  // Clear file and preview
-  const clearFile = useCallback(() => {
-    if (filePreview) {
-      URL.revokeObjectURL(filePreview)
-    }
-    setFile(null)
-    setFilePreview(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }, [filePreview])
+  const capturePhoto = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return
+    const v = videoRef.current
+    const c = canvasRef.current
+    c.width = v.videoWidth; c.height = v.videoHeight
+    c.getContext("2d")?.drawImage(v, 0, 0)
+    c.toBlob(blob => {
+      if (!blob) return
+      const file = new File([blob], `photo_${Date.now()}.jpg`, { type: "image/jpeg" })
+      addFiles([file])
+      closeCamera()
+    }, "image/jpeg", 0.9)
+  }, [addFiles])
 
-  // Handle submit with optimistic UI
-  // components/feed/FeedComposer.tsx - Add detailed logging in handleSubmit
+  const closeCamera = useCallback(() => {
+    cameraStream?.getTracks().forEach(t => t.stop())
+    setCameraStream(null)
+    setCameraOpen(false)
+  }, [cameraStream])
 
-const handleSubmit = async () => {
-  const trimmedContent = content.trim()
-  
-  // Validate content
-  if (!trimmedContent && !file) {
-    setError("Please enter content or add an attachment")
-    toast.warning("Please enter content or add an attachment")
-    textareaRef.current?.focus()
-    return
-  }
-  
-  if (trimmedContent.length > maxLength) {
-    setError(`Content exceeds ${maxLength} characters`)
-    toast.warning(`Content exceeds ${maxLength} characters`)
-    return
-  }
-  
-  setLoading(true)
-  setError(null)
-  setUploadProgress(0)
-  
-  try {
-    let uploadedAttachments: CreatePostPayload['attachments'] = []
-    
-    // Step 1: Upload file if exists
-    if (file) {
-      try {
-        const uploadResult = await uploadMedia(file, (progress) => {
-          setUploadProgress(progress)
-        })
-        
-        uploadedAttachments = [{
-          file_url: uploadResult.url,
-          attachment_type: uploadResult.attachment_type as any,
-          file_name: uploadResult.file_name || file.name,
-          mime_type: uploadResult.mime_type || file.type,
-        }]
-      } catch (uploadError: any) {
-        console.error('📤 Upload error:', uploadError)
-        const errorMsg = uploadError.normalizedError?.message || uploadError.message || 'Failed to upload file. Please try again.'
-        setError(errorMsg)
-        toast.error(errorMsg)
-        setLoading(false)
-        return
-      }
-    }
-    
-    // Step 2: Create post
-    const postData: CreatePostPayload = {
-      content: trimmedContent,
-      class_id: classId,
-      subject_id: subjectId,
-      post_type: postType,
-      visibility: 'public',
-      title: trimmedContent.slice(0, 100),
-      attachments: uploadedAttachments,
-    }
-    
-    // ✅ Add detailed logging
-    console.log('📝 Creating post with data:', JSON.stringify(postData, null, 2))
-    
-    const newPost = await createPost(postData)
-    console.log('✅ Post created successfully:', newPost)
-    
-    // Reset form
-    setContent("")
-    clearFile()
-    setActive(false)
-    setUploadProgress(0)
-    setCharCount(0)
-    
-    // Auto-resize textarea
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
-    
-    // Show success message
-    toast.success("Post created successfully!", { duration: 3000 })
-    
-    // Notify parent with real post
-    onCreated?.(newPost)
-    
-  } catch (err: any) {
-    // ✅ Add detailed error logging
-    console.error('❌ Create post error:', err)
-    console.error('Error response:', err.response?.data)
-    console.error('Error status:', err.response?.status)
-    console.error('Error message:', err.message)
-    
-    // Try to extract detailed error from response
-    let errorMsg = 'Failed to create post. Please try again.'
-    
-    if (err.response?.data) {
-      const data = err.response.data
-      if (typeof data === 'string') {
-        errorMsg = data
-      } else if (data.detail) {
-        errorMsg = data.detail
-      } else if (data.message) {
-        errorMsg = data.message
-      } else if (data.errors) {
-        errorMsg = JSON.stringify(data.errors)
-      }
-    } else if (err.message) {
-      errorMsg = err.message
-    }
-    
-    setError(errorMsg)
-    toast.error(errorMsg)
-    
-    // Revert optimistic update if parent handled it
-    onCreated?.(null)
-  } finally {
-    setLoading(false)
-  }
-}
-  
-  // Auto-resize textarea
-  const handleTextareaChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value
-    if (newValue.length <= maxLength) {
-      setContent(newValue)
-      setError(null)
-      
-      // Auto-resize
-      const textarea = e.target
-      textarea.style.height = 'auto'
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`
-    } else {
-      setError(`Content cannot exceed ${maxLength} characters`)
-    }
-  }, [maxLength])
-  
-  // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Submit on Ctrl+Enter or Cmd+Enter
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault()
-      if (!loading && (content.trim() || file)) {
-        handleSubmit()
-      }
-    }
-    
-    // Cancel on Escape
-    if (e.key === 'Escape' && active) {
-      e.preventDefault()
-      handleCancel()
-    }
-  }, [loading, content, file, active])
-  
-  // Cancel composer
-  const handleCancel = useCallback(() => {
-    setContent("")
-    clearFile()
-    setActive(false)
-    setError(null)
-    setCharCount(0)
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
-  }, [clearFile])
-  
-  const isNearLimit = charCount > maxLength * 0.9
-  const isOverLimit = charCount > maxLength
-  const canSubmit = (content.trim() || file) && !loading && !isOverLimit
-  
+  const handleSubmit = useCallback(async () => {
+    const text = content.trim()
+    if (!text && media.length === 0) { toast.warning("Write something or add media"); return }
+    setLoading(true); setError(null)
 
-  
+    try {
+      let attachments: any[] = []
+
+      // Upload all media files
+      for (let i = 0; i < media.length; i++) {
+        const m = media[i]
+        setMedia(prev => prev.map((item, idx) => idx === i ? { ...item, uploading: true } : item))
+        try {
+          const result = await uploadMedia(m.file, () => {})
+          attachments.push({ file_url: result.url, attachment_type: result.attachment_type, file_name: result.file_name || m.file.name, mime_type: result.mime_type || m.file.type })
+          setMedia(prev => prev.map((item, idx) => idx === i ? { ...item, uploading: false, uploaded: true } : item))
+        } catch (e: any) {
+          throw new Error(`Failed to upload ${m.file.name}: ${e.message}`)
+        }
+      }
+
+      const post = await createPost({
+        content: text || " ",
+        post_type: media.length > 0 ? (media[0].type === "video" ? "video" : "image") : "text",
+        visibility: "public",
+        title: text.slice(0, 60) || "Post",
+        attachments,
+      })
+
+      console.log("✅ Post created successfully:", post)
+      toast.success("Posted!")
+      setContent("")
+      setMedia([])
+      setActive(false)
+      onCreated?.(post)
+    } catch (e: any) {
+      const msg = e.message || "Failed to post"
+      setError(msg)
+      toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
+  }, [content, media, toast, onCreated])
+
+  const canPost = (content.trim().length > 0 || media.length > 0) && !loading
+
   return (
-    <div className={`create-post ${active ? 'active' : ''}`}>
-      {/* User Avatar */}
-      <UserAvatar user={currentUser} size="md" />
-      
-      {/* Main Input Area */}
-      <div className="create-post-input-area">
-        <textarea
-          ref={textareaRef}
-          placeholder={placeholder}
-          value={content}
-          onFocus={() => setActive(true)}
-          onChange={handleTextareaChange}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-          rows={1}
-          maxLength={maxLength}
-          aria-label="Post content"
-        />
-        
-        {/* Character Counter */}
-        {active && charCount > 0 && (
-          <div className={`char-counter ${isNearLimit ? 'warning' : ''} ${isOverLimit ? 'error' : ''}`}>
-            {charCount}/{maxLength}
-          </div>
-        )}
-        
-        {/* File Preview */}
-        {filePreview && (
-          <div className="create-post-file-preview">
-            {file?.type.startsWith('image/') ? (
-              <div className="file-preview-image">
-                <img 
-                  src={filePreview} 
-                  alt="Preview"
-                  onClick={() => window.open(filePreview, '_blank')}
-                />
-                <div className="file-overlay">
-                  <span className="file-type">Image</span>
-                </div>
-              </div>
-            ) : (
-              <div className="file-preview-video">
-                <video src={filePreview} controls />
-                <div className="file-overlay">
-                  <span className="file-type">Video</span>
-                </div>
-              </div>
-            )}
-            <button 
-              type="button" 
-              className="remove-file"
-              onClick={clearFile}
-              aria-label="Remove file"
-            >
-              ×
-            </button>
-          </div>
-        )}
-        
-        {/* Upload Progress */}
-        {loading && uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="upload-progress">
-            <div 
-              className="upload-progress-bar" 
-              style={{ width: `${uploadProgress}%` }}
-            />
-            <span>{uploadProgress}%</span>
-          </div>
-        )}
-        
-        {/* Error Message */}
-        {error && (
-          <div className="create-post-error" role="alert">
-            <span className="error-icon">⚠️</span>
-            <span className="error-message">{error}</span>
-            <button 
-              type="button" 
-              className="error-close"
-              onClick={() => setError(null)}
-              aria-label="Dismiss error"
-            >
-              ×
-            </button>
-          </div>
-        )}
-        
-        {/* Actions */}
-        <div className="create-post-actions">
-          <label className={`attach-file-btn ${loading ? 'disabled' : ''}`}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,video/mp4,video/quicktime"
-              onChange={handleFileChange}
-              disabled={loading}
-              aria-label="Attach file"
-            />
-            📎
-          </label>
-          
-          <div className="action-buttons">
-            {active && (
-              <button
-                type="button"
-                className="btn-cancel"
-                onClick={handleCancel}
-                disabled={loading}
-              >
-                Cancel
+    <div className={`composer ${active ? "active" : ""}`}>
+      {/* Camera Modal */}
+      {cameraOpen && (
+        <div className="camera-modal">
+          <div className="camera-overlay" onClick={closeCamera} />
+          <div className="camera-container">
+            <div className="camera-header">
+              <span style={{ fontWeight: 700 }}>📷 Take Photo</span>
+              <button className="camera-close" onClick={closeCamera}><X size={20} /></button>
+            </div>
+            <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+            <div className="camera-controls">
+              <button className="camera-capture" onClick={capturePhoto}>
+                <div className="capture-btn-inner" />
               </button>
-            )}
-            
-            <button
-              type="button"
-              className={`btn-post ${canSubmit ? '' : 'disabled'}`}
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-small" />
-                  <span>{uploadProgress > 0 ? `${uploadProgress}%` : 'Posting...'}</span>
-                </>
-              ) : (
-                <>
-                  <span className="btn-icon">📤</span>
-                  <span>Post</span>
-                </>
-              )}
-            </button>
+            </div>
           </div>
+        </div>
+      )}
+
+      <div className="composer-inner">
+        {/* Avatar */}
+        <div className="composer-avatar">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={user?.full_name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} onError={e => { (e.target as HTMLImageElement).style.display = "none" }} />
+          ) : (
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: avatarColor, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 16 }}>
+              {user?.full_name?.[0]?.toUpperCase() ?? "?"}
+            </div>
+          )}
+        </div>
+
+        <div className="composer-right">
+          {/* Textarea */}
+          <textarea
+            ref={textareaRef}
+            className="composer-textarea"
+            value={content}
+            onChange={e => { setContent(e.target.value); setActive(true) }}
+            onFocus={() => setActive(true)}
+            placeholder={placeholder}
+            maxLength={5000}
+            rows={1}
+          />
+
+          {/* Character count */}
+          {content.length > 200 && (
+            <div style={{ textAlign: "right", fontSize: 11, color: content.length > 4800 ? "var(--danger)" : "var(--muted)", marginTop: 2 }}>
+              {content.length}/5000
+            </div>
+          )}
+
+          {/* Media Preview Grid */}
+          {media.length > 0 && (
+            <div className={`composer-media-grid grid-${Math.min(media.length, 2)}`}>
+              {media.map((m, i) => (
+                <div key={i} className="composer-media-item">
+                  {m.type === "video" ? (
+                    <video src={m.preview} className="composer-media-preview" controls={false} muted />
+                  ) : (
+                    <img src={m.preview} alt="" className="composer-media-preview" />
+                  )}
+                  {m.uploading && (
+                    <div className="composer-media-loading">
+                      <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
+                    </div>
+                  )}
+                  {m.uploaded && (
+                    <div className="composer-media-done">✓</div>
+                  )}
+                  <button className="composer-media-remove" onClick={() => removeMedia(i)}>
+                    <X size={14} />
+                  </button>
+                  {m.error && <div className="composer-media-error">{m.error}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div style={{ padding: "8px 12px", borderRadius: 8, background: "color-mix(in srgb, var(--danger) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--danger) 25%, transparent)", color: "var(--danger)", fontSize: 13, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{error}</span>
+              <button onClick={() => setError(null)} style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", fontSize: 16 }}>×</button>
+            </div>
+          )}
+
+          {/* Toolbar + Submit */}
+          {active && (
+            <div className="composer-toolbar">
+              <div className="composer-tools">
+                {/* Image */}
+                <button className="composer-tool" title="Add image" onClick={() => fileInputRef.current?.click()}>
+                  <Image size={18} />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: "none" }}
+                  onChange={e => { if (e.target.files) addFiles(Array.from(e.target.files)); e.target.value = "" }} />
+
+                {/* Video */}
+                <button className="composer-tool" title="Add video" onClick={() => videoInputRef.current?.click()}>
+                  <Video size={18} />
+                </button>
+                <input ref={videoInputRef} type="file" accept="video/*" style={{ display: "none" }}
+                  onChange={e => { if (e.target.files) addFiles(Array.from(e.target.files)); e.target.value = "" }} />
+
+                {/* Camera */}
+                <button className="composer-tool" title="Take photo" onClick={openCamera}>
+                  <Camera size={18} />
+                </button>
+
+                {/* File count */}
+                {media.length > 0 && (
+                  <span style={{ fontSize: 12, color: "var(--muted)", marginLeft: 4 }}>
+                    {media.length}/4 files
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button className="btn" style={{ fontSize: 12, padding: "6px 12px" }}
+                  onClick={() => { setActive(false); setContent(""); setMedia([]) }}>
+                  Cancel
+                </button>
+                <button className="btn btn-primary" style={{ fontSize: 13, padding: "8px 20px", gap: 6 }}
+                  onClick={handleSubmit} disabled={!canPost}>
+                  {loading ? <><span className="spinner-small" /> Posting...</> : <><Send size={14} /> Post</>}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-
