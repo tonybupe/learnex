@@ -80,7 +80,7 @@ def list_following(
     return [build_public_user_response(db, user) for user in users]
 
 
-@router.get("/{user_id}/follow-stats", response_model=FollowStatsResponse)
+@router.get("/{user_id}/follow-stats")
 def get_user_follow_stats(
     user_id: int,
     db: Session = Depends(get_db),
@@ -90,4 +90,14 @@ def get_user_follow_stats(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return get_follow_stats(db, user_id)
+    stats = get_follow_stats(db, user_id)
+    is_following = db.query(Follow).filter(
+        Follow.follower_id == current_user.id,
+        Follow.following_id == user_id
+    ).first() is not None
+    return {
+        "user_id": stats.user_id,
+        "followers_count": stats.followers_count,
+        "following_count": stats.following_count,
+        "is_following": is_following,
+    }
