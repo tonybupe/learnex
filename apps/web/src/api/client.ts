@@ -44,7 +44,7 @@ function shouldRetry(error: AxiosError): boolean {
   const code = error.code
   
   // Don't retry on these status codes
-  if (status === 400 || status === 401 || status === 403 || status === 404) {
+    if (status === 401) {
     return false
   }
   
@@ -254,7 +254,7 @@ api.interceptors.response.use(
     }
     
     // Handle authentication errors
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       const store = useAuthStore.getState()
       store.clearSession?.()
       localStorage.removeItem("learnex_access_token")
@@ -344,7 +344,7 @@ export function isCancelError(error: unknown): boolean {
 export function isAuthError(error: unknown): boolean {
   if (error instanceof AxiosError) {
     const status = error.response?.status
-    return status === 401 || status === 403
+    return status === 401
   }
   return false
 }
