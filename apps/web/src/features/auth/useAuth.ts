@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "./auth.store"
 import { login as loginApi, register as registerApi, getMe } from "./auth.api"
 import type { LoginCredentials, RegisterData } from "./auth.api"
+import { queryClient } from "@/lib/queryClient"
 
 const ROLE_ROUTES = {
   admin: "/admin/dashboard",
@@ -36,10 +37,12 @@ export function useAuth() {
     loadUser()
   }, [accessToken, user, isLoading, setSession, clearSession, setLoading])
 
-  // LOGIN — get token, then fetch user
+  // LOGIN
   const login = async (credentials: LoginCredentials) => {
     setLoading(true)
     try {
+      // Clear ALL cached data from previous session before loading new user
+      queryClient.clear()
       const { access_token } = await loginApi(credentials)
       const userData = await getMe()
       setSession(access_token, userData)
@@ -54,20 +57,13 @@ export function useAuth() {
     }
   }
 
-  // REGISTER — create account, then login automatically
+  // REGISTER
   const register = async (data: RegisterData) => {
     setLoading(true)
     try {
-      // Step 1: Register (returns user, no token)
+      queryClient.clear()
       await registerApi(data)
-
-      // Step 2: Auto-login
-      const { access_token } = await loginApi({
-        email: data.email,
-        password: data.password,
-      })
-
-      // Step 3: Fetch full user profile
+      const { access_token } = await loginApi({ email: data.email, password: data.password })
       const userData = await getMe()
       setSession(access_token, userData)
       navigate(ROLE_ROUTES[userData.role] ?? "/")
@@ -83,6 +79,8 @@ export function useAuth() {
 
   const logout = () => {
     localStorage.removeItem("learnex_access_token")
+    // Clear ALL query cache so next user starts fresh
+    queryClient.clear()
     clearSession()
     navigate("/auth/login")
   }

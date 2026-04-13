@@ -154,7 +154,7 @@ export default function ProfilePage() {
                 {p.profession && <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Briefcase size={13} /> {p.profession}</span>}
                 {p.organization && <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Building size={13} /> {p.organization}</span>}
                 {p.website && <a href={p.website} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--accent)", textDecoration: "none" }}><Globe size={13} /> {p.website}</a>}
-                <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={13} /> Joined {new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={13} /> Joined {(() => { try { const d = new Date(user.created_at); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) } catch { return '' } })()}</span>
               </div>
             </div>
 

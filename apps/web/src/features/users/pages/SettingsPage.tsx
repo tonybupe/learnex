@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -62,21 +62,23 @@ export default function SettingsPage() {
       const res = await api.get("/users/me")
       return res.data
     },
-    onSuccess: (data: any) => {
-      if (!formReady) {
-        setProfileForm({
-          bio: data.profile?.bio ?? "",
-          location: data.profile?.location ?? "",
-          country: data.profile?.country ?? "",
-          profession: data.profile?.profession ?? "",
-          organization: data.profile?.organization ?? "",
-          website: data.profile?.website ?? "",
-          avatar_url: data.profile?.avatar_url ?? "",
-        })
-        setFormReady(true)
-      }
+  })
+
+  // Populate form when user data loads
+  useEffect(() => {
+    if (user && !formReady) {
+      setProfileForm({
+        bio: user.profile?.bio ?? "",
+        location: user.profile?.location ?? "",
+        country: user.profile?.country ?? "",
+        profession: user.profile?.profession ?? "",
+        organization: user.profile?.organization ?? "",
+        website: user.profile?.website ?? "",
+        avatar_url: user.profile?.avatar_url ?? "",
+      })
+      setFormReady(true)
     }
-  } as any)
+  }, [user, formReady])
 
   const showToast = (type: "success"|"error", msg: string) => {
     setToast({ type, msg })
@@ -263,8 +265,8 @@ export default function SettingsPage() {
                     { label: "Gender",    value: user.sex || "—" },
                     { label: "Role",      value: `${user.role.toUpperCase()}`, color: roleColor },
                     { label: "Status",    value: user.is_active ? "Active" : "Inactive", color: user.is_active ? "var(--success)" : "var(--danger)" },
-                    { label: "Verified",  value: user.is_verified ? "Yes ✅" : "No ❌" },
-                    { label: "Member since", value: new Date(user.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
+                    { label: "Verified",  value: user.is_verified ? "✅ Verified" : "⏳ Not yet verified" },
+                    { label: "Member since", value: (() => { try { const d = new Date(user.created_at); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) } catch { return '—' } })() },
                   ].map(row => (
                     <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)", fontSize: 14 }}>
                       <span style={{ color: "var(--muted)", fontWeight: 600 }}>{row.label}</span>
