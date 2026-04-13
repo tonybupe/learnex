@@ -381,3 +381,104 @@
 @media (max-width: 640px) {
   .shell-content { padding: 8px; }
 }
+/* =========================================
+   DASHBOARD STICKY HEADER
+========================================= */
+
+.dash-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px 24px 18px;
+  margin-bottom: 0;
+}
+
+.dark .dash-sticky-header {
+  background: rgba(13,17,23,0.90);
+}
+
+.dash-sticky-header.shrunk {
+  padding: 10px 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+.dash-header-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dash-header-left { flex: 1; min-width: 0; }
+
+.dash-greeting {
+  margin-bottom: 6px;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  max-height: 32px;
+  opacity: 1;
+}
+.dash-greeting.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+}
+
+.dash-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.2;
+  margin: 0;
+  transition: font-size 0.25s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-sticky-header.shrunk .dash-title {
+  font-size: 18px;
+}
+
+.dash-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 4px 0 0;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  max-height: 24px;
+  opacity: 1;
+}
+.dash-sub.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+}
+
+.dash-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dash-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 32px;
+}
+
+@media (max-width: 768px) {
+  .dash-sticky-header { padding: 14px 16px 12px; }
+  .dash-sticky-header.shrunk { padding: 8px 16px; }
+  .dash-title { font-size: 22px; }
+  .dash-body { padding: 14px 16px 24px; gap: 14px; }
+  .dash-header-actions .btn span { display: none; }
+}
