@@ -1,0 +1,317 @@
+/* =========================================
+   LEARNEX LAYOUT SYSTEM
+   Sticky sidebars, scrollable center
+========================================= */
+
+/* ── SHELL ── */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── TOPBAR ── */
+.shell-topbar {
+  flex-shrink: 0;
+  z-index: 500;
+  position: relative;
+}
+
+/* ── BODY ── */
+.shell-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── LEFT SIDEBAR ── */
+.shell-sidebar {
+  flex-shrink: 0;
+  width: 220px;
+  border-right: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.shell-sidebar.collapsed {
+  width: 64px;
+}
+
+.shell-sidebar-inner {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 8px;
+}
+
+/* ── CENTER MAIN ── */
+.shell-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+}
+
+.shell-content {
+  min-height: 100%;
+  padding: 20px;
+  max-width: 100%;
+}
+
+/* ── RIGHT PANEL ── */
+.shell-right {
+  flex-shrink: 0;
+  width: 280px;
+  border-left: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shell-right-inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+/* ── SIDEBAR NAV ── */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.sidebar-link:hover {
+  background: var(--bg2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.sidebar-link.active {
+  background: var(--chip);
+  color: var(--accent);
+  border-color: var(--chipBorder);
+  font-weight: 800;
+}
+
+.sidebar-link.icon-only {
+  justify-content: center;
+  padding: 10px;
+}
+
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.sidebar-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.2s ease;
+}
+
+/* Tooltip for collapsed state */
+.sidebar-link.icon-only::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text);
+  color: var(--card);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.15s;
+  box-shadow: var(--shadow2);
+}
+.sidebar-link.icon-only:hover::after { opacity: 1; }
+
+/* ── RIGHT PANEL COMPONENTS ── */
+.right-panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rp-card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 14px;
+}
+
+.rp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rp-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.rp-badge {
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.rp-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.rp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.rp-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.rp-link:hover { opacity: 0.8; }
+
+/* Notifications */
+.rp-notif {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rp-notif:last-child { border-bottom: none; }
+.rp-notif-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.rp-notif-msg { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.rp-notif.unread .rp-notif-msg { font-weight: 800; }
+.rp-notif-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* Sessions */
+.rp-session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rp-session:last-child { border-bottom: none; }
+.rp-session-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+.rp-session-title { font-size: 12px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-session-time { font-size: 10px; color: var(--muted); }
+
+/* Teachers */
+.rp-teacher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.rp-teacher:last-child { border-bottom: none; }
+.rp-teacher:hover { opacity: 0.85; }
+.rp-teacher-name { font-size: 12px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-teacher-sub { font-size: 10px; color: var(--muted); }
+.rp-follow-btn {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.rp-follow-btn:hover { background: var(--accent); color: white; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1280px) {
+  .shell-right { display: none; }
+}
+
+@media (max-width: 960px) {
+  .shell-sidebar { display: none; }
+  .shell-content { padding: 12px; }
+}
+
+@media (max-width: 640px) {
+  .shell-content { padding: 8px; }
+}
+
+/* ── PULSE ANIMATION ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}

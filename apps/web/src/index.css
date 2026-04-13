@@ -97,57 +97,7 @@ body {
   }
 }
 
-/* =========================================
-   APPLICATION SHELL
-========================================= */
-.app-shell {
-  min-height: 100vh;
-  background: var(--grad);
-  display: flex;
-  flex-direction: column;
-}
-
-.app-layout {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  flex: 1;
-  min-height: 0;
-}
-
-.app-sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card);
-  box-shadow: var(--shadow2);
-  padding: 12px;
-}
-
-.app-main {
-  flex: 1;
-  min-width: 0;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card);
-  box-shadow: var(--shadow2);
-  padding: 20px;
-  overflow: auto;
-}
-
-.app-right-panel {
-  width: 280px;
-  flex-shrink: 0;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--card);
-  box-shadow: var(--shadow2);
-  padding: 16px;
-}
-
-@media (max-width: 1280px) { .app-right-panel { display: none; } }
-@media (max-width: 960px)  { .app-sidebar { display: none; } }
+/* Layout handled by layout.css */
 
 /* =========================================
    TOPBAR
