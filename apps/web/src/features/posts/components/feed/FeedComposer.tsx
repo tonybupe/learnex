@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { createPost, uploadMedia } from "../../api/posts.api"
 import { useToast } from "@/features/posts/hooks/useToast"
 import { useAuthStore } from "@/features/auth/auth.store"
-import { Image, Video, Camera, X, Send, FileText, Smile } from "lucide-react"
+import { Image, Video, Camera, X, Send } from "lucide-react"
 
 function getBaseUrl() {
   return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1","") || "http://localhost:8000"
@@ -249,8 +249,8 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
             </div>
           )}
 
-          {/* Toolbar + Submit */}
-          {active && (
+          {/* Toolbar + Submit - always visible */}
+          {(
             <div className="composer-toolbar">
               <div className="composer-tools">
                 {/* Image */}
@@ -291,7 +291,7 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
                 </button>
               </div>
             </div>
-          )}
+          )
         </div>
       </div>
     </div>
