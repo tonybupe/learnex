@@ -1,0 +1,89 @@
+.gsearch-wrap { position: relative; flex: 1; max-width: 480px; }
+
+.gsearch-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 14px; height: 40px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--bg2);
+  transition: all 0.2s;
+}
+.gsearch-input-wrap.focused {
+  border-color: var(--accent); background: var(--card);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.gsearch-icon { color: var(--muted); flex-shrink: 0; }
+.gsearch-input {
+  flex: 1; border: none; background: transparent;
+  color: var(--text); font-size: 14px; font-family: inherit;
+  outline: none; min-width: 0;
+}
+.gsearch-input::placeholder { color: var(--muted); }
+.gsearch-spin { color: var(--accent); animation: gspin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes gspin { to { transform: rotate(360deg); } }
+.gsearch-clear {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; padding: 2px; border-radius: 50%;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.gsearch-clear:hover { background: var(--bg2); color: var(--text); }
+
+.gsearch-dropdown {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+  z-index: 9999; overflow: hidden; max-height: 480px; overflow-y: auto;
+  animation: gsDrop 0.15s ease;
+}
+@keyframes gsDrop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+.gsearch-section { padding: 8px 6px 4px; }
+.gsearch-section + .gsearch-section { border-top: 1px solid var(--border); }
+.gsearch-section-title {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em; padding: 2px 10px 6px;
+}
+.gsearch-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 10px; border: none; background: transparent;
+  cursor: pointer; border-radius: 10px; text-align: left;
+  transition: background 0.12s; font-family: inherit;
+}
+.gsearch-item:hover, .gsearch-item.active { background: var(--bg2); }
+.gsearch-item-icon {
+  width: 28px; height: 28px; border-radius: 8px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; background: var(--bg2);
+}
+.gsearch-item-body { flex: 1; min-width: 0; }
+.gsearch-item-title { display: block; font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gsearch-item-sub { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+.gsearch-item-arrow { color: var(--muted); flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+.gsearch-item:hover .gsearch-item-arrow { opacity: 1; }
+
+.gsearch-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 10px 8px; }
+.gsearch-chip {
+  padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.gsearch-chip:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg2)); }
+
+.gsearch-all {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 12px; border: none; border-top: 1px solid var(--border);
+  background: var(--bg2); color: var(--accent); font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: background 0.15s;
+}
+.gsearch-all:hover { background: color-mix(in srgb, var(--accent) 8%, var(--bg2)); }
+
+.gsearch-loading { display: flex; align-items: center; gap: 8px; padding: 20px; color: var(--muted); font-size: 13px; justify-content: center; }
+.gsearch-empty { display: flex; flex-direction: column; align-items: center; padding: 28px 16px; color: var(--muted); font-size: 13px; text-align: center; }
+
+.gsearch-mobile-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px); z-index: 1000;
+  display: flex; flex-direction: column; padding: 16px; padding-top: 24px;
+}
+.gsearch-mobile-box {
+  background: var(--card); border-radius: 16px; padding: 16px;
+  max-height: 85vh; overflow-y: auto;
+}
