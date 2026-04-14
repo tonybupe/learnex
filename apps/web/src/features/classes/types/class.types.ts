@@ -21,8 +21,11 @@ export type Class = {
   visibility: "public" | "private"
   status?: string
   subject_id: number
+  teacher_id?: number
   teacher?: Teacher
   subject?: Subject
+  member_count?: number
+  is_member?: boolean
   created_at?: string
   updated_at?: string
 }

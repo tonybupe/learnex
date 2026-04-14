@@ -53,6 +53,19 @@ def list_classes(
     return base_class_query(db).order_by(ClassRoom.created_at.desc()).all()
 
 
+@router.get("/enrolled", response_model=List[ClassResponse])
+def enrolled_classes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("learner")),
+):
+    """Return classes the learner is actively enrolled in."""
+    enrolled_ids = db.query(ClassMember.class_id).filter(
+        ClassMember.learner_id == current_user.id,
+        ClassMember.status == "active"
+    ).subquery()
+    return base_class_query(db).filter(ClassRoom.id.in_(enrolled_ids)).order_by(ClassRoom.created_at.desc()).all()
+
+
 @router.get("/discover", response_model=List[ClassResponse])
 def discover_classes(
     db: Session = Depends(get_db),
