@@ -71,70 +71,374 @@ function timeAgo(d: string) {
 // ── Rich Content Editor with Preview ──
 function RichEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [preview, setPreview] = useState(false)
+  const [activeTab, setActiveTab] = useState<"write"|"insert">("write")
+  const [history, setHistory] = useState<string[]>([value])
+  const [historyIdx, setHistoryIdx] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const insert = useCallback((before: string, after: string = "", placeholder: string = "") => {
+  // Save to history on meaningful change
+  const pushHistory = useCallback((newVal: string) => {
+    setHistory(prev => {
+      const trimmed = prev.slice(0, historyIdx + 1)
+      return [...trimmed, newVal].slice(-50)
+    })
+    setHistoryIdx(prev => Math.min(prev + 1, 49))
+    onChange(newVal)
+  }, [historyIdx, onChange])
+
+  const undo = useCallback(() => {
+    if (historyIdx <= 0) return
+    const newIdx = historyIdx - 1
+    setHistoryIdx(newIdx)
+    onChange(history[newIdx])
+  }, [historyIdx, history, onChange])
+
+  const redo = useCallback(() => {
+    if (historyIdx >= history.length - 1) return
+    const newIdx = historyIdx + 1
+    setHistoryIdx(newIdx)
+    onChange(history[newIdx])
+  }, [historyIdx, history, onChange])
+
+  const insert = useCallback((before: string, after: string = "", placeholder: string = "", newLine = false) => {
     const ta = textareaRef.current
     if (!ta) return
     const start = ta.selectionStart
     const end = ta.selectionEnd
     const selected = ta.value.substring(start, end) || placeholder
-    const newText = ta.value.substring(0, start) + before + selected + after + ta.value.substring(end)
-    onChange(newText)
+    const prefix = newLine && start > 0 && ta.value[start - 1] !== "\n" ? "\n" : ""
+    const suffix = newLine ? "\n" : ""
+    const newText = ta.value.substring(0, start) + prefix + before + selected + after + suffix + ta.value.substring(end)
+    pushHistory(newText)
     setTimeout(() => {
       ta.focus()
-      ta.setSelectionRange(start + before.length, start + before.length + selected.length)
+      const pos = start + prefix.length + before.length
+      ta.setSelectionRange(pos, pos + selected.length)
     }, 0)
-  }, [onChange])
+  }, [pushHistory])
 
-  const TOOLBAR = [
-    { icon: <Heading2 size={14} />, title: "Heading", action: () => insert("## ", "", "Heading") },
-    { icon: <Bold size={14} />, title: "Bold", action: () => insert("**", "**", "bold text") },
-    { icon: <Italic size={14} />, title: "Italic", action: () => insert("*", "*", "italic text") },
-    { icon: <List size={14} />, title: "Bullet", action: () => insert("- ", "", "item") },
-    { icon: <Code size={14} />, title: "Code", action: () => insert("`", "`", "code") },
-    { icon: <AlignLeft size={14} />, title: "Quote", action: () => insert("> ", "", "quote") },
+  const insertAtCursor = useCallback((text: string) => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const newText = ta.value.substring(0, start) + text + ta.value.substring(start)
+    pushHistory(newText)
+    setTimeout(() => { ta.focus(); ta.setSelectionRange(start + text.length, start + text.length) }, 0)
+  }, [pushHistory])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo() }
+    if ((e.ctrlKey || e.metaKey) && e.key === "y") { e.preventDefault(); redo() }
+    if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); insert("**","**","bold text") }
+    if ((e.ctrlKey || e.metaKey) && e.key === "i") { e.preventDefault(); insert("*","*","italic text") }
+    if (e.key === "Tab") { e.preventDefault(); insertAtCursor("  ") }
+  }, [undo, redo, insert, insertAtCursor])
+
+  const TABLE_TEMPLATE = `| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+`
+  const DIAGRAM_TEMPLATE = `\`\`\`
+[Box A] --> [Box B] --> [Box C]
+              |
+           [Box D]
+\`\`\`
+`
+  const MATH_TEMPLATE = `$$
+E = mc^2
+$$
+`
+
+  const TOOLBAR_GROUPS = [
+    {
+      label: "Format",
+      items: [
+        { icon: "H1", title: "Heading 1 (Ctrl+1)", action: () => insert("# ","","Heading 1", true) },
+        { icon: "H2", title: "Heading 2", action: () => insert("## ","","Heading 2", true) },
+        { icon: "H3", title: "Heading 3", action: () => insert("### ","","Heading 3", true) },
+        { icon: "─", title: "Divider", action: () => insertAtCursor("\n---\n") },
+      ]
+    },
+    {
+      label: "Text",
+      items: [
+        { icon: "B", title: "Bold (Ctrl+B)", action: () => insert("**","**","bold"), style: { fontWeight: 900 } },
+        { icon: "I", title: "Italic (Ctrl+I)", action: () => insert("*","*","italic"), style: { fontStyle: "italic" } },
+        { icon: "S̶", title: "Strikethrough", action: () => insert("~~","~~","strikethrough") },
+        { icon: "`", title: "Inline Code", action: () => insert("`","`","code") },
+        { icon: "==", title: "Highlight", action: () => insert("==","==","highlighted") },
+      ]
+    },
+    {
+      label: "Lists",
+      items: [
+        { icon: "•", title: "Bullet List", action: () => insert("- ","","List item", true) },
+        { icon: "1.", title: "Numbered List", action: () => insert("1. ","","List item", true) },
+        { icon: "✓", title: "Checklist", action: () => insert("- [ ] ","","Task", true) },
+        { icon: "❝", title: "Blockquote", action: () => insert("> ","","Quote", true) },
+      ]
+    },
   ]
 
+  const INSERT_ITEMS = [
+    {
+      group: "Media",
+      items: [
+        {
+          icon: "🖼️", label: "Image from URL",
+          action: () => {
+            const url = prompt("Enter image URL:")
+            const alt = prompt("Alt text (optional):") || "image"
+            if (url) insertAtCursor(`\n![${alt}](${url})\n`)
+          }
+        },
+        {
+          icon: "📷", label: "Upload Image",
+          action: () => fileInputRef.current?.click()
+        },
+        {
+          icon: "🎥", label: "YouTube Video",
+          action: () => {
+            const url = prompt("Enter YouTube URL:")
+            if (url) {
+              const id = url.match(/(?:v=|youtu\.be\/)([^&?\s]+)/)?.[1]
+              if (id) insertAtCursor(`\n[![YouTube](https://img.youtube.com/vi/${id}/0.jpg)](${url})\n`)
+              else insertAtCursor(`\n[▶ Watch Video](${url})\n`)
+            }
+          }
+        },
+        {
+          icon: "🔗", label: "Link",
+          action: () => {
+            const url = prompt("Enter URL:")
+            const text = prompt("Link text:") || url
+            if (url) insert(`[${text}](`, ")", url)
+          }
+        },
+      ]
+    },
+    {
+      group: "Tables & Structure",
+      items: [
+        {
+          icon: "📊", label: "Insert Table",
+          action: () => insertAtCursor("\n" + TABLE_TEMPLATE)
+        },
+        {
+          icon: "📋", label: "2-Col Table",
+          action: () => insertAtCursor("\n| Term | Definition |\n|------|------------|\n| Term | Definition |\n")
+        },
+        {
+          icon: "📐", label: "Diagram",
+          action: () => insertAtCursor("\n" + DIAGRAM_TEMPLATE)
+        },
+        {
+          icon: "➗", label: "Math Formula",
+          action: () => insertAtCursor("\n" + MATH_TEMPLATE)
+        },
+      ]
+    },
+    {
+      group: "Lesson Templates",
+      items: [
+        {
+          icon: "📝", label: "Learning Objectives",
+          action: () => insertAtCursor("\n## Learning Objectives\n\nBy the end of this lesson, students will be able to:\n- Objective 1\n- Objective 2\n- Objective 3\n")
+        },
+        {
+          icon: "❓", label: "Review Questions",
+          action: () => insertAtCursor("\n## Review Questions\n\n1. Question one?\n2. Question two?\n3. Question three?\n")
+        },
+        {
+          icon: "🔑", label: "Key Terms Box",
+          action: () => insertAtCursor("\n## Key Terms\n\n| Term | Definition |\n|------|------------|\n| Term 1 | Definition here |\n| Term 2 | Definition here |\n")
+        },
+        {
+          icon: "💡", label: "Note/Tip Box",
+          action: () => insertAtCursor("\n> 💡 **Note:** Add your important note or tip here.\n")
+        },
+        {
+          icon: "⚠️", label: "Warning Box",
+          action: () => insertAtCursor("\n> ⚠️ **Important:** Add your warning or caution here.\n")
+        },
+        {
+          icon: "📌", label: "Summary Box",
+          action: () => insertAtCursor("\n## Summary\n\nIn this lesson we covered:\n- Key point 1\n- Key point 2\n- Key point 3\n")
+        },
+        {
+          icon: "🧪", label: "Example Block",
+          action: () => insertAtCursor("\n### Example\n\n**Problem:** State the problem here.\n\n**Solution:** Show the solution step by step.\n\n**Answer:** Final answer.\n")
+        },
+        {
+          icon: "📖", label: "Full Lesson Template",
+          action: () => insertAtCursor(`
+## Introduction
+
+Brief introduction to the topic.
+
+## Learning Objectives
+
+- Students will understand...
+- Students will be able to...
+- Students will apply...
+
+## Key Concepts
+
+### Concept 1
+
+Explanation here.
+
+### Concept 2
+
+Explanation here.
+
+## Examples
+
+### Example 1
+
+**Problem:** ...
+**Solution:** ...
+
+## Key Terms
+
+| Term | Definition |
+|------|------------|
+| Term | Definition |
+
+## Summary
+
+Key takeaways from this lesson.
+
+## Review Questions
+
+1. Question one?
+2. Question two?
+3. Question three?
+`)
+        },
+      ]
+    },
+    {
+      group: "Code Blocks",
+      items: [
+        { icon: "JS", label: "JavaScript", action: () => insertAtCursor("\n```javascript\n// code here\n```\n") },
+        { icon: "PY", label: "Python", action: () => insertAtCursor("\n```python\n# code here\n```\n") },
+        { icon: "</>", label: "HTML", action: () => insertAtCursor("\n```html\n<!-- code here -->\n```\n") },
+        { icon: "{ }", label: "Generic Code", action: () => insertAtCursor("\n```\ncode here\n```\n") },
+      ]
+    },
+  ]
+
+  const canUndo = historyIdx > 0
+  const canRedo = historyIdx < history.length - 1
+
   return (
-    <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
-      {/* Toolbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "8px 10px", background: "var(--bg2)", borderBottom: "1px solid var(--border)", flexWrap: "wrap" }}>
-        {TOOLBAR.map((t, i) => (
-          <button key={i} type="button" onClick={t.action} title={t.title}
-            style={{ width: 30, height: 30, borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", color: "var(--text)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "var(--card)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            {t.icon}
+    <div style={{ border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", background: "var(--card)" }}>
+      {/* Tab bar */}
+      <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid var(--border)", background: "var(--bg2)" }}>
+        {["write","insert"].map(t => (
+          <button key={t} type="button" onClick={() => setActiveTab(t as any)}
+            style={{ padding: "9px 18px", border: "none", background: activeTab === t ? "var(--card)" : "transparent", color: activeTab === t ? "var(--accent)" : "var(--muted)", fontWeight: 800, fontSize: 13, cursor: "pointer", borderBottom: activeTab === t ? "2px solid var(--accent)" : "2px solid transparent", fontFamily: "inherit", textTransform: "capitalize" }}>
+            {t === "write" ? "✏️ Write" : "➕ Insert"}
           </button>
         ))}
-        <div style={{ height: 20, width: 1, background: "var(--border)", margin: "0 6px" }} />
+        <div style={{ flex: 1 }} />
+        {/* Undo/Redo */}
+        <div style={{ display: "flex", gap: 2, padding: "0 8px" }}>
+          <button type="button" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)"
+            style={{ width: 30, height: 30, borderRadius: 6, border: "none", background: "transparent", cursor: canUndo ? "pointer" : "not-allowed", color: canUndo ? "var(--text)" : "var(--muted)", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ↩
+          </button>
+          <button type="button" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Y)"
+            style={{ width: 30, height: 30, borderRadius: 6, border: "none", background: "transparent", cursor: canRedo ? "pointer" : "not-allowed", color: canRedo ? "var(--text)" : "var(--muted)", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ↪
+          </button>
+        </div>
+        {/* Preview toggle */}
         <button type="button" onClick={() => setPreview(p => !p)}
-          style={{ padding: "4px 12px", borderRadius: 6, border: "1px solid var(--border)", background: preview ? "var(--accent)" : "transparent", color: preview ? "white" : "var(--muted)", cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }}>
+          style={{ margin: "4px 8px 4px 0", padding: "4px 12px", borderRadius: 8, border: "1px solid var(--border)", background: preview ? "var(--accent)" : "transparent", color: preview ? "white" : "var(--muted)", cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "inherit" }}>
           {preview ? "✏️ Edit" : "👁 Preview"}
         </button>
       </div>
 
+      {/* WRITE TAB — Toolbar */}
+      {activeTab === "write" && !preview && (
+        <div style={{ display: "flex", alignItems: "center", gap: 0, padding: "6px 10px", background: "var(--bg2)", borderBottom: "1px solid var(--border)", flexWrap: "wrap", rowGap: 4 }}>
+          {TOOLBAR_GROUPS.map((group, gi) => (
+            <div key={gi} style={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {gi > 0 && <div style={{ width: 1, height: 20, background: "var(--border)", margin: "0 6px" }} />}
+              {group.items.map((item, ii) => (
+                <button key={ii} type="button" onClick={item.action} title={item.title}
+                  style={{ minWidth: 28, height: 28, padding: "0 5px", borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", color: "var(--text)", fontSize: 12, fontWeight: 700, fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", ...((item as any).style ?? {}) }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--card)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                  {item.icon}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* INSERT TAB */}
+      {activeTab === "insert" && (
+        <div style={{ padding: 16, background: "var(--bg2)", borderBottom: "1px solid var(--border)", maxHeight: 300, overflowY: "auto" }}>
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
+            onChange={e => {
+              const file = e.target.files?.[0]
+              if (file) {
+                const reader = new FileReader()
+                reader.onload = ev => {
+                  const url = ev.target?.result as string
+                  insertAtCursor(`\n![${file.name}](${url})\n`)
+                }
+                reader.readAsDataURL(file)
+              }
+              e.target.value = ""
+            }} />
+          {INSERT_ITEMS.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{group.group}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 6 }}>
+                {group.items.map((item, ii) => (
+                  <button key={ii} type="button"
+                    onClick={() => { item.action(); setActiveTab("write") }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--text)", fontFamily: "inherit", textAlign: "left", transition: "all 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)"; (e.currentTarget as HTMLElement).style.background = "color-mix(in srgb, var(--accent) 6%, var(--card))" }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLElement).style.background = "var(--card)" }}>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Editor / Preview */}
       {preview ? (
-        <div style={{ padding: 20, minHeight: 240, fontSize: 15, lineHeight: 1.8, background: "var(--card)" }}>
+        <div style={{ padding: 24, minHeight: 280, fontSize: 15, lineHeight: 1.8 }}>
           {renderContent(value)}
         </div>
       ) : (
-        <textarea ref={textareaRef} value={value} onChange={e => onChange(e.target.value)}
-          placeholder="Write lesson content... Use ## for headings, **bold**, - bullets, > quotes"
-          style={{ width: "100%", minHeight: 240, padding: "14px", border: "none", background: "var(--card)", color: "var(--text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.7 }} />
+        <textarea ref={textareaRef} value={value}
+          onChange={e => pushHistory(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Write lesson content...&#10;&#10;Use the toolbar above or Insert tab for tables, images, templates and more.&#10;&#10;Keyboard shortcuts:&#10;Ctrl+Z = Undo  |  Ctrl+Y = Redo  |  Ctrl+B = Bold  |  Ctrl+I = Italic  |  Tab = Indent"
+          style={{ width: "100%", minHeight: 300, padding: "16px", border: "none", background: "var(--card)", color: "var(--text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.8, display: "block" }} />
       )}
 
       {/* Footer */}
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 12px", background: "var(--bg2)", borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--muted)" }}>
-        <span>Markdown supported · ## heading · **bold** · - list · {'>'} quote</span>
-        <span>{value.length} chars · ~{Math.max(1, Math.ceil(value.split(/\s+/).length / 200))} min read</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 14px", background: "var(--bg2)", borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--muted)" }}>
+        <span>Ctrl+Z undo · Ctrl+B bold · Ctrl+I italic · Tab indent · Insert tab for tables & templates</span>
+        <span>{value.length} chars · {value.split(/\s+/).filter(Boolean).length} words · ~{Math.max(1, Math.ceil(value.split(/\s+/).length / 200))} min read</span>
       </div>
     </div>
   )
 }
-
 // ── Live Presentation Mode ──
 function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const [stream, setStream] = useState<MediaStream | null>(null)
