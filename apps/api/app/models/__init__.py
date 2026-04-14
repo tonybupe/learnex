@@ -10,6 +10,7 @@ from app.models.saved_post import SavedPost
 from app.models.post_attachment import PostAttachment
 from app.models.lesson import Lesson
 from app.models.lesson_resource import LessonResource
+from app.models.lesson_discussion import LessonDiscussion
 from app.models.quiz import Quiz
 from app.models.quiz_question import QuizQuestion
 from app.models.quiz_option import QuizOption
@@ -25,39 +26,16 @@ from app.models.conversation_participant import ConversationParticipant
 from app.models.message import Message
 from app.models.report import Report
 from app.models.audit_log import AuditLog
-from app.models.moderation_action import ModerationAction 
-from .user_profile import UserProfile  
-
+from app.models.moderation_action import ModerationAction
+from .user_profile import UserProfile
 
 __all__ = [
-    "User",
-    "Follow",
-    "Subject",
-    "ClassRoom",
-    "ClassMember",
-    "Post",
-    "PostComment",
-    "PostReaction",
-    "SavedPost",
-    "PostAttachment",
-    "Lesson",
-    "LessonResource",
-    "Quiz",
-    "QuizQuestion",
-    "QuizOption",
-    "QuizAttempt",
-    "QuizAnswer",
-    "LiveSession",
-    "SessionAttendance",
-    "Notification",
-    "Reminder",
-    "MediaFile",
-    "Conversation",
-    "ConversationParticipant",
-    "Message",
-    "Report",
-    "AuditLog",
-    "ModerationAction",
-    "UserProfile",
-    
+    "User", "Follow", "Subject", "ClassRoom", "ClassMember",
+    "Post", "PostComment", "PostReaction", "SavedPost", "PostAttachment",
+    "Lesson", "LessonResource", "LessonDiscussion",
+    "Quiz", "QuizQuestion", "QuizOption", "QuizAttempt", "QuizAnswer",
+    "LiveSession", "SessionAttendance",
+    "Notification", "Reminder", "MediaFile",
+    "Conversation", "ConversationParticipant", "Message",
+    "Report", "AuditLog", "ModerationAction", "UserProfile",
 ]
