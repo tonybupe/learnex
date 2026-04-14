@@ -63,7 +63,22 @@ Return ONLY a valid JSON object with no markdown, no backticks, no extra text:
         import json
         return json.loads(text)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+        err = str(e)
+        # Graceful fallback with template content when API quota exceeded
+        if "credit" in err.lower() or "billing" in err.lower() or "quota" in err.lower():
+            import json
+            fallback = {
+                "content": f"## Introduction to {topic}\n\nThis lesson covers the fundamental concepts of **{topic}**.\n\n## Key Concepts\n\n- Definition and overview of {topic}\n- Historical background and context\n- Core principles and theories\n- Real-world applications\n- Common misconceptions\n\n## Main Content\n\n### What is {topic}?\n\n{topic} is an important concept that forms the foundation of understanding in this field. Students should approach this topic with curiosity and an open mind.\n\n### Why is it Important?\n\nUnderstanding {topic} helps learners:\n- Build critical thinking skills\n- Apply knowledge to real situations\n- Connect theory with practice\n- Develop deeper subject mastery\n\n## Summary\n\nIn this lesson, we explored the key aspects of {topic}. Students should now have a foundational understanding and be ready to explore more advanced concepts.\n\n## Review Questions\n\n1. What is the main concept behind {topic}?\n2. How does {topic} apply in real-world scenarios?\n3. What are the key principles you learned today?",
+                "summary": f"An introduction to {topic} covering key concepts, principles and real-world applications.",
+                "youtube_searches": [f"{topic} explained", f"{topic} tutorial for beginners", f"{topic} examples"],
+                "resource_links": [
+                    {{"title": f"Wikipedia: {topic}", "url": f"https://en.wikipedia.org/wiki/{topic.replace(chr(32), chr(95))}", "type": "article"}},
+                    {{"title": f"Khan Academy: {topic}", "url": f"https://www.khanacademy.org/search?page_search_query={topic.replace(chr(32), chr(43))}", "type": "course"}},
+                    {{"title": f"YouTube: {topic} Explained", "url": f"https://www.youtube.com/results?search_query={topic.replace(chr(32), chr(43))}+explained", "type": "video"}}
+                ]
+            }
+            return fallback
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {err}")
 
 
 def lesson_query(db: Session):
