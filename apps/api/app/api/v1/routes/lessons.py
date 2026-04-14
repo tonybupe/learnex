@@ -1,4 +1,6 @@
 from typing import List
+import json
+import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -6,19 +8,111 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.deps import get_current_user, require_roles
 from app.models.lesson import Lesson
+from app.models.lesson_discussion import LessonDiscussion
 from app.models.user import User
 from app.schemas.lessons import (
-    LessonCreate,
-    LessonResourceCreate,
-    LessonResourceResponse,
-    LessonResponse,
-    LessonUpdate,
+    LessonCreate, LessonResourceCreate, LessonResourceResponse,
+    LessonResponse, LessonUpdate,
 )
-
 from app.services.notification_service import notify_lesson_published
 from app.services.lesson_service import add_lesson_resource, create_lesson, update_lesson
 
 router = APIRouter()
+
+
+def lesson_query(db: Session):
+    return db.query(Lesson).options(joinedload(Lesson.resources))
+
+
+# =========================================================
+# CRUD
+# =========================================================
+
+@router.post("", response_model=LessonResponse)
+def create_lesson_route(
+    payload: LessonCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher")),
+):
+    try:
+        lesson = create_lesson(db, current_user, payload)
+        if lesson.status == "published":
+            notify_lesson_published(db, lesson.id, current_user, lesson.class_id, lesson.title)
+        return lesson_query(db).filter(Lesson.id == lesson.id).first()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("", response_model=List[LessonResponse])
+def list_lessons(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return lesson_query(db).order_by(Lesson.created_at.desc()).all()
+
+
+@router.get("/{lesson_id}", response_model=LessonResponse)
+def get_lesson(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lesson = lesson_query(db).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    return lesson
+
+
+@router.patch("/{lesson_id}", response_model=LessonResponse)
+def update_lesson_route(
+    lesson_id: int,
+    payload: LessonUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only update your own lessons")
+    try:
+        updated = update_lesson(db, lesson, payload)
+        return lesson_query(db).filter(Lesson.id == updated.id).first()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.delete("/{lesson_id}")
+def delete_lesson(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only delete your own lessons")
+    db.delete(lesson)
+    db.commit()
+    return {"message": "Lesson deleted successfully"}
+
+
+@router.post("/{lesson_id}/resources", response_model=LessonResourceResponse)
+def add_resource_route(
+    lesson_id: int,
+    payload: LessonResourceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only manage your own lesson resources")
+    return add_lesson_resource(db, lesson, payload)
+
+
 # =========================================================
 # AI LESSON CONTENT GENERATOR
 # =========================================================
@@ -57,7 +151,7 @@ def generate_lesson_content(
                 f"- Develop deeper subject mastery\n\n"
                 f"## Summary\n\n"
                 f"In this lesson, we explored the key aspects of {t}. "
-                f"Students should now have a foundational understanding and be ready to explore more advanced concepts.\n\n"
+                f"Students should now have a foundational understanding.\n\n"
                 f"## Review Questions\n\n"
                 f"1. What is the main concept behind {t}?\n"
                 f"2. How does {t} apply in real-world scenarios?\n"
@@ -72,12 +166,11 @@ def generate_lesson_content(
             "resource_links": [
                 {"title": f"Wikipedia: {t}", "url": f"https://en.wikipedia.org/wiki/{slug}", "type": "article"},
                 {"title": f"Khan Academy: {t}", "url": f"https://www.khanacademy.org/search?page_search_query={query}", "type": "course"},
-                {"title": f"YouTube: {t} Explained", "url": f"https://www.youtube.com/results?search_query={query}+explained", "type": "video"},
+                {"title": f"YouTube: {t}", "url": f"https://www.youtube.com/results?search_query={query}+explained", "type": "video"},
             ],
         }
 
     try:
-        import os
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         if not api_key or api_key == "your-anthropic-api-key-here":
             return make_fallback(topic)
@@ -99,7 +192,6 @@ def generate_lesson_content(
                 )
             }]
         )
-        import json
         text = message.content[0].text.strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
@@ -113,11 +205,8 @@ def generate_lesson_content(
 
 
 # =========================================================
-# LESSON DISCUSSION (comments by enrolled learners)
+# LESSON DISCUSSION
 # =========================================================
-
-from app.models.lesson_discussion import LessonDiscussion
-
 
 @router.get("/{lesson_id}/discussion")
 def get_lesson_discussion(
