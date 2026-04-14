@@ -64,7 +64,8 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
     extensions: [
       StarterKit.configure({
         codeBlock: false,
-        // Disable built-in link and underline to avoid duplicates
+        link: false,
+        underline: false,
       }),
       Underline,
       Highlight.configure({ multicolor: true }),
