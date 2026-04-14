@@ -51,67 +51,64 @@ type InsertTab = "media" | "table" | "template" | "code"
 
 // ── Image Toolbar (shows when image selected) ──
 function ImageToolbar({ editor }: { editor: any }) {
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
-  const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null)
+  const [visible, setVisible] = useState(false)
+  const [style, setStyle] = useState<React.CSSProperties>({})
+  const toolbarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!editor) return
-    const updateToolbar = () => {
-      const selection = editor.state.selection
-      if (!editor.isActive("image")) { setPos(null); setImgEl(null); return }
-      // Find selected image element
-      const domEl = document.querySelector(".tiptap-editor img.ProseMirror-selectednode") as HTMLImageElement
-      if (!domEl) { setPos(null); return }
-      setImgEl(domEl)
-      const rect = domEl.getBoundingClientRect()
-      const editorRect = domEl.closest(".tiptap-editor")?.getBoundingClientRect()
-      if (editorRect) {
-        setPos({ top: rect.top - editorRect.top - 48, left: rect.left - editorRect.left + rect.width / 2 })
-      }
+    const update = () => {
+      if (!editor.isActive("image")) { setVisible(false); return }
+      const { from } = editor.state.selection
+      const node = editor.view.nodeDOM(from) as HTMLElement | null
+      if (!node) { setVisible(false); return }
+      const imgEl = node.tagName === "IMG" ? node as HTMLImageElement : node.querySelector("img") as HTMLImageElement | null
+      if (!imgEl) { setVisible(false); return }
+      const editorEl = editor.view.dom.closest(".tiptap-editor-wrap") as HTMLElement | null
+      if (!editorEl) { setVisible(false); return }
+      const imgRect = imgEl.getBoundingClientRect()
+      const edRect = editorEl.getBoundingClientRect()
+      setStyle({
+        top: imgRect.top - edRect.top - 42,
+        left: imgRect.left - edRect.left + imgRect.width / 2,
+        transform: "translateX(-50%)",
+        position: "absolute",
+      })
+      setVisible(true)
     }
-    editor.on("selectionUpdate", updateToolbar)
-    return () => editor.off("selectionUpdate", updateToolbar)
+    editor.on("selectionUpdate", update)
+    editor.on("transaction", update)
+    return () => { editor.off("selectionUpdate", update); editor.off("transaction", update) }
   }, [editor])
 
-  if (!pos || !imgEl || !editor) return null
-
-  const setSize = (width: string) => {
-    imgEl.style.width = width
-    imgEl.style.maxWidth = width === "100%" ? "100%" : width
+  const updateAttr = (attrs: Record<string, string>) => {
+    editor.chain().focus().updateAttributes("image", attrs).run()
   }
 
-  const setAlign = (align: string) => {
-    imgEl.style.display = align === "center" ? "block" : "inline-block"
-    imgEl.style.margin = align === "center" ? "10px auto" : align === "left" ? "10px 16px 10px 0" : "10px 0 10px 16px"
-    imgEl.style.float = align === "left" ? "left" : align === "right" ? "right" : "none"
-  }
+  if (!visible || !editor) return null
 
   return (
-    <div className="image-toolbar" style={{ top: Math.max(4, pos.top), left: pos.left }}>
-      <button type="button" onClick={() => setSize("25%")} title="Small">S</button>
-      <button type="button" onClick={() => setSize("50%")} title="Medium">M</button>
-      <button type="button" onClick={() => setSize("75%")} title="Large">L</button>
-      <button type="button" onClick={() => setSize("100%")} title="Full width">Full</button>
+    <div ref={toolbarRef} className="image-toolbar" style={style}>
+      {/* Size */}
+      <button type="button" onClick={() => updateAttr({ width: "200px" })} title="Small (200px)">S</button>
+      <button type="button" onClick={() => updateAttr({ width: "400px" })} title="Medium (400px)">M</button>
+      <button type="button" onClick={() => updateAttr({ width: "600px" })} title="Large (600px)">L</button>
+      <button type="button" onClick={() => updateAttr({ width: "100%" })} title="Full width">Full</button>
       <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
-      <button type="button" onClick={() => setAlign("left")} title="Float left">←</button>
-      <button type="button" onClick={() => setAlign("center")} title="Center">↔</button>
-      <button type="button" onClick={() => setAlign("right")} title="Float right">→</button>
+      {/* Align */}
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:left" })} title="Left">←</button>
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px auto" })} title="Center">↔</button>
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:right" })} title="Right">→</button>
       <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
-      <button type="button" title="Edit alt text" onClick={() => {
-        const alt = prompt("Alt text / caption:", imgEl.alt)
-        if (alt !== null) imgEl.alt = alt
+      {/* Alt */}
+      <button type="button" title="Edit caption/alt" onClick={() => {
+        const cur = editor.getAttributes("image").alt ?? ""
+        const alt = prompt("Image caption / alt text:", cur)
+        if (alt !== null) updateAttr({ alt })
       }}>Alt</button>
-      <button type="button" title="Add link" onClick={() => {
-        const url = prompt("Link URL (wrap image in link):")
-        if (url) {
-          const link = document.createElement("a")
-          link.href = url
-          link.target = "_blank"
-          imgEl.parentNode?.insertBefore(link, imgEl)
-          link.appendChild(imgEl)
-        }
-      }}>🔗</button>
-      <button type="button" title="Delete image" onClick={() => editor.chain().focus().deleteSelection().run()}
+      {/* Delete */}
+      <button type="button" title="Remove image"
+        onClick={() => editor.chain().focus().deleteSelection().run()}
         style={{ color: "var(--danger)" }}>🗑</button>
     </div>
   )
@@ -203,13 +200,27 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
     setImageUrl("")
   }, [editor])
 
-  const insertImageFile = useCallback((file: File) => {
-    const reader = new FileReader()
-    reader.onload = e => {
-      const src = e.target?.result as string
-      editor?.chain().focus().setImage({ src, alt: file.name }).run()
-    }
-    reader.readAsDataURL(file)
+  const insertImageFile = useCallback(async (file: File) => {
+    // Upload to server
+    const formData = new FormData()
+    formData.append("file", file)
+    try {
+      // Try server upload first
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL?.replace("/api/v1","") || "http://localhost:8000"}/api/v1/uploads/image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("learnex_access_token") ?? ""}` },
+        body: formData,
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const src = data.url?.startsWith("http") ? data.url : `${import.meta.env.VITE_API_BASE_URL?.replace("/api/v1","") || "http://localhost:8000"}${data.url}`
+        editor?.chain().focus().setImage({ src, alt: file.name }).run()
+        return
+      }
+    } catch {}
+    // Fallback: use object URL (temporary, session only)
+    const src = URL.createObjectURL(file)
+    editor?.chain().focus().setImage({ src, alt: file.name }).run()
   }, [editor])
 
   const insertLink = useCallback(() => {
@@ -487,7 +498,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
       )}
 
       {/* ── EDITOR ── */}
-      <div style={{ position: "relative" }}>
+      <div className="tiptap-editor-wrap" style={{ position: "relative" }}>
         <EditorContent editor={editor} style={{ minHeight }} />
         <ImageToolbar editor={editor} />
       </div>
