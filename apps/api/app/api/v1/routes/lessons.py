@@ -53,10 +53,41 @@ def create_lesson_route(
 
 @router.get("", response_model=List[LessonResponse])
 def list_lessons(
+    mine: bool = False,
+    class_id: int = None,
+    visibility: str = None,
+    lesson_type: str = None,
+    status: str = None,
+    search: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return lesson_query(db).order_by(Lesson.created_at.desc()).all()
+    q = lesson_query(db)
+    # Teachers: mine=true returns only their own lessons
+    if mine and current_user.role in ("teacher",):
+        q = q.filter(Lesson.teacher_id == current_user.id)
+    # Learners: only see published lessons in their enrolled classes
+    if current_user.role == "learner":
+        from app.models.class_member import ClassMember
+        enrolled_class_ids = db.query(ClassMember.class_id).filter(
+            ClassMember.learner_id == current_user.id,
+            ClassMember.status == "active"
+        ).subquery()
+        q = q.filter(
+            (Lesson.visibility == "public") |
+            (Lesson.class_id.in_(enrolled_class_ids))
+        ).filter(Lesson.status == "published")
+    if class_id:
+        q = q.filter(Lesson.class_id == class_id)
+    if visibility:
+        q = q.filter(Lesson.visibility == visibility)
+    if lesson_type:
+        q = q.filter(Lesson.lesson_type == lesson_type)
+    if status:
+        q = q.filter(Lesson.status == status)
+    if search:
+        q = q.filter(Lesson.title.ilike(f"%{search}%"))
+    return q.order_by(Lesson.created_at.desc()).all()
 
 
 @router.get("/{lesson_id}", response_model=LessonResponse)
