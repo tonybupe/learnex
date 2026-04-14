@@ -114,3 +114,97 @@ def add_resource_route(
         raise HTTPException(status_code=403, detail="You can only manage your own lesson resources")
 
     return add_lesson_resource(db, lesson, payload)
+
+# =========================================================
+# LESSON DISCUSSION (comments by enrolled learners)
+# =========================================================
+
+from app.models.lesson_discussion import LessonDiscussion
+
+
+@router.get("/{lesson_id}/discussion")
+def get_lesson_discussion(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    comments = (
+        db.query(LessonDiscussion)
+        .filter(LessonDiscussion.lesson_id == lesson_id)
+        .order_by(LessonDiscussion.created_at.asc())
+        .all()
+    )
+    result = []
+    for c in comments:
+        author = db.query(User).filter(User.id == c.user_id).first()
+        result.append({
+            "id": c.id,
+            "content": c.content,
+            "user_id": c.user_id,
+            "lesson_id": c.lesson_id,
+            "created_at": c.created_at,
+            "author": {
+                "id": author.id,
+                "full_name": author.full_name,
+                "role": author.role,
+            } if author else None,
+        })
+    return result
+
+
+@router.post("/{lesson_id}/discussion")
+def add_lesson_comment(
+    lesson_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    content = payload.get("content", "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Comment cannot be empty")
+    comment = LessonDiscussion(
+        lesson_id=lesson_id,
+        user_id=current_user.id,
+        content=content,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return {
+        "id": comment.id,
+        "content": comment.content,
+        "user_id": comment.user_id,
+        "lesson_id": comment.lesson_id,
+        "created_at": comment.created_at,
+        "author": {
+            "id": current_user.id,
+            "full_name": current_user.full_name,
+            "role": current_user.role,
+        },
+    }
+
+
+@router.delete("/{lesson_id}/discussion/{comment_id}")
+def delete_lesson_comment(
+    lesson_id: int,
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    comment = db.query(LessonDiscussion).filter(
+        LessonDiscussion.id == comment_id,
+        LessonDiscussion.lesson_id == lesson_id,
+    ).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.user_id != current_user.id and current_user.role not in ["admin", "teacher"]:
+        raise HTTPException(status_code=403, detail="Not allowed")
+    db.delete(comment)
+    db.commit()
+    return {"message": "Deleted"}
