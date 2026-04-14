@@ -1,0 +1,296 @@
+/* =========================================
+   TIPTAP RICH EDITOR
+========================================= */
+
+.tiptap-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOOLBAR ── */
+.tiptap-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  row-gap: 4px;
+  min-height: 44px;
+}
+
+.tiptap-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.tiptap-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  margin: 0 5px;
+  flex-shrink: 0;
+}
+
+.tiptap-tool-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 5px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.tiptap-tool-btn:hover { background: var(--card); color: var(--accent); }
+.tiptap-tool-btn.is-active { background: var(--chip); color: var(--accent); border: 1px solid var(--chipBorder); }
+.tiptap-tool-btn.is-danger:hover { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+.tiptap-insert-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--chipBorder);
+  background: var(--chip);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  margin-left: auto;
+}
+.tiptap-insert-btn:hover, .tiptap-insert-btn.active {
+  background: color-mix(in srgb, var(--accent) 15%, var(--card));
+  border-color: var(--accent);
+}
+
+/* ── INSERT PANEL ── */
+.tiptap-insert-panel {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tiptap-insert-tabs {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px 0;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tiptap-insert-tab {
+  padding: 7px 16px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tiptap-insert-tab:hover { color: var(--text); }
+.tiptap-insert-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tiptap-insert-close {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tiptap-insert-close:hover { background: var(--card); color: var(--danger); }
+
+.tiptap-insert-content {
+  padding: 16px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.tiptap-insert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.tiptap-insert-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: all 0.15s;
+  text-align: center;
+}
+.tiptap-insert-card:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--card));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(203,38,228,0.12);
+}
+
+.tiptap-insert-card-icon { font-size: 28px; line-height: 1; }
+.tiptap-insert-card-label { font-weight: 800; font-size: 13px; color: var(--text); }
+
+/* ── BUBBLE MENU ── */
+.tiptap-bubble-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.tiptap-bubble-btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 5px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.tiptap-bubble-btn:hover { background: var(--bg2); color: var(--accent); }
+.tiptap-bubble-btn.active { background: var(--chip); color: var(--accent); }
+.tiptap-bubble-divider { width: 1px; height: 18px; background: var(--border); margin: 0 3px; }
+
+/* ── EDITOR CONTENT ── */
+.tiptap-editor {
+  padding: 20px 24px;
+  outline: none;
+  min-height: inherit;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.tiptap-editor p { margin: 0 0 8px; }
+.tiptap-editor h1 { font-size: 26px; font-weight: 900; margin: 24px 0 12px; color: var(--text); }
+.tiptap-editor h2 { font-size: 20px; font-weight: 800; margin: 20px 0 10px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+.tiptap-editor h3 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
+.tiptap-editor ul { padding-left: 24px; margin: 8px 0; }
+.tiptap-editor ol { padding-left: 24px; margin: 8px 0; }
+.tiptap-editor li { margin: 4px 0; line-height: 1.7; }
+.tiptap-editor blockquote { border-left: 4px solid var(--accent); margin: 12px 0; padding: 8px 16px; color: var(--muted); font-style: italic; background: var(--bg2); border-radius: 0 8px 8px 0; }
+.tiptap-editor code { background: var(--bg2); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: monospace; color: var(--accent); }
+.tiptap-editor pre { background: #0d1117; border-radius: 10px; padding: 16px; margin: 12px 0; overflow-x: auto; }
+.tiptap-editor pre code { background: none; color: #e6edf3; font-size: 13px; padding: 0; }
+.tiptap-editor hr { border: none; border-top: 2px solid var(--border); margin: 20px 0; }
+.tiptap-editor mark { background: #fef08a; color: #78350f; padding: 0 2px; border-radius: 2px; }
+.tiptap-editor a.editor-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.tiptap-editor img.editor-image { max-width: 100%; border-radius: 10px; margin: 10px 0; display: block; box-shadow: var(--shadow2); }
+
+/* ── TABLES ── */
+.tiptap-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.tiptap-editor th {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg2));
+  color: var(--accent);
+  font-weight: 800;
+  padding: 10px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tiptap-editor td {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.tiptap-editor tr:nth-child(even) td { background: var(--bg2); }
+.tiptap-editor tr:hover td { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.tiptap-editor .selectedCell { background: color-mix(in srgb, var(--accent) 12%, transparent) !important; }
+.tiptap-editor .column-resize-handle { position: absolute; right: -2px; top: 0; bottom: 0; width: 4px; background: var(--accent); cursor: col-resize; opacity: 0; transition: opacity 0.15s; }
+.tiptap-editor .tableWrapper:hover .column-resize-handle { opacity: 1; }
+.tiptap-editor .resize-cursor { cursor: col-resize; }
+
+/* Placeholder */
+.tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* ── FOOTER ── */
+.tiptap-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.tiptap-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Checkbox list */
+.tiptap-editor ul[data-type="taskList"] { list-style: none; padding-left: 0; }
+.tiptap-editor li[data-type="taskItem"] { display: flex; align-items: flex-start; gap: 8px; }
+.tiptap-editor li[data-type="taskItem"] > label { margin-top: 3px; }

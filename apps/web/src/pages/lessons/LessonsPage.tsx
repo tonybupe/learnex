@@ -1,4 +1,5 @@
 import AppShell from "@/components/layout/AppShell"
+import RichEditor from "@/components/editor/RichEditor"
 import { api } from "@/api/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth/useAuth"
@@ -405,14 +406,13 @@ export default function LessonsPage() {
               </div>
 
               <div className="form-field">
-                <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>Content *</span>
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400 }}>Markdown supported</span>
-                </label>
-                <textarea required value={form.content}
-                  onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                  placeholder="Write or edit lesson content here... Use ## for headings, - for bullet points"
-                  style={{ width: "100%", minHeight: 200, padding: 12, borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg2)", color: "var(--text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.6 }} />
+                <label className="form-label">Content *</label>
+                <RichEditor
+                  value={form.content}
+                  onChange={(md) => setForm(p => ({ ...p, content: md }))}
+                  placeholder="Write your lesson content here..."
+                  minHeight={280}
+                />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
