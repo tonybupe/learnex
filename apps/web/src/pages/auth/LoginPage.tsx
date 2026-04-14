@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -71,9 +71,9 @@ Role Redirect
 
 function redirectByRole(role: UserRole): string {
   const routes: Record<UserRole, string> = {
-    admin: "/admin/dashboard",
-    teacher: "/teacher/dashboard",
-    learner: "/learner/dashboard",
+    admin: "/home",
+    teacher: "/home",
+    learner: "/home",
   }
 
   return routes[role]
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
     console.log("1. Login attempt:")
 
-    // 🔐 LOGIN
+    // ðŸ” LOGIN
     const response = await login(values)
 
     const accessToken = response.access_token
@@ -130,12 +130,12 @@ export default function LoginPage() {
 
     console.log("2. Token received")
 
-    // 💾 STORE TOKEN
+    // ðŸ’¾ STORE TOKEN
     localStorage.setItem("learnex_access_token", accessToken)
 
     console.log("3. Token stored")
 
-    // 👤 FETCH USER (MANDATORY)
+    // ðŸ‘¤ FETCH USER (MANDATORY)
     const user = await getMe()
 
     if (import.meta.env.DEV) {
@@ -149,10 +149,10 @@ export default function LoginPage() {
       throw new Error("User fetch failed")
     }
 
-    // 🧠 STORE SESSION
+    // ðŸ§  STORE SESSION
     setSession(accessToken, user)
 
-    // 🚀 REDIRECT
+    // ðŸš€ REDIRECT
     navigate(redirectByRole(user.role), { replace: true })
 
   } catch (error) {
@@ -197,7 +197,7 @@ export default function LoginPage() {
         }}>
           <div style={{ maxWidth: "500px" }}>
             <div className="chip" style={{ marginBottom: "16px" }}>
-              🚀 Learnex v2.0
+              ðŸš€ Learnex v2.0
             </div>
 
             <h1 style={{ 
@@ -223,7 +223,7 @@ export default function LoginPage() {
 
             <div className="grid-2" style={{ gap: "16px" }}>
               <Card className="hover-lift">
-                <div style={{ fontSize: "32px", marginBottom: "12px" }}>📚</div>
+                <div style={{ fontSize: "32px", marginBottom: "12px" }}>ðŸ“š</div>
                 <div className="card-title" style={{ fontSize: "18px", marginBottom: "8px" }}>
                   For Learners
                 </div>
@@ -233,7 +233,7 @@ export default function LoginPage() {
               </Card>
 
               <Card className="hover-lift">
-                <div style={{ fontSize: "32px", marginBottom: "12px" }}>👩‍🏫</div>
+                <div style={{ fontSize: "32px", marginBottom: "12px" }}>ðŸ‘©â€ðŸ«</div>
                 <div className="card-title" style={{ fontSize: "18px", marginBottom: "8px" }}>
                   For Teachers
                 </div>
@@ -244,8 +244,8 @@ export default function LoginPage() {
             </div>
 
             <div style={{ marginTop: "30px", display: "flex", gap: "16px" }}>
-              <div className="chip">⭐ 5k+ active users</div>
-              <div className="chip">🏆 98% satisfaction</div>
+              <div className="chip">â­ 5k+ active users</div>
+              <div className="chip">ðŸ† 98% satisfaction</div>
             </div>
           </div>
         </div>
