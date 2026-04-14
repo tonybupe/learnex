@@ -413,7 +413,6 @@ export default function LessonsPage() {
                   {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>✓ Content loaded — edit below</span>}
                 </label>
                 <RichEditor
-                  key={form.content.slice(0, 50)}
                   value={form.content}
                   onChange={(md) => setForm(p => ({ ...p, content: md }))}
                   placeholder="Write your lesson content here, or use AI Generate above..."

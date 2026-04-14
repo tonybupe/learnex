@@ -227,7 +227,55 @@
 .tiptap-editor hr { border: none; border-top: 2px solid var(--border); margin: 20px 0; }
 .tiptap-editor mark { background: #fef08a; color: #78350f; padding: 0 2px; border-radius: 2px; }
 .tiptap-editor a.editor-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
-.tiptap-editor img.editor-image { max-width: 100%; border-radius: 10px; margin: 10px 0; display: block; box-shadow: var(--shadow2); }
+.tiptap-editor img.editor-image {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 10px auto;
+  display: block;
+  box-shadow: var(--shadow2);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.tiptap-editor img.editor-image:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.tiptap-editor img.editor-image.ProseMirror-selectednode {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  outline: none;
+}
+/* Image toolbar shown on selection */
+.image-toolbar {
+  position: absolute;
+  top: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  white-space: nowrap;
+}
+.image-toolbar button {
+  padding: 4px 10px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.image-toolbar button:hover { background: var(--bg2); color: var(--accent); }
+.image-toolbar button.active { background: var(--chip); color: var(--accent); }
 
 /* ── TABLES ── */
 .tiptap-editor table {

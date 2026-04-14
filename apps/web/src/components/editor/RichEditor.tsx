@@ -11,7 +11,7 @@ import { Color } from "@tiptap/extension-color"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight"
 import { common, createLowlight } from "lowlight"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import "./RichEditor.css"
 
 const lowlight = createLowlight(common)
@@ -49,6 +49,74 @@ type Props = {
 
 type InsertTab = "media" | "table" | "template" | "code"
 
+// ── Image Toolbar (shows when image selected) ──
+function ImageToolbar({ editor }: { editor: any }) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null)
+
+  useEffect(() => {
+    if (!editor) return
+    const updateToolbar = () => {
+      const selection = editor.state.selection
+      if (!editor.isActive("image")) { setPos(null); setImgEl(null); return }
+      // Find selected image element
+      const domEl = document.querySelector(".tiptap-editor img.ProseMirror-selectednode") as HTMLImageElement
+      if (!domEl) { setPos(null); return }
+      setImgEl(domEl)
+      const rect = domEl.getBoundingClientRect()
+      const editorRect = domEl.closest(".tiptap-editor")?.getBoundingClientRect()
+      if (editorRect) {
+        setPos({ top: rect.top - editorRect.top - 48, left: rect.left - editorRect.left + rect.width / 2 })
+      }
+    }
+    editor.on("selectionUpdate", updateToolbar)
+    return () => editor.off("selectionUpdate", updateToolbar)
+  }, [editor])
+
+  if (!pos || !imgEl || !editor) return null
+
+  const setSize = (width: string) => {
+    imgEl.style.width = width
+    imgEl.style.maxWidth = width === "100%" ? "100%" : width
+  }
+
+  const setAlign = (align: string) => {
+    imgEl.style.display = align === "center" ? "block" : "inline-block"
+    imgEl.style.margin = align === "center" ? "10px auto" : align === "left" ? "10px 16px 10px 0" : "10px 0 10px 16px"
+    imgEl.style.float = align === "left" ? "left" : align === "right" ? "right" : "none"
+  }
+
+  return (
+    <div className="image-toolbar" style={{ top: Math.max(4, pos.top), left: pos.left }}>
+      <button type="button" onClick={() => setSize("25%")} title="Small">S</button>
+      <button type="button" onClick={() => setSize("50%")} title="Medium">M</button>
+      <button type="button" onClick={() => setSize("75%")} title="Large">L</button>
+      <button type="button" onClick={() => setSize("100%")} title="Full width">Full</button>
+      <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
+      <button type="button" onClick={() => setAlign("left")} title="Float left">←</button>
+      <button type="button" onClick={() => setAlign("center")} title="Center">↔</button>
+      <button type="button" onClick={() => setAlign("right")} title="Float right">→</button>
+      <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
+      <button type="button" title="Edit alt text" onClick={() => {
+        const alt = prompt("Alt text / caption:", imgEl.alt)
+        if (alt !== null) imgEl.alt = alt
+      }}>Alt</button>
+      <button type="button" title="Add link" onClick={() => {
+        const url = prompt("Link URL (wrap image in link):")
+        if (url) {
+          const link = document.createElement("a")
+          link.href = url
+          link.target = "_blank"
+          imgEl.parentNode?.insertBefore(link, imgEl)
+          link.appendChild(imgEl)
+        }
+      }}>🔗</button>
+      <button type="button" title="Delete image" onClick={() => editor.chain().focus().deleteSelection().run()}
+        style={{ color: "var(--danger)" }}>🗑</button>
+    </div>
+  )
+}
+
 export default function RichEditor({ value, onChange, placeholder = "Start writing...", minHeight = 320 }: Props) {
   const [showInsert, setShowInsert] = useState(false)
   const [insertTab, setInsertTab] = useState<InsertTab>("media")
@@ -59,6 +127,10 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
   const [tableCols, setTableCols] = useState(3)
   const [wordCount, setWordCount] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Track last externally set value to detect AI-injected content
+  const lastExternalValue = useRef(value)
+  const isUpdatingFromExternal = useRef(false)
 
   const editor = useEditor({
     extensions: [
@@ -84,9 +156,13 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
     content: value
       ? value.includes("<")
         ? value
-        : `<p>${value.split("\n\n").map(p => p.trim()).filter(Boolean).join("</p><p>")}</p>`
+        : value.split("\n").map(line => {
+            if (!line.trim()) return "<p></p>"
+            return `<p>${line}</p>`
+          }).join("")
       : "",
     onUpdate: ({ editor }) => {
+      if (isUpdatingFromExternal.current) return
       const html = editor.getHTML()
       const md = htmlToMarkdown(html)
       const words = editor.state.doc.textContent.split(/\s+/).filter(Boolean).length
@@ -98,11 +174,32 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
     },
   })
 
+  // When value changes externally (AI generation), update editor content
+  useEffect(() => {
+    if (!editor || !value) return
+    // Only update if value changed significantly from outside (AI inject)
+    if (value !== lastExternalValue.current && Math.abs(value.length - lastExternalValue.current.length) > 20) {
+      lastExternalValue.current = value
+      isUpdatingFromExternal.current = true
+      const html = value.includes("<")
+        ? value
+        : value.split("\n").map(line => {
+            if (!line.trim()) return "<p></p>"
+            return `<p>${line}</p>`
+          }).join("")
+      editor.commands.setContent(html, false)
+      setTimeout(() => { isUpdatingFromExternal.current = false }, 100)
+    }
+  }, [value, editor])
+
   const isActive = (name: string, attrs?: any) => editor?.isActive(name, attrs) ?? false
 
-  const insertImage = useCallback((url: string) => {
+  const insertImage = useCallback((url: string, alt = "image") => {
     if (!editor || !url.trim()) return
-    editor.chain().focus().setImage({ src: url.trim(), alt: "image" }).run()
+    // Insert image with caption paragraph below
+    editor.chain().focus()
+      .setImage({ src: url.trim(), alt })
+      .run()
     setImageUrl("")
   }, [editor])
 
@@ -390,7 +487,10 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
       )}
 
       {/* ── EDITOR ── */}
-      <EditorContent editor={editor} style={{ minHeight }} />
+      <div style={{ position: "relative" }}>
+        <EditorContent editor={editor} style={{ minHeight }} />
+        <ImageToolbar editor={editor} />
+      </div>
 
       {/* ── FOOTER ── */}
       <div className="tiptap-footer">
