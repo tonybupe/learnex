@@ -48,33 +48,8 @@ function AIGenerator({ topic, onGenerated }: { topic: string; onGenerated: (cont
     if (!topic.trim()) return
     setLoading(true)
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: `You are an expert educator. Generate a structured lesson content for the topic: "${topic}".
-
-Return ONLY a JSON object with this exact structure (no markdown, no backticks):
-{
-  "content": "Full lesson content with ## headings, bullet points, examples. At least 300 words.",
-  "summary": "One sentence summary",
-  "youtube_searches": ["search query 1", "search query 2", "search query 3"],
-  "resource_links": [
-    {"title": "Resource name", "url": "https://...", "type": "article or video"},
-    {"title": "Resource name", "url": "https://...", "type": "article or video"}
-  ]
-}`
-          }]
-        })
-      })
-      const data = await res.json()
-      const text = data.content?.[0]?.text ?? ""
-      const clean = text.replace(/```json|```/g, "").trim()
-      const parsed = JSON.parse(clean)
+      const res = await api.post("/lessons/ai/generate", { topic })
+      const parsed = res.data
       onGenerated(parsed.content ?? "")
       setSuggestions({
         videos: parsed.youtube_searches ?? [],
