@@ -485,7 +485,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 <div style={{ display: "flex", justify: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
                   <span style={{ fontWeight: 800 }}>Lesson Content</span>
                   <button className="btn" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setContentPreview(p => !p)}>
-                    {contentPreview ? <><AlignLeft size={13} /> Raw</> : <><Eye size={13} /> Preview</>}
+                    {contentPreview ? <>📄 Raw</> : <><Eye size={13} /> Preview</>}
                   </button>
                 </div>
                 {contentPreview ? (
