@@ -19,6 +19,7 @@ import MessagingPage from "@/pages/shared/MessagingPage"
 import UnauthorizedPage from "@/pages/shared/UnauthorizedPage"
 import NotFoundPage from "@/pages/shared/NotFoundPage"
 import FeedPage from "@/pages/shared/FeedSection"
+import HomePage from "@/pages/shared/HomePage"
 
 // Features
 import ProfilePage from "@/features/users/pages/ProfilePage"
@@ -44,8 +45,7 @@ function RootRedirect() {
   )
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />
   if (!user?.role) return <Navigate to="/auth/login" replace />
-  const routes = { admin: "/admin/dashboard", teacher: "/teacher/dashboard", learner: "/learner/dashboard" }
-  return <Navigate to={routes[user.role]} replace />
+  return <Navigate to="/home" replace />
 }
 
 export default function App() {
@@ -75,6 +75,7 @@ export default function App() {
         <Route path="/profile/:userId" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ProfilePage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SettingsPage /></AuthGuard>} />
 
+        <Route path="/home" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><HomePage /></AuthGuard>} />
         <Route path="/subscription" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SubscriptionPage /></AuthGuard>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

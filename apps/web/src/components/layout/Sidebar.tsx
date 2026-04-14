@@ -3,26 +3,29 @@ import { useAuthStore } from "@/features/auth/auth.store"
 import {
   Home, BookOpen, Users, FileText, Video,
   MessageCircle, Search, Bookmark, BarChart2,
-  GraduationCap, Settings, LogOut, Sparkles
+  GraduationCap, Settings, LogOut, Sparkles, TrendingUp, LayoutDashboard
 } from "lucide-react"
 
-const MENU = [
-  { label: "Dashboard",     icon: Home,          path: "/" },
-  { label: "Classes",       icon: GraduationCap, path: "/classes" },
-  { label: "Subjects",      icon: BookOpen,      path: "/subjects" },
-  { label: "Lessons",       icon: FileText,      path: "/lessons" },
-  { label: "Live Sessions", icon: Video,         path: "/live-sessions" },
-  { label: "Messages",      icon: MessageCircle, path: "/messages" },
-  { label: "Discover",      icon: Search,        path: "/discover" },
-  { label: "Saved",         icon: Bookmark,      path: "/saved" },
-  { label: "Analytics",     icon: BarChart2,     path: "/analytics" },
-  { label: "AI Plans",      icon: Sparkles,      path: "/subscription" },
+const BASE_MENU = [
+  { label: "Home",          icon: Home,             path: "/home",          roles: ["admin","teacher","learner"] },
+  { label: "Classes",       icon: GraduationCap,    path: "/classes",       roles: ["admin","teacher","learner"] },
+  { label: "Subjects",      icon: BookOpen,         path: "/subjects",      roles: ["admin","teacher","learner"] },
+  { label: "Lessons",       icon: FileText,         path: "/lessons",       roles: ["admin","teacher","learner"] },
+  { label: "Live Sessions", icon: Video,            path: "/live-sessions", roles: ["admin","teacher","learner"] },
+  { label: "Messages",      icon: MessageCircle,    path: "/messages",      roles: ["admin","teacher","learner"] },
+  { label: "Discover",      icon: Search,           path: "/discover",      roles: ["admin","teacher","learner"] },
+  { label: "Saved",         icon: Bookmark,         path: "/saved",         roles: ["admin","teacher","learner"] },
+  { label: "Analytics",     icon: BarChart2,        path: "/analytics",     roles: ["admin","teacher"] },
+  { label: "My Dashboard",  icon: LayoutDashboard,  path: "/teacher/dashboard", roles: ["teacher"] },
+  { label: "My Dashboard",  icon: LayoutDashboard,  path: "/admin/dashboard",   roles: ["admin"] },
+  { label: "AI Plans",      icon: Sparkles,         path: "/subscription",  roles: ["admin","teacher"] },
 ]
 
 export default function Sidebar() {
   const user = useAuthStore(s => s.user)
   const navigate = useNavigate()
   const logout = useAuthStore(s => s.logout)
+  const MENU = BASE_MENU.filter(item => !user?.role || item.roles.includes(user.role))
 
   const roleColor: Record<string, string> = {
     admin: "#ef4444", teacher: "#cb26e4", learner: "#38bdf8"
