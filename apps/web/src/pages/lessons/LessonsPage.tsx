@@ -395,7 +395,9 @@ export default function LessonsPage() {
               <AIGenerator
                 topic={form.title}
                 subtopic={form.subtopic}
-                onGenerated={(content) => setForm(p => ({ ...p, content }))}
+                onGenerated={(content, result) => {
+                  setForm(p => ({ ...p, content }))
+                }}
               />
 
               <div className="form-field">
@@ -406,11 +408,15 @@ export default function LessonsPage() {
               </div>
 
               <div className="form-field">
-                <label className="form-label">Content *</label>
+                <label className="form-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>Content *</span>
+                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>✓ Content loaded — edit below</span>}
+                </label>
                 <RichEditor
+                  key={form.content.slice(0, 50)}
                   value={form.content}
                   onChange={(md) => setForm(p => ({ ...p, content: md }))}
-                  placeholder="Write your lesson content here..."
+                  placeholder="Write your lesson content here, or use AI Generate above..."
                   minHeight={280}
                 />
               </div>
