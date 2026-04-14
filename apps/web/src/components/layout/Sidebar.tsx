@@ -3,7 +3,7 @@ import { useAuthStore } from "@/features/auth/auth.store"
 import {
   Home, BookOpen, Users, FileText, Video,
   MessageCircle, Search, Bookmark, BarChart2,
-  GraduationCap, Settings, LogOut
+  GraduationCap, Settings, LogOut, Sparkles
 } from "lucide-react"
 
 const MENU = [
@@ -16,6 +16,7 @@ const MENU = [
   { label: "Discover",      icon: Search,        path: "/discover" },
   { label: "Saved",         icon: Bookmark,      path: "/saved" },
   { label: "Analytics",     icon: BarChart2,     path: "/analytics" },
+  { label: "AI Plans",      icon: Sparkles,      path: "/subscription" },
 ]
 
 export default function Sidebar() {

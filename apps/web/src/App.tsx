@@ -12,6 +12,7 @@ import RegisterPage from "@/pages/auth/RegisterPage"
 import TeacherDashboardPage from "@/pages/teacher/TeacherDashboardPage"
 import LearnerDashboardPage from "@/pages/learner/LearnerDashboardPage"
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage"
+import SubscriptionPage from "@/pages/subscription/SubscriptionPage"
 
 // Shared
 import MessagingPage from "@/pages/shared/MessagingPage"

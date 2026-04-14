@@ -2,12 +2,13 @@ import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth/useAuth"
-import { useState, useRef } from "react"
+import { useState } from "react"
 import LessonDetail from "./LessonDetail"
+import { useNavigate } from "react-router-dom"
 import {
-  BookOpen, Clock, FileText, Video, Eye,
-  PlusCircle, ChevronDown, ChevronRight, Search,
-  Sparkles, Filter, Edit2, Trash2
+  BookOpen, FileText, Video, Eye, PlusCircle,
+  ChevronDown, ChevronRight, Search, Sparkles,
+  Edit2, Trash2, Image, Link2, Crown
 } from "lucide-react"
 
 interface LessonResource { id: number; resource_type: string; url: string; title?: string; mime_type?: string }
@@ -39,64 +40,179 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// ── AI Content Generator ──
-function AIGenerator({ topic, onGenerated }: { topic: string; onGenerated: (content: string) => void }) {
+interface AIResult {
+  content: string; summary: string
+  key_terms?: { term: string; definition: string }[]
+  youtube_searches?: string[]
+  image_searches?: string[]
+  resource_links?: { title: string; url: string; type: string }[]
+  diagram_suggestions?: string[]
+  presentation_slides?: { slide: number; title: string; points: string[] }[]
+}
+
+function AIGenerator({ topic, subtopic, onGenerated }: {
+  topic: string; subtopic: string; onGenerated: (content: string, result: AIResult) => void
+}) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [suggestions, setSuggestions] = useState<{ videos: string[]; links: string[] } | null>(null)
+  const [result, setResult] = useState<AIResult | null>(null)
+  const [level, setLevel] = useState("secondary")
+  const [error, setError] = useState("")
 
   const generate = async () => {
-    if (!topic.trim()) return
-    setLoading(true)
+    if (!topic.trim()) { setError("Enter a topic first"); return }
+    setLoading(true); setError("")
     try {
-      const res = await api.post("/lessons/ai/generate", { topic })
-      const parsed = res.data
-      onGenerated(parsed.content ?? "")
-      setSuggestions({
-        videos: parsed.youtube_searches ?? [],
-        links: parsed.resource_links ?? []
-      })
-    } catch (e) {
-      console.error("AI generation failed:", e)
+      const res = await api.post("/lessons/ai/generate", { topic, subtopic, level })
+      const data: AIResult = res.data
+      setResult(data)
+      onGenerated(data.content, data)
+    } catch (e: any) {
+      const msg = e?.response?.data?.detail || "Generation failed"
+      if (msg.includes("credit") || msg.includes("billing")) {
+        setError("AI credits needed. ")
+      } else {
+        setError(msg)
+      }
     } finally { setLoading(false) }
   }
 
   return (
-    <div style={{ borderRadius: 12, border: "1px solid color-mix(in srgb, var(--accent) 30%, var(--border))", background: "color-mix(in srgb, var(--accent) 5%, var(--card))", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Sparkles size={16} style={{ color: "var(--accent)" }} />
-        <span style={{ fontWeight: 800, fontSize: 13, color: "var(--accent)" }}>AI Content Generator</span>
+    <div style={{ borderRadius: 14, border: "1px solid color-mix(in srgb, var(--accent) 30%, var(--border))", background: "color-mix(in srgb, var(--accent) 4%, var(--card))", padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Sparkles size={16} style={{ color: "var(--accent)" }} />
+          <span style={{ fontWeight: 800, fontSize: 14, color: "var(--accent)" }}>AI Content Generator</span>
+        </div>
+        <button style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "var(--accent2)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}
+          onClick={() => navigate("/subscription")}>
+          <Crown size={12} /> Upgrade for more AI power
+        </button>
       </div>
-      <p style={{ fontSize: 12, color: "var(--muted)", margin: 0 }}>
-        Enter a topic/title above, then click Generate to auto-create lesson content, diagrams and resource suggestions.
-      </p>
-      <button className="btn btn-primary" style={{ fontSize: 13, alignSelf: "flex-start" }}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px", gap: 10 }}>
+        <div className="form-field">
+          <label className="form-label" style={{ fontSize: 11 }}>Topic *</label>
+          <input className="audit-control" value={topic} readOnly placeholder="Enter topic above..." style={{ fontSize: 13, opacity: topic ? 1 : 0.6 }} />
+        </div>
+        <div className="form-field">
+          <label className="form-label" style={{ fontSize: 11 }}>Subtopic (optional)</label>
+          <input className="audit-control" value={subtopic} readOnly placeholder="e.g. Light reactions" style={{ fontSize: 13, opacity: subtopic ? 1 : 0.6 }} />
+        </div>
+        <div className="form-field">
+          <label className="form-label" style={{ fontSize: 11 }}>Level</label>
+          <select className="audit-control select" value={level} onChange={e => setLevel(e.target.value)} style={{ fontSize: 13 }}>
+            <option value="primary">Primary</option>
+            <option value="secondary">Secondary</option>
+            <option value="college">College</option>
+            <option value="university">University</option>
+          </select>
+        </div>
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 13, color: "var(--danger)", display: "flex", alignItems: "center", gap: 6 }}>
+          {error}
+          {error.includes("credits") && (
+            <button className="btn btn-primary" style={{ fontSize: 11, padding: "3px 10px" }} onClick={() => navigate("/subscription")}>
+              Get Credits
+            </button>
+          )}
+        </div>
+      )}
+
+      <button className="btn btn-primary" style={{ alignSelf: "flex-start", fontSize: 13, gap: 8 }}
         onClick={generate} disabled={loading || !topic.trim()}>
-        {loading ? <><span className="spinner-small" /> Generating...</> : <><Sparkles size={14} /> Generate Content</>}
+        {loading ? <><span className="spinner-small" /> Generating lesson...</> : <><Sparkles size={14} /> Generate with AI</>}
       </button>
-      {suggestions && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
-          {suggestions.videos.length > 0 && (
+
+      {/* AI Results */}
+      {result && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>✅ Content generated! Scroll down to edit.</div>
+
+          {/* Key Terms */}
+          {result.key_terms && result.key_terms.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: "var(--text)" }}>🎥 Suggested YouTube Searches</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {suggestions.videos.map((v, i) => (
-                  <a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(v)}`}
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>📖 Key Terms</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {result.key_terms.map((t, i) => (
+                  <span key={i} className="chip" title={t.definition} style={{ fontSize: 11, cursor: "help" }}>{t.term}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Videos */}
+          {result.youtube_searches && result.youtube_searches.length > 0 && (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>🎥 Video Suggestions</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {result.youtube_searches.map((q, i) => (
+                  <a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`}
                     target="_blank" rel="noreferrer"
-                    style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Video size={11} /> {v}
+                    style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#ef4444", textDecoration: "none", padding: "4px 8px", borderRadius: 6, background: "rgba(239,68,68,0.06)" }}>
+                    <Video size={12} /> {q}
                   </a>
                 ))}
               </div>
             </div>
           )}
-          {suggestions.links.length > 0 && (
+
+          {/* Images */}
+          {result.image_searches && result.image_searches.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, color: "var(--text)" }}>🔗 Resource Links</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>🖼️ Image & Diagram Searches</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {result.image_searches.map((q, i) => (
+                  <a key={i} href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`}
+                    target="_blank" rel="noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--accent2)", textDecoration: "none", padding: "4px 10px", borderRadius: 999, border: "1px solid color-mix(in srgb, var(--accent2) 30%, var(--border))", background: "color-mix(in srgb, var(--accent2) 6%, transparent)" }}>
+                    <Image size={10} /> {q}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Diagrams */}
+          {result.diagram_suggestions && result.diagram_suggestions.length > 0 && (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>📊 Diagram Ideas</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {suggestions.links.map((l: any, i: number) => (
-                  <a key={i} href={l.url} target="_blank" rel="noreferrer"
-                    style={{ fontSize: 12, color: "var(--accent2)", textDecoration: "none" }}>
-                    📄 {l.title}
+                {result.diagram_suggestions.map((d, i) => (
+                  <div key={i} style={{ fontSize: 12, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ color: "var(--accent)", fontSize: 14 }}>◆</span> {d}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Slide Outline */}
+          {result.presentation_slides && result.presentation_slides.length > 0 && (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>📊 Presentation Outline</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                {result.presentation_slides.map((s, i) => (
+                  <div key={i} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 12 }}>
+                    <div style={{ fontWeight: 800, color: "var(--accent)", marginBottom: 4 }}>Slide {s.slide}: {s.title}</div>
+                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>• {p}</div>)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Resources */}
+          {result.resource_links && result.resource_links.length > 0 && (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: "var(--text)" }}>🔗 Resources</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {result.resource_links.map((r, i) => (
+                  <a key={i} href={r.url} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 12, color: "var(--accent)", textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}>
+                    <Link2 size={10} /> {r.title}
                   </a>
                 ))}
               </div>
@@ -108,16 +224,13 @@ function AIGenerator({ topic, onGenerated }: { topic: string; onGenerated: (cont
   )
 }
 
-// ── Lesson Card (collapsible) ──
-function LessonCard({ lesson, onOpen, onDelete, canEdit, isTeacher }: {
-  lesson: Lesson; onOpen: () => void; onDelete: () => void; canEdit: boolean; isTeacher: boolean
+function LessonCard({ lesson, onOpen, onDelete, canEdit }: {
+  lesson: Lesson; onOpen: () => void; onDelete: () => void; canEdit: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const color = TYPE_COLOR[lesson.lesson_type] ?? "var(--accent)"
-
   return (
     <div className="card" style={{ padding: 0, overflow: "hidden", borderLeft: `4px solid ${color}` }}>
-      {/* Header row - always visible */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer" }}
         onClick={() => setExpanded(e => !e)}>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", color, flexShrink: 0 }}>
@@ -129,39 +242,22 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, isTeacher }: {
             <span style={{ padding: "1px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: lesson.status === "published" ? "rgba(34,197,94,0.12)" : "var(--bg2)", color: STATUS_COLOR[lesson.status] }}>{lesson.status}</span>
             {lesson.visibility === "public" && <span style={{ padding: "1px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: "rgba(56,189,248,0.12)", color: "var(--accent2)" }}>public</span>}
           </div>
-          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2, display: "flex", gap: 10 }}>
-            <span>{timeAgo(lesson.created_at)}</span>
-            {lesson.resources.length > 0 && <span>· {lesson.resources.length} resources</span>}
-          </div>
+          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{timeAgo(lesson.created_at)}</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {expanded ? <ChevronDown size={16} style={{ color: "var(--muted)" }} /> : <ChevronRight size={16} style={{ color: "var(--muted)" }} />}
-        </div>
+        {expanded ? <ChevronDown size={16} style={{ color: "var(--muted)" }} /> : <ChevronRight size={16} style={{ color: "var(--muted)" }} />}
       </div>
-
-      {/* Expanded preview */}
       {expanded && (
         <div style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
-          {lesson.description && (
-            <p style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 8px", lineHeight: 1.5 }}>{lesson.description}</p>
-          )}
-          <p style={{ fontSize: 13, color: "var(--text)", margin: "8px 0 14px", lineHeight: 1.6,
-            display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {lesson.description && <p style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 8px" }}>{lesson.description}</p>}
+          <p style={{ fontSize: 13, color: "var(--text)", margin: "8px 0 14px", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {lesson.content}
           </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={onOpen}>
-              Open Lesson →
-            </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={onOpen}>Open →</button>
             {canEdit && (
-              <>
-                <button className="btn" style={{ fontSize: 12, padding: "6px 12px" }} onClick={onOpen}>
-                  <Edit2 size={13} /> Edit
-                </button>
-                <button className="btn" style={{ fontSize: 12, padding: "6px 12px", color: "var(--danger)" }} onClick={e => { e.stopPropagation(); onDelete() }}>
-                  <Trash2 size={13} />
-                </button>
-              </>
+              <button className="btn" style={{ fontSize: 12, padding: "6px 12px", color: "var(--danger)" }} onClick={e => { e.stopPropagation(); onDelete() }}>
+                <Trash2 size={13} />
+              </button>
             )}
           </div>
         </div>
@@ -172,15 +268,15 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, isTeacher }: {
 
 export default function LessonsPage() {
   const { isTeacher, isAdmin, user } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [error, setError] = useState("")
   const [search, setSearch] = useState("")
-  const [filterClass, setFilterClass] = useState("")
   const [filterType, setFilterType] = useState("")
   const [form, setForm] = useState({
-    title: "", description: "", content: "",
+    title: "", subtopic: "", description: "", content: "",
     class_id: "", subject_id: "1",
     lesson_type: "note", status: "published", visibility: "class"
   })
@@ -207,7 +303,7 @@ export default function LessonsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lessons"] })
       setShowForm(false)
-      setForm({ title: "", description: "", content: "", class_id: "", subject_id: "1", lesson_type: "note", status: "published", visibility: "class" })
+      setForm({ title: "", subtopic: "", description: "", content: "", class_id: "", subject_id: "1", lesson_type: "note", status: "published", visibility: "class" })
     },
     onError: (err: any) => setError(err?.response?.data?.detail || "Failed to create lesson"),
   })
@@ -229,10 +325,8 @@ export default function LessonsPage() {
     })
   }
 
-  // Group lessons by class
   const filtered = lessons.filter(l =>
-    (search === "" || l.title.toLowerCase().includes(search.toLowerCase()) || l.content.toLowerCase().includes(search.toLowerCase())) &&
-    (filterClass === "" || String(l.class_id) === filterClass) &&
+    (search === "" || l.title.toLowerCase().includes(search.toLowerCase())) &&
     (filterType === "" || l.lesson_type === filterType)
   )
 
@@ -249,21 +343,27 @@ export default function LessonsPage() {
     <AppShell>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px 40px" }}>
 
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 10 }}>
               <BookOpen size={24} style={{ color: "var(--accent)" }} /> Lessons
             </h1>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>
-              {isTeacher || isAdmin ? "Create and manage your class lessons" : "Browse your class lessons"}
+              {isTeacher || isAdmin ? "AI-powered lesson creation for your classes" : "Browse your class lessons"}
             </p>
           </div>
-          {(isTeacher || isAdmin) && (
-            <button className="btn btn-primary" onClick={() => setShowForm(s => !s)}>
-              <PlusCircle size={15} /> {showForm ? "Cancel" : "New Lesson"}
-            </button>
-          )}
+          <div style={{ display: "flex", gap: 8 }}>
+            {(isTeacher || isAdmin) && (
+              <>
+                <button className="btn" style={{ fontSize: 12, color: "var(--accent)" }} onClick={() => navigate("/subscription")}>
+                  <Sparkles size={13} /> AI Plans
+                </button>
+                <button className="btn btn-primary" onClick={() => setShowForm(s => !s)}>
+                  <PlusCircle size={15} /> {showForm ? "Cancel" : "New Lesson"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Create Form */}
@@ -274,23 +374,29 @@ export default function LessonsPage() {
             </div>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Title + AI */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "end" }}>
+              {/* Topic + Subtopic */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="form-field">
                   <label className="form-label">Topic / Title *</label>
                   <input className="audit-control" required value={form.title}
                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                    placeholder="e.g. Introduction to Algebra, Photosynthesis..." />
+                    placeholder="e.g. Photosynthesis, Algebra, World War II..." />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Subtopic (optional)</label>
+                  <input className="audit-control" value={form.subtopic}
+                    onChange={e => setForm(p => ({ ...p, subtopic: e.target.value }))}
+                    placeholder="e.g. Light reactions, Quadratic equations..." />
                 </div>
               </div>
 
               {/* AI Generator */}
               <AIGenerator
                 topic={form.title}
-                onGenerated={content => setForm(p => ({ ...p, content }))}
+                subtopic={form.subtopic}
+                onGenerated={(content) => setForm(p => ({ ...p, content }))}
               />
 
-              {/* Description */}
               <div className="form-field">
                 <label className="form-label">Description</label>
                 <input className="audit-control" value={form.description}
@@ -298,19 +404,17 @@ export default function LessonsPage() {
                   placeholder="Brief overview..." />
               </div>
 
-              {/* Content */}
               <div className="form-field">
                 <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>Content *</span>
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400 }}>Supports markdown formatting</span>
+                  <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400 }}>Markdown supported</span>
                 </label>
                 <textarea required value={form.content}
                   onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                  placeholder="Write your lesson content here... Use ## for headings, - for bullet points"
-                  style={{ width: "100%", minHeight: 200, padding: "12px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg2)", color: "var(--text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.6 }} />
+                  placeholder="Write or edit lesson content here... Use ## for headings, - for bullet points"
+                  style={{ width: "100%", minHeight: 200, padding: 12, borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg2)", color: "var(--text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.6 }} />
               </div>
 
-              {/* Class + Subject + Type */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                 <div className="form-field">
                   <label className="form-label">Class *</label>
@@ -326,7 +430,7 @@ export default function LessonsPage() {
                   )}
                 </div>
                 <div className="form-field">
-                  <label className="form-label">Lesson Type</label>
+                  <label className="form-label">Type</label>
                   <select className="audit-control select" value={form.lesson_type}
                     onChange={e => setForm(p => ({ ...p, lesson_type: e.target.value }))}>
                     <option value="note">📝 Note</option>
@@ -362,7 +466,6 @@ export default function LessonsPage() {
               </div>
 
               {error && <div style={{ color: "var(--danger)", fontSize: 13, fontWeight: 600, padding: "8px 12px", borderRadius: 8, background: "color-mix(in srgb, var(--danger) 10%, transparent)" }}>{error}</div>}
-
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button type="button" className="btn" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={createMutation.isPending}>
@@ -373,7 +476,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* Search + Filters */}
+        {/* Search + Filter */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
             <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
@@ -390,14 +493,8 @@ export default function LessonsPage() {
           </select>
         </div>
 
-        {/* Loading */}
-        {isLoading && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {[1,2,3].map(i => <div key={i} className="card" style={{ height: 80, opacity: 0.4 }} />)}
-          </div>
-        )}
+        {isLoading && [1,2,3].map(i => <div key={i} className="card" style={{ height: 80, opacity: 0.4, marginBottom: 8 }} />)}
 
-        {/* Empty */}
         {!isLoading && filtered.length === 0 && (
           <div className="card" style={{ textAlign: "center", padding: 48 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
@@ -408,33 +505,27 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* Lessons grouped by class */}
         {!isLoading && Object.keys(byClass).length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {Object.entries(byClass).map(([classId, classLessons]) => {
               const cls = classes.find(c => c.id === Number(classId))
               return (
                 <div key={classId}>
-                  {/* Class header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 14px", borderRadius: 999, border: "1px solid var(--border)", background: "var(--card)", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}>
                       🎓 {cls?.title ?? `Class ${classId}`}
                       <span className="chip" style={{ fontSize: 10 }}>{classLessons.length} lessons</span>
+                      {cls?.class_code && <span style={{ fontSize: 10, color: "var(--muted)" }}>Code: {cls.class_code}</span>}
                     </div>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
                   </div>
-
-                  {/* Lesson cards */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {classLessons.map(lesson => (
-                      <LessonCard
-                        key={lesson.id}
-                        lesson={lesson}
+                      <LessonCard key={lesson.id} lesson={lesson}
                         onOpen={() => setActiveLesson(lesson)}
                         onDelete={() => { if (window.confirm("Delete this lesson?")) deleteMutation.mutate(lesson.id) }}
                         canEdit={(isTeacher && lesson.teacher_id === user?.id) || !!isAdmin}
-                        isTeacher={!!isTeacher}
                       />
                     ))}
                   </div>
