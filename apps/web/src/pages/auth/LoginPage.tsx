@@ -245,6 +245,7 @@ export default function LoginPage() {
             {[
               { role: "Teacher", icon: "👩‍🏫", color: "#cb26e4" },
               { role: "Learner", icon: "🎓", color: "#38bdf8" },
+              { role: "Admin",   icon: "🛡️", color: "#22c55e" },
             ].map(r => (
               <div key={r.role} style={{ padding: "10px 8px", borderRadius: 10, background: "var(--bg2)", border: "1px solid var(--border)", textAlign: "center" }}>
                 <div style={{ fontSize: 20, marginBottom: 4 }}>{r.icon}</div>
