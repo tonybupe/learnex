@@ -65,8 +65,8 @@ async def startup_event():
     upload_dir = settings.upload_dir
     try:
         Path(upload_dir).mkdir(parents=True, exist_ok=True)
-        app.mount("/uploads/images", StaticFiles(directory="uploads/images"), name="images")
-app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
+        Path("uploads/images").mkdir(parents=True, exist_ok=True)
+        app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
     except Exception as e:
         logging.warning(f"Uploads disabled: {e}")
 

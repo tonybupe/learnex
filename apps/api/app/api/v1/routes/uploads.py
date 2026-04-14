@@ -1,7 +1,7 @@
 import os, uuid
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from app.api.deps import get_current_user
+from app.deps import get_current_user
 from app.models.user import User
 
 router = APIRouter()
