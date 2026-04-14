@@ -82,7 +82,8 @@ def generate_lesson_content(
         if not api_key or api_key == "your-anthropic-api-key-here":
             return make_fallback(topic)
 
-        client = anthropic_client.Anthropic(api_key=api_key)
+        import anthropic as _anthropic
+        client = _anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=1500,
