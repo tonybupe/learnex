@@ -19,6 +19,51 @@ from app.services.notification_service import notify_lesson_published
 from app.services.lesson_service import add_lesson_resource, create_lesson, update_lesson
 
 router = APIRouter()
+# =========================================================
+# AI LESSON CONTENT GENERATOR
+# =========================================================
+import anthropic as anthropic_client
+
+@router.post("/ai/generate")
+def generate_lesson_content(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    topic = payload.get("topic", "").strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="Topic is required")
+
+    try:
+        import os
+        client = anthropic_client.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        message = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=1500,
+            messages=[{
+                "role": "user",
+                "content": f"""You are an expert educator. Generate structured lesson content for the topic: "{topic}".
+
+Return ONLY a valid JSON object with no markdown, no backticks, no extra text:
+{{
+  "content": "Full lesson content with ## headings, - bullet points, bold **terms**, and examples. At least 400 words.",
+  "summary": "One sentence summary",
+  "youtube_searches": ["search query 1", "search query 2", "search query 3"],
+  "resource_links": [
+    {{"title": "Resource name", "url": "https://en.wikipedia.org/wiki/{topic.replace(' ','_')}", "type": "article"}},
+    {{"title": "Khan Academy - {topic}", "url": "https://www.khanacademy.org/search?page_search_query={topic.replace(' ','+')}","type": "course"}}
+  ]
+}}"""
+            }]
+        )
+        text = message.content[0].text.strip()
+        # Clean any accidental markdown
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        import json
+        return json.loads(text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
 
 
 def lesson_query(db: Session):
