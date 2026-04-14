@@ -293,7 +293,7 @@ export default function LessonsPage() {
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-mine"],
     queryFn: async () => {
-      const res = await api.get("/classes")
+      const res = await api.get("/classes?mine=true")
       return Array.isArray(res.data) ? res.data as ClassRoom[] : []
     },
     enabled: isTeacher || isAdmin,

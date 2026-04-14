@@ -35,6 +35,14 @@ def create_lesson_route(
     current_user: User = Depends(require_roles("teacher")),
 ):
     try:
+        # Verify teacher owns the class they are creating a lesson for
+        if current_user.role == "teacher":
+            from app.models.class_room import ClassRoom
+            cls = db.query(ClassRoom).filter(ClassRoom.id == payload.class_id).first()
+            if not cls:
+                raise HTTPException(status_code=404, detail="Class not found")
+            if cls.teacher_id != current_user.id:
+                raise HTTPException(status_code=403, detail="You can only create lessons in your own classes")
         lesson = create_lesson(db, current_user, payload)
         if lesson.status == "published":
             notify_lesson_published(db, lesson.id, current_user, lesson.class_id, lesson.title)

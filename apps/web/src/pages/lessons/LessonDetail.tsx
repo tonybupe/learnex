@@ -334,7 +334,12 @@ export default function LessonDetail({ lesson, onBack }: Props) {
   const wordCount = l.content.split(/\s+/).filter(Boolean).length
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const slides = l.content.split("\n").filter(line => line.startsWith("## ")).map(l => l.slice(3))
+  // RBAC: only the lesson owner (teacher) or admin can edit/delete
+  // RBAC: only the lesson owner or admin can edit/delete
   const canEdit = (isTeacher && l.teacher_id === currentUser?.id) || !!isAdmin
+  const isOwner = l.teacher_id === currentUser?.id
+  const isPublicLesson = l.visibility === "public"
+  const canShare = true // Anyone can share a public lesson to the feed
 
   return (
     <>
