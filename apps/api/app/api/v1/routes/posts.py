@@ -11,7 +11,7 @@ import uuid
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc
+from sqlalchemy import desc, func, case
 
 from app.core.config import settings
 from app.core.database import get_db
@@ -23,6 +23,7 @@ from app.models.post_comment import PostComment
 from app.models.post_reaction import PostReaction
 from app.models.saved_post import SavedPost
 from app.models.user import User
+from app.models.follow import Follow
 from app.models.post_attachment import PostAttachment
 
 from app.schemas.posts import (
