@@ -607,8 +607,6 @@ export default {
 // FEED BY MODE
 // =========================================
 
-import type { Post } from "../types/post.types"
-
 export async function getFeedByMode(
   mode: "latest" | "popular" | "following" | "trending" | "classes",
   page = 1,
@@ -619,7 +617,7 @@ export async function getFeedByMode(
     const raw = Array.isArray(res.data) ? res.data : (res.data?.data ?? [])
     return raw.map(transformPost)
   } catch (error) {
-    const apiError = handleApiError(error, Failed to load feed)
+    const apiError = handleApiError(error, "Failed to load feed")
     throw transformApiError(apiError)
   }
 }
