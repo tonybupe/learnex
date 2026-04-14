@@ -22,7 +22,6 @@ router = APIRouter()
 # =========================================================
 # AI LESSON CONTENT GENERATOR
 # =========================================================
-import anthropic as anthropic_client
 
 @router.post("/ai/generate")
 def generate_lesson_content(
@@ -34,146 +33,83 @@ def generate_lesson_content(
     if not topic:
         raise HTTPException(status_code=400, detail="Topic is required")
 
+    def make_fallback(t: str) -> dict:
+        slug = t.replace(" ", "_")
+        query = t.replace(" ", "+")
+        return {
+            "content": (
+                f"## Introduction to {t}\n\n"
+                f"This lesson covers the fundamental concepts of **{t}**.\n\n"
+                f"## Key Concepts\n\n"
+                f"- Definition and overview of {t}\n"
+                f"- Historical background and context\n"
+                f"- Core principles and theories\n"
+                f"- Real-world applications\n"
+                f"- Common misconceptions\n\n"
+                f"## Main Content\n\n"
+                f"### What is {t}?\n\n"
+                f"{t} is an important concept that forms the foundation of understanding in this field.\n\n"
+                f"### Why is it Important?\n\n"
+                f"Understanding {t} helps learners:\n"
+                f"- Build critical thinking skills\n"
+                f"- Apply knowledge to real situations\n"
+                f"- Connect theory with practice\n"
+                f"- Develop deeper subject mastery\n\n"
+                f"## Summary\n\n"
+                f"In this lesson, we explored the key aspects of {t}. "
+                f"Students should now have a foundational understanding and be ready to explore more advanced concepts.\n\n"
+                f"## Review Questions\n\n"
+                f"1. What is the main concept behind {t}?\n"
+                f"2. How does {t} apply in real-world scenarios?\n"
+                f"3. What are the key principles you learned today?"
+            ),
+            "summary": f"An introduction to {t} covering key concepts, principles and real-world applications.",
+            "youtube_searches": [
+                f"{t} explained",
+                f"{t} tutorial for beginners",
+                f"{t} examples and applications",
+            ],
+            "resource_links": [
+                {"title": f"Wikipedia: {t}", "url": f"https://en.wikipedia.org/wiki/{slug}", "type": "article"},
+                {"title": f"Khan Academy: {t}", "url": f"https://www.khanacademy.org/search?page_search_query={query}", "type": "course"},
+                {"title": f"YouTube: {t} Explained", "url": f"https://www.youtube.com/results?search_query={query}+explained", "type": "video"},
+            ],
+        }
+
     try:
         import os
-        client = anthropic_client.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key or api_key == "your-anthropic-api-key-here":
+            return make_fallback(topic)
+
+        client = anthropic_client.Anthropic(api_key=api_key)
         message = client.messages.create(
             model="claude-opus-4-6",
             max_tokens=1500,
             messages=[{
                 "role": "user",
-                "content": f"""You are an expert educator. Generate structured lesson content for the topic: "{topic}".
-
-Return ONLY a valid JSON object with no markdown, no backticks, no extra text:
-{{
-  "content": "Full lesson content with ## headings, - bullet points, bold **terms**, and examples. At least 400 words.",
-  "summary": "One sentence summary",
-  "youtube_searches": ["search query 1", "search query 2", "search query 3"],
-  "resource_links": [
-    {{"title": "Resource name", "url": "https://en.wikipedia.org/wiki/{topic.replace(' ','_')}", "type": "article"}},
-    {{"title": "Khan Academy - {topic}", "url": "https://www.khanacademy.org/search?page_search_query={topic.replace(' ','+')}","type": "course"}}
-  ]
-}}"""
+                "content": (
+                    f'You are an expert educator. Generate structured lesson content for: "{topic}".\n\n'
+                    'Return ONLY valid JSON, no markdown, no backticks:\n'
+                    '{"content":"lesson with ## headings, - bullets, **bold** terms, 400+ words",'
+                    '"summary":"one sentence",'
+                    '"youtube_searches":["query1","query2","query3"],'
+                    '"resource_links":[{"title":"name","url":"https://...","type":"article"}]}'
+                )
             }]
         )
+        import json
         text = message.content[0].text.strip()
-        # Clean any accidental markdown
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-        import json
         return json.loads(text)
+
     except Exception as e:
         err = str(e)
-        # Graceful fallback with template content when API quota exceeded
-        if "credit" in err.lower() or "billing" in err.lower() or "quota" in err.lower():
-            import json
-            fallback = {
-                "content": f"## Introduction to {topic}\n\nThis lesson covers the fundamental concepts of **{topic}**.\n\n## Key Concepts\n\n- Definition and overview of {topic}\n- Historical background and context\n- Core principles and theories\n- Real-world applications\n- Common misconceptions\n\n## Main Content\n\n### What is {topic}?\n\n{topic} is an important concept that forms the foundation of understanding in this field. Students should approach this topic with curiosity and an open mind.\n\n### Why is it Important?\n\nUnderstanding {topic} helps learners:\n- Build critical thinking skills\n- Apply knowledge to real situations\n- Connect theory with practice\n- Develop deeper subject mastery\n\n## Summary\n\nIn this lesson, we explored the key aspects of {topic}. Students should now have a foundational understanding and be ready to explore more advanced concepts.\n\n## Review Questions\n\n1. What is the main concept behind {topic}?\n2. How does {topic} apply in real-world scenarios?\n3. What are the key principles you learned today?",
-                "summary": f"An introduction to {topic} covering key concepts, principles and real-world applications.",
-                "youtube_searches": [f"{topic} explained", f"{topic} tutorial for beginners", f"{topic} examples"],
-                "resource_links": [
-                    {{"title": f"Wikipedia: {topic}", "url": f"https://en.wikipedia.org/wiki/{topic.replace(chr(32), chr(95))}", "type": "article"}},
-                    {{"title": f"Khan Academy: {topic}", "url": f"https://www.khanacademy.org/search?page_search_query={topic.replace(chr(32), chr(43))}", "type": "course"}},
-                    {{"title": f"YouTube: {topic} Explained", "url": f"https://www.youtube.com/results?search_query={topic.replace(chr(32), chr(43))}+explained", "type": "video"}}
-                ]
-            }
-            return fallback
+        if any(w in err.lower() for w in ["credit", "billing", "quota", "insufficient"]):
+            return make_fallback(topic)
         raise HTTPException(status_code=500, detail=f"AI generation failed: {err}")
 
-
-def lesson_query(db: Session):
-    return db.query(Lesson).options(joinedload(Lesson.resources))
-
-
-@router.post("", response_model=LessonResponse)
-def create_lesson_route(
-    payload: LessonCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("teacher")),
-):
-    try:
-        lesson = create_lesson(db, current_user, payload)
-        if lesson.status == "published":
-            notify_lesson_published(db, lesson.id, current_user, lesson.class_id, lesson.title)
-        return lesson_query(db).filter(Lesson.id == lesson.id).first()
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-
-@router.get("", response_model=List[LessonResponse])
-def list_lessons(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return lesson_query(db).order_by(Lesson.created_at.desc()).all()
-
-
-@router.get("/{lesson_id}", response_model=LessonResponse)
-def get_lesson(
-    lesson_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    lesson = lesson_query(db).filter(Lesson.id == lesson_id).first()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-    return lesson
-
-
-@router.patch("/{lesson_id}", response_model=LessonResponse)
-def update_lesson_route(
-    lesson_id: int,
-    payload: LessonUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("teacher", "admin")),
-):
-    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only update your own lessons")
-
-    try:
-        updated = update_lesson(db, lesson, payload)
-        return lesson_query(db).filter(Lesson.id == updated.id).first()
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-
-@router.delete("/{lesson_id}")
-def delete_lesson(
-    lesson_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("teacher", "admin")),
-):
-    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only delete your own lessons")
-
-    db.delete(lesson)
-    db.commit()
-    return {"message": "Lesson deleted successfully"}
-
-
-@router.post("/{lesson_id}/resources", response_model=LessonResourceResponse)
-def add_resource_route(
-    lesson_id: int,
-    payload: LessonResourceCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("teacher", "admin")),
-):
-    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    if current_user.role == "teacher" and lesson.teacher_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You can only manage your own lesson resources")
-
-    return add_lesson_resource(db, lesson, payload)
 
 # =========================================================
 # LESSON DISCUSSION (comments by enrolled learners)
