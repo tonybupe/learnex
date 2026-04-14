@@ -1,4 +1,5 @@
-import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from "@tiptap/react"
+import { useEditor, EditorContent } from "@tiptap/react"
+import { BubbleMenu } from "@tiptap/extension-bubble-menu"
 import StarterKit from "@tiptap/starter-kit"
 import Table from "@tiptap/extension-table"
 import TableRow from "@tiptap/extension-table-row"
