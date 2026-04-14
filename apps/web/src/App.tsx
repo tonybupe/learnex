@@ -75,6 +75,7 @@ export default function App() {
         <Route path="/profile/:userId" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ProfilePage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SettingsPage /></AuthGuard>} />
 
+        <Route path="/subscription" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SubscriptionPage /></AuthGuard>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </QueryClientProvider>
