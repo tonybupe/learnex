@@ -26,6 +26,11 @@ def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
     return res.json()["access_token"]
 
 @pytest.fixture(scope="session")
+def admin_headers(client: TestClient, admin_token: str) -> dict:
+    """Admin auth headers for test_users.py."""
+    return {"Authorization": f"Bearer {admin_token}"}
+
+@pytest.fixture(scope="session")
 def auth_headers(client: TestClient, registered_user: dict) -> dict:
     """Auth headers using registered_user token - used by test_users.py."""
     from tests.test_auth import REGISTER_PAYLOAD
