@@ -1,131 +1,89 @@
-﻿"""Shared pytest fixtures using SQLite in-memory database."""
-import os
+"""Shared test fixtures for Learnex API tests."""
 import pytest
-
-# Set ALL environment variables BEFORE any app imports
-os.environ["APP_NAME"] = "Learnex Test"
-os.environ["APP_ENV"] = "test"
-os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only-32chars"
-os.environ["POSTGRES_DB"] = "learnex_test"
-os.environ["POSTGRES_USER"] = "postgres"
-os.environ["POSTGRES_PASSWORD"] = "postgres"
-os.environ["POSTGRES_HOST"] = "localhost"
-os.environ["POSTGRES_PORT"] = "5432"
-os.environ["REDIS_HOST"] = "localhost"
-os.environ["REDIS_PORT"] = "6379"
-os.environ["UPLOAD_DIR"] = "/tmp/learnex_uploads"
-os.environ["MEDIA_BASE_URL"] = "http://localhost:8000/uploads"
-
-# Create upload dir
-os.makedirs("/tmp/learnex_uploads", exist_ok=True)
-
+import uuid
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
-
-TEST_DATABASE_URL = "sqlite:///./test_learnex.db"
-
-engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-)
-
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-from app.core.database import Base, get_db
 from app.main import app
+from app.core.database import get_db
 
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-    if os.path.exists("test_learnex.db"):
-        os.remove("test_learnex.db")
-
-
-@pytest.fixture(scope="function")
-def db():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-
-
-@pytest.fixture(scope="function")
-def client(db):
-    app.dependency_overrides[get_db] = lambda: db
-    with TestClient(app, raise_server_exceptions=False) as c:
+# ── Use the live DB (same as before new conftest broke things) ────────────────
+@pytest.fixture(scope="session")
+def client():
+    with TestClient(app) as c:
         yield c
-    app.dependency_overrides.clear()
 
-
-REGISTER_PAYLOAD = {
-    "full_name": "Tony Bupe",
-    "email": "tony@learnex.dev",
-    "phone_number": "+260971234567",
-    "sex": "male",
-    "password": "Secure123",
-    "role": "learner",
-}
-
-ADMIN_PAYLOAD = {
-    "full_name": "Admin User",
-    "email": "admin@learnex.dev",
-    "phone_number": "+260971234568",
-    "sex": "male",
-    "password": "Secure123",
-    "role": "admin",
-}
-
-
-@pytest.fixture
-def registered_user(client):
-    resp = client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
-    assert resp.status_code == 201, resp.text
-    return resp.json()
-
-
-@pytest.fixture
-def auth_headers(client, registered_user):
-    resp = client.post("/api/v1/auth/login", json={
-        "email": REGISTER_PAYLOAD["email"],
-        "password": REGISTER_PAYLOAD["password"],
+# ── Auth helpers ──────────────────────────────────────────────────────────────
+def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
+    uid = suffix or uuid.uuid4().hex[:8]
+    email = f"{role}_{uid}@test.learnex.com"
+    phone = f"09{uid[:8]}"
+    client.post("/api/v1/auth/register", json={
+        "full_name": f"Test {role.title()} {uid}",
+        "email": email,
+        "password": "Test1234!",
+        "phone_number": phone,
+        "sex": "male",
+        "role": role,
     })
-    assert resp.status_code == 200, resp.text
-    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+    res = client.post("/api/v1/auth/login", json={"email": email, "password": "Test1234!"})
+    assert res.status_code == 200, f"Login failed for {email}: {res.text}"
+    return res.json()["access_token"]
 
 
-@pytest.fixture
-def admin_user(client):
-    resp = client.post("/api/v1/auth/register", json=ADMIN_PAYLOAD)
-    assert resp.status_code == 201, resp.text
-    return resp.json()
+@pytest.fixture(scope="session")
+def teacher_token(client: TestClient) -> str:
+    return register_and_login(client, "teacher")
 
+@pytest.fixture(scope="session")
+def other_teacher_token(client: TestClient) -> str:
+    return register_and_login(client, "teacher")
 
-@pytest.fixture
-def admin_headers(client, admin_user):
-    resp = client.post("/api/v1/auth/login", json={
-        "email": ADMIN_PAYLOAD["email"],
-        "password": ADMIN_PAYLOAD["password"],
+@pytest.fixture(scope="session")
+def learner_token(client: TestClient) -> str:
+    return register_and_login(client, "learner")
+
+@pytest.fixture(scope="session")
+def admin_token(client: TestClient) -> str:
+    res = client.post("/api/v1/auth/login", json={
+        "email": "nthnbupe@gmail.com", "password": "bupe1407"
     })
-    assert resp.status_code == 200, resp.text
-    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+    if res.status_code == 200:
+        return res.json()["access_token"]
+    return register_and_login(client, "teacher", "adminfb")
+
+@pytest.fixture(scope="session")
+def subject_id(client: TestClient, teacher_token: str) -> int:
+    uid = uuid.uuid4().hex[:6].upper()
+    res = client.post("/api/v1/subjects", json={
+        "name": f"Test Subject {uid}",
+        "code": f"TST{uid}",
+        "description": "Test subject for fixtures"
+    }, headers={"Authorization": f"Bearer {teacher_token}"})
+    assert res.status_code == 200, f"Subject creation failed: {res.text}"
+    return res.json()["id"]
+
+@pytest.fixture(scope="session")
+def teacher_class_id(client: TestClient, teacher_token: str, subject_id: int) -> int:
+    uid = uuid.uuid4().hex[:6].upper()
+    res = client.post("/api/v1/classes", json={
+        "title": f"Test Class {uid}",
+        "class_code": f"CLS{uid}",
+        "subject_id": subject_id,
+        "visibility": "public",
+        "grade_level": "Grade 10"
+    }, headers={"Authorization": f"Bearer {teacher_token}"})
+    assert res.status_code == 200, f"Class creation failed: {res.text}"
+    return res.json()["id"]
+
+@pytest.fixture(scope="session")
+def teacher_lesson_id(client: TestClient, teacher_token: str, teacher_class_id: int, subject_id: int) -> int:
+    res = client.post("/api/v1/lessons", json={
+        "title": "Fixture Lesson",
+        "content": "## Introduction\nTest content for fixtures.",
+        "class_id": teacher_class_id,
+        "subject_id": subject_id,
+        "lesson_type": "note",
+        "status": "published",
+        "visibility": "class"
+    }, headers={"Authorization": f"Bearer {teacher_token}"})
+    assert res.status_code == 200, f"Lesson creation failed: {res.text}"
+    return res.json()["id"]

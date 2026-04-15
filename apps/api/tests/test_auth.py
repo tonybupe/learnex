@@ -1,11 +1,13 @@
-﻿"""Tests for POST /api/v1/auth/register and /login."""
+"""Tests for POST /api/v1/auth/register and /login."""
 import pytest
 from fastapi.testclient import TestClient
 
+import uuid as _uuid
+_uid = _uuid.uuid4().hex[:8]
 REGISTER_PAYLOAD = {
     "full_name": "Tony Bupe",
-    "email": "tony@learnex.dev",
-    "phone_number": "+260971234567",
+    "email": f"tony_{_uid}@learnex.dev",
+    "phone_number": f"+2609{_uid[:8]}",
     "sex": "male",
     "password": "Secure123",
     "role": "learner",
@@ -23,7 +25,9 @@ class TestRegister:
         assert "password" not in body
         assert "password_hash" not in body
 
-    def test_register_duplicate_email(self, client: TestClient, registered_user):
+    def test_register_duplicate_email(self, client: TestClient):
+        # Register once, then try again
+        client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
         resp = client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
         assert resp.status_code == 400
         assert "Email already registered" in resp.json()["detail"]
