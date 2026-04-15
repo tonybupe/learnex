@@ -105,7 +105,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
     mutationFn: async (content: string) => api.post("/posts", {
       content,
       class_id: cls.id,
-      post_type: "discussion",
+      post_type: "text",
       status: "published",
       visibility: "class",
     }),
