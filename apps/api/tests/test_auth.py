@@ -64,9 +64,11 @@ class TestRegister:
         assert resp.status_code == 422
 
     def test_register_teacher_role(self, client: TestClient):
+        import uuid as _u
+        _x = _u.uuid4().hex[:8]
         payload = REGISTER_PAYLOAD.copy()
-        payload["email"] = "teacher@learnex.dev"
-        payload["phone_number"] = "+260971111111"
+        payload["email"] = f"teacher_{_x}@learnex.dev"
+        payload["phone_number"] = f"+2609{_x[:7]}"
         payload["role"] = "teacher"
         resp = client.post("/api/v1/auth/register", json=payload)
         assert resp.status_code == 201

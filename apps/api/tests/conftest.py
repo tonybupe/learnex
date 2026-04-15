@@ -3,15 +3,12 @@ import pytest
 import uuid
 from fastapi.testclient import TestClient
 from app.main import app
-from app.core.database import get_db
 
-# ── Use the live DB (same as before new conftest broke things) ────────────────
 @pytest.fixture(scope="session")
 def client():
     with TestClient(app) as c:
         yield c
 
-# ── Auth helpers ──────────────────────────────────────────────────────────────
 def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
     uid = suffix or uuid.uuid4().hex[:8]
     email = f"{role}_{uid}@test.learnex.com"
@@ -28,6 +25,13 @@ def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
     assert res.status_code == 200, f"Login failed for {email}: {res.text}"
     return res.json()["access_token"]
 
+@pytest.fixture(scope="session")
+def registered_user(client: TestClient):
+    """Register a learner and return their credentials. Used by test_auth.py."""
+    from tests.test_auth import REGISTER_PAYLOAD
+    # Try to register (may already exist)
+    client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
+    return REGISTER_PAYLOAD
 
 @pytest.fixture(scope="session")
 def teacher_token(client: TestClient) -> str:
@@ -48,7 +52,7 @@ def admin_token(client: TestClient) -> str:
     })
     if res.status_code == 200:
         return res.json()["access_token"]
-    return register_and_login(client, "teacher", "adminfb")
+    return register_and_login(client, "teacher")
 
 @pytest.fixture(scope="session")
 def subject_id(client: TestClient, teacher_token: str) -> int:
