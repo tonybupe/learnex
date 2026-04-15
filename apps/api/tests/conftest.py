@@ -26,6 +26,11 @@ def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
     return res.json()["access_token"]
 
 @pytest.fixture(scope="session")
+def auth_headers(client: TestClient, teacher_token: str) -> dict:
+    """Generic auth headers using teacher token - used by test_users.py."""
+    return {"Authorization": f"Bearer {teacher_token}"}
+
+@pytest.fixture(scope="session")
 def registered_user(client: TestClient):
     """Register a learner and return their credentials. Used by test_auth.py."""
     from tests.test_auth import REGISTER_PAYLOAD
