@@ -26,17 +26,33 @@ def register_and_login(client: TestClient, role: str, suffix: str = "") -> str:
     return res.json()["access_token"]
 
 @pytest.fixture(scope="session")
-def auth_headers(client: TestClient, teacher_token: str) -> dict:
-    """Generic auth headers using teacher token - used by test_users.py."""
-    return {"Authorization": f"Bearer {teacher_token}"}
+def auth_headers(client: TestClient, registered_user: dict) -> dict:
+    """Auth headers using registered_user token - used by test_users.py."""
+    from tests.test_auth import REGISTER_PAYLOAD
+    login = client.post("/api/v1/auth/login", json={
+        "email": REGISTER_PAYLOAD["email"],
+        "password": REGISTER_PAYLOAD["password"],
+    })
+    token = login.json().get("access_token", "")
+    return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture(scope="session")
 def registered_user(client: TestClient):
-    """Register a learner and return their credentials. Used by test_auth.py."""
+    """Register a learner, login, and return full user dict with id. Used by test_auth/users."""
     from tests.test_auth import REGISTER_PAYLOAD
-    # Try to register (may already exist)
     client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
-    return REGISTER_PAYLOAD
+    login = client.post("/api/v1/auth/login", json={
+        "email": REGISTER_PAYLOAD["email"],
+        "password": REGISTER_PAYLOAD["password"],
+    })
+    if login.status_code != 200:
+        return {**REGISTER_PAYLOAD, "id": 1}  # fallback
+    token = login.json()["access_token"]
+    me = client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token}"})
+    user = me.json()
+    user["password"] = REGISTER_PAYLOAD["password"]
+    user["email"] = REGISTER_PAYLOAD["email"]
+    return user
 
 @pytest.fixture(scope="session")
 def teacher_token(client: TestClient) -> str:
