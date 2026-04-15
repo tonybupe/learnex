@@ -339,6 +339,8 @@ export default function LessonDetail({ lesson, onBack }: Props) {
   const canEdit = (isTeacher && l.teacher_id === currentUser?.id) || !!isAdmin
   const isOwner = l.teacher_id === currentUser?.id
   const isPublicLesson = l.visibility === "public"
+  // isMember check — simplified; in full app fetch class membership
+  const isMember = isTeacher || isAdmin || isOwner
   const canShare = true // Anyone can share a public lesson to the feed
 
   return (
@@ -575,68 +577,124 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 </div>
               )}
 
-              {/* ── DISCUSSION TAB ── */}
+              {/* ── DISCUSSION TAB — WhatsApp Style ── */}
               {tab === "discussion" && (
-                <div className="card" style={{ padding: 20 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 4 }}>💬 Class Discussion</div>
-                  <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 18px" }}>Ask questions and discuss this lesson with your classmates.</p>
-
-                  {/* Comment composer */}
-                  <div style={{ display: "flex", gap: 10, marginBottom: 24, alignItems: "center" }}>
-                    <Avatar user={currentUser} size={36} />
-                    <div style={{ flex: 1, display: "flex", gap: 8, alignItems: "center", padding: "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)", transition: "border-color 0.15s" }}
-                      onFocusCapture={e => (e.currentTarget.style.borderColor = "var(--accent)")}
-                      onBlurCapture={e => (e.currentTarget.style.borderColor = "var(--border)")}>
-                      <input ref={commentInputRef} value={commentText}
-                        onChange={e => setCommentText(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && commentText.trim()) { e.preventDefault(); addCommentMutation.mutate(commentText) } }}
-                        placeholder="Add a comment or question..."
-                        style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 14, fontFamily: "inherit", outline: "none" }} />
-                      <button className="btn btn-primary" style={{ fontSize: 12, padding: "5px 14px", borderRadius: 20 }}
-                        onClick={() => commentText.trim() && addCommentMutation.mutate(commentText)}
-                        disabled={!commentText.trim() || addCommentMutation.isPending}>
-                        {addCommentMutation.isPending ? "..." : <Send size={13} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Comments */}
-                  {comments.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "36px 0", color: "var(--muted)" }}>
-                      <MessageCircle size={36} style={{ marginBottom: 10, opacity: 0.3 }} />
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>No comments yet</div>
-                      <div style={{ fontSize: 13, marginTop: 4 }}>Be the first to start the discussion!</div>
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      {comments.map((c, i) => (
-                        <div key={c.id} style={{ display: "flex", gap: 12, padding: "14px 0", borderBottom: i < comments.length - 1 ? "1px solid var(--border)" : "none" }}>
-                          <Avatar user={c.author} size={36} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
-                              <span style={{ fontWeight: 800, fontSize: 14 }}>{c.author?.full_name ?? "Unknown"}</span>
-                              {c.author?.role !== "learner" && (
-                                <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>
-                                  {c.author?.role}
-                                </span>
-                              )}
-                              <span style={{ fontSize: 11, color: "var(--muted)", marginLeft: "auto" }}>{timeAgo(c.created_at)}</span>
-                              {(c.user_id === currentUser?.id || isAdmin || isTeacher) && (
-                                <button onClick={() => deleteCommentMutation.mutate(c.id)}
-                                  style={{ background: "none", border: "none", color: "transparent", cursor: "pointer", display: "flex", alignItems: "center", padding: "2px 4px", borderRadius: 4, transition: "all 0.15s" }}
-                                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--danger)"; (e.currentTarget as HTMLElement).style.background = "color-mix(in srgb, var(--danger) 10%, transparent)" }}
-                                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "transparent"; (e.currentTarget as HTMLElement).style.background = "none" }}>
-                                  <Trash2 size={12} />
-                                </button>
-                              )}
-                            </div>
-                            <div style={{ fontSize: 14, color: "var(--text)", lineHeight: 1.6 }}>{c.content}</div>
+                (() => {
+                  const isClassOnly = l.visibility === "class"
+                  const canChat = !isClassOnly || canEdit || isMember
+                  if (!canChat) {
+                    return (
+                      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
+                          <MessageCircle size={16} style={{ color: "#cb26e4" }} />
+                          <span style={{ fontWeight: 800 }}>Discussion</span>
+                        </div>
+                        <div style={{ textAlign: "center", padding: "48px 24px" }}>
+                          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(203,38,228,0.1)", border: "2px solid rgba(203,38,228,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                            <Lock size={28} style={{ color: "#cb26e4" }} />
+                          </div>
+                          <h3 style={{ fontSize: 18, fontWeight: 900, margin: "0 0 8px" }}>Members only discussion</h3>
+                          <p style={{ color: "var(--muted)", fontSize: 14, lineHeight: 1.6, margin: "0 0 20px" }}>
+                            This lesson discussion is available to class members only.<br />
+                            Join the class to participate in the conversation.
+                          </p>
+                          <a href="/classes" style={{ display: "inline-block", padding: "11px 24px", borderRadius: 11, background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                            View Classes
+                          </a>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", height: "58vh", minHeight: 380, background: "var(--bg2)", borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)" }}>
+                      {/* Chat header */}
+                      <div style={{ padding: "12px 16px", background: "var(--card)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <MessageCircle size={16} style={{ color: "white" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: 14 }}>Lesson Discussion</div>
+                          <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                            {l.visibility === "public" ? "🌐 Public lesson · Anyone can discuss" : "🔒 Class members only"}
                           </div>
                         </div>
-                      ))}
+                        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5 }}>
+                          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s infinite" }} />
+                          <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 700 }}>Live</span>
+                        </div>
+                      </div>
+
+                      {/* Messages */}
+                      <div style={{ flex: 1, overflowY: "auto", padding: "12px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
+                        {comments.length === 0 ? (
+                          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
+                            <MessageCircle size={32} style={{ opacity: 0.25, marginBottom: 10 }} />
+                            <div style={{ fontSize: 14, fontWeight: 600 }}>No messages yet</div>
+                            <div style={{ fontSize: 13, marginTop: 4 }}>Start the discussion! 💬</div>
+                          </div>
+                        ) : comments.map((c, i) => {
+                          const isMe = c.user_id === currentUser?.id || c.author?.id === currentUser?.id
+                          const prevSame = i > 0 && comments[i-1].user_id === c.user_id
+                          const showMeta = !isMe && !prevSame
+                          return (
+                            <div key={c.id} style={{ display: "flex", flexDirection: isMe ? "row-reverse" : "row", alignItems: "flex-end", gap: 6, marginBottom: 2 }}>
+                              {!isMe && (
+                                <div style={{ width: 26, flexShrink: 0 }}>
+                                  {showMeta && <Avatar user={c.author} size={26} />}
+                                </div>
+                              )}
+                              <div style={{ maxWidth: "68%", display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
+                                {showMeta && (
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: "#cb26e4", marginBottom: 2, paddingLeft: 4 }}>
+                                    {c.author?.full_name ?? "Unknown"}
+                                    {c.author?.role && c.author.role !== "learner" && (
+                                      <span style={{ marginLeft: 5, fontSize: 10, padding: "1px 6px", borderRadius: 999, background: "rgba(203,38,228,0.12)", color: "#cb26e4" }}>{c.author.role}</span>
+                                    )}
+                                  </div>
+                                )}
+                                <div style={{ padding: "8px 12px", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: isMe ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--card)", color: isMe ? "white" : "var(--text)", border: isMe ? "none" : "1px solid var(--border)", fontSize: 14, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(0,0,0,0.06)" }}>
+                                  {c.content}
+                                </div>
+                                <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4, paddingLeft: isMe ? 0 : 4, paddingRight: isMe ? 4 : 0 }}>
+                                  {timeAgo(c.created_at)}
+                                  {isMe && <CheckCircle2 size={9} style={{ color: "var(--success)" }} />}
+                                  {(c.user_id === currentUser?.id || isAdmin || isTeacher) && (
+                                    <button onClick={() => deleteCommentMutation.mutate(c.id)}
+                                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: "1px 3px", borderRadius: 3, display: "flex", alignItems: "center" }}
+                                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--danger)"}
+                                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
+                                      <Trash2 size={10} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        <div ref={commentInputRef as any} />
+                      </div>
+
+                      {/* Input */}
+                      <div style={{ padding: "10px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 8, alignItems: "center" }}>
+                        <Avatar user={currentUser} size={32} />
+                        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)" }}
+                          onFocusCapture={e => e.currentTarget.style.borderColor = "var(--accent)"}
+                          onBlurCapture={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                          <input value={commentText} onChange={e => setCommentText(e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && commentText.trim()) { e.preventDefault(); addCommentMutation.mutate(commentText) }}}
+                            placeholder="Type a message..."
+                            style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+                          {commentText.trim() && (
+                            <button onClick={() => addCommentMutation.mutate(commentText)} disabled={addCommentMutation.isPending}
+                              style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Send size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
+                  )
+                })()
               )}
 
               {/* ── RESOURCES TAB ── */}
