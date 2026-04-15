@@ -6,6 +6,8 @@ import { useAuth } from "@/features/auth/useAuth"
 
 // Auth
 import LoginPage from "@/pages/auth/LoginPage"
+import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
 
 // Dashboards
@@ -55,6 +57,8 @@ export default function App() {
         <Route path="/" element={<RootRedirect />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         <Route path="/admin/dashboard" element={<AuthGuard allowedRoles={["admin"]}><AdminDashboardPage /></AuthGuard>} />
