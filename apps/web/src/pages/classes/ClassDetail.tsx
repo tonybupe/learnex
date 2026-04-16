@@ -448,7 +448,7 @@ export default function ClassDetail({ cls, onBack }: Props) {
   const { isLearner, isTeacher, isAdmin } = useAuth()
   const currentUser = useAuthStore(s => s.user)
   const queryClient = useQueryClient()
-  const isOwner = cls.teacher_id === currentUser?.id
+  const isOwner = (cls.teacher_id ?? cls.teacher?.id) === currentUser?.id
 
   const { data: lessons = [] } = useQuery({
     queryKey: ["class-lessons", cls.id],

@@ -27,7 +27,7 @@ function ClassCard({
   onDelete: () => void; onEdit: () => void
   joining: boolean; leaving: boolean
 }) {
-  const isOwner = cls.teacher_id === currentUserId
+  const isOwner = (cls.teacher_id ?? cls.teacher?.id) === currentUserId
   const isMember = cls.is_member
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
@@ -183,7 +183,7 @@ export default function ClassesPage() {
   // Enrich classes with is_member — owner = always member, others check enrollment
   const classes: Class[] = allClasses.map((c: Class) => ({
     ...c,
-    is_member: c.teacher_id === currentUser?.id || enrolledIds.has(c.id),
+    is_member: ((c.teacher_id ?? c.teacher?.id) === currentUser?.id) || enrolledIds.has(c.id),
   }))
 
   // Mutations
@@ -239,13 +239,13 @@ export default function ClassesPage() {
     // Apply tab filter
     if (filter === "mine") {
       // My Classes = classes I created as teacher
-      result = result.filter(c => c.teacher_id === currentUser?.id)
+      result = result.filter(c => (c.teacher_id ?? c.teacher?.id) === currentUser?.id)
     } else if (filter === "enrolled") {
       // Joined Classes = classes I joined as member (not my own)
-      result = result.filter(c => enrolledIds.has(c.id) && c.teacher_id !== currentUser?.id)
+      result = result.filter(c => enrolledIds.has(c.id) && (c.teacher_id ?? c.teacher?.id) !== currentUser?.id)
     } else if (filter === "other") {
       // Discover = classes not owned and not joined
-      result = result.filter(c => c.teacher_id !== currentUser?.id && !enrolledIds.has(c.id))
+      result = result.filter(c => (c.teacher_id ?? c.teacher?.id) !== currentUser?.id && !enrolledIds.has(c.id))
     }
 
     // Search
@@ -267,13 +267,13 @@ export default function ClassesPage() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Tab counts
-  const mineCount = classes.filter(c => c.teacher_id === currentUser?.id).length
+  const mineCount = classes.filter(c => (c.teacher_id ?? c.teacher?.id) === currentUser?.id).length
   const enrolledCount = myEnrolled.length
   const otherCount = classes.filter(c =>
-    c.teacher_id !== currentUser?.id && !enrolledIds.has(c.id)
+    (c.teacher_id ?? c.teacher?.id) !== currentUser?.id && !enrolledIds.has(c.id)
   ).length
 
-  const joinedCount = myEnrolled.length  // classes joined as member (not owner)
+  const joinedCount = myEnrolled.filter(c => (c.teacher_id ?? c.teacher?.id) !== currentUser?.id).length
 
   const TABS = isTeacher || isAdmin ? [
     { key: "all",      label: "All Classes",    count: classes.length },
