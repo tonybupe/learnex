@@ -25,8 +25,23 @@ export default function TeacherStats() {
   const { data, isLoading } = useQuery({
     queryKey: ["teacher-dashboard"],
     queryFn: async () => {
-      const res = await api.get("/analytics/dashboard/teacher")
-      return res.data
+      // Try analytics endpoint, fallback to direct counts
+      try {
+        const res = await api.get("/analytics/dashboard/teacher")
+        if (res.data && res.data.total_classes !== undefined) return res.data
+      } catch {}
+      // Fallback: fetch real counts directly
+      const [clsRes, lesRes] = await Promise.all([
+        api.get("/classes?mine=true").catch(() => ({ data: [] })),
+        api.get("/lessons?mine=true").catch(() => ({ data: [] })),
+      ])
+      const cls = Array.isArray(clsRes.data) ? clsRes.data : []
+      const les = Array.isArray(lesRes.data) ? lesRes.data : []
+      return {
+        total_classes: cls.length,
+        total_lessons: les.length,
+        total_students: cls.reduce((a: number, c: any) => a + (c.member_count ?? 0), 0),
+      }
     },
     retry: false,
     staleTime: 60000,

@@ -149,7 +149,7 @@ export default function TeacherDashboardPage() {
   const { data: classes = [] } = useQuery({
     queryKey: ["my-classes"],
     queryFn: async () => {
-      const res = await api.get("/classes?my=true").catch(() => ({ data: [] }))
+      const res = await api.get("/classes?mine=true").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data : (res.data?.items ?? [])
     },
     staleTime: 60000,
@@ -158,7 +158,7 @@ export default function TeacherDashboardPage() {
   const { data: lessons = [] } = useQuery({
     queryKey: ["my-lessons"],
     queryFn: async () => {
-      const res = await api.get("/lessons?limit=10").catch(() => ({ data: [] }))
+      const res = await api.get("/lessons?mine=true&limit=10").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data : (res.data?.items ?? [])
     },
     staleTime: 60000,
