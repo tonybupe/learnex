@@ -18,7 +18,6 @@ from app.schemas.posts import PostResponse
 
 router = APIRouter()
 
-
 def base_post_query(db: Session):
     return db.query(Post).options(
         joinedload(Post.author).joinedload(User.profile),
@@ -27,9 +26,12 @@ def base_post_query(db: Session):
         joinedload(Post.attachments),
     )
 
+def public_only(q):
+    """Exclude class chat/discussion posts from public feeds.
+    Posts with class_id are internal class discussions — not for the global feed."""
+    return q.filter(Post.class_id == None)
 
 def serialize_posts(db: Session, posts: list, current_user: User) -> list:
-    """Reuse the existing to_post_response from posts route."""
     from app.api.v1.routes.posts import to_post_response
     result = []
     for p in posts:
@@ -40,7 +42,7 @@ def serialize_posts(db: Session, posts: list, current_user: User) -> list:
     return result
 
 
-# ── LATEST ────────────────────────────────────────────────────────
+# ── LATEST ───────────────────────────────────────────────────────
 @router.get("/latest", response_model=List[PostResponse])
 def feed_latest(
     page: int = Query(1, ge=1),
@@ -50,7 +52,7 @@ def feed_latest(
 ):
     offset = (page - 1) * limit
     posts = (
-        base_post_query(db)
+        public_only(base_post_query(db))
         .filter(Post.status == "published")
         .order_by(desc(Post.created_at))
         .offset(offset).limit(limit).all()
@@ -69,7 +71,6 @@ def feed_popular(
 ):
     offset = (page - 1) * limit
     since = datetime.utcnow() - timedelta(days=days)
-
     reaction_sq = (
         db.query(PostReaction.post_id, func.count(PostReaction.id).label("rc"))
         .group_by(PostReaction.post_id).subquery()
@@ -79,7 +80,7 @@ def feed_popular(
         .group_by(PostComment.post_id).subquery()
     )
     posts = (
-        base_post_query(db)
+        public_only(base_post_query(db))
         .outerjoin(reaction_sq, Post.id == reaction_sq.c.post_id)
         .outerjoin(comment_sq, Post.id == comment_sq.c.post_id)
         .filter(Post.status == "published", Post.created_at >= since)
@@ -102,7 +103,6 @@ def feed_trending(
 ):
     offset = (page - 1) * limit
     since = datetime.utcnow() - timedelta(days=3)
-
     reaction_sq = (
         db.query(PostReaction.post_id, func.count(PostReaction.id).label("rc"))
         .group_by(PostReaction.post_id).subquery()
@@ -112,7 +112,7 @@ def feed_trending(
         .group_by(PostComment.post_id).subquery()
     )
     posts = (
-        base_post_query(db)
+        public_only(base_post_query(db))
         .outerjoin(reaction_sq, Post.id == reaction_sq.c.post_id)
         .outerjoin(comment_sq, Post.id == comment_sq.c.post_id)
         .filter(Post.status == "published", Post.created_at >= since)
@@ -142,7 +142,7 @@ def feed_following(
             .subquery()
         )
         posts = (
-            base_post_query(db)
+            public_only(base_post_query(db))
             .filter(Post.status == "published", Post.author_id.in_(following_ids))
             .order_by(desc(Post.created_at))
             .offset(offset).limit(limit).all()
@@ -153,6 +153,8 @@ def feed_following(
 
 
 # ── MY CLASSES ────────────────────────────────────────────────────
+# Classes feed intentionally includes class posts (shared lessons, announcements)
+# but still excludes raw chat messages (visibility="class", post_type="text")
 @router.get("/classes", response_model=List[PostResponse])
 def feed_classes(
     page: int = Query(1, ge=1),
@@ -176,6 +178,8 @@ def feed_classes(
             .filter(
                 Post.status == "published",
                 Post.class_id.isnot(None),
+                # Only show shared content (lessons/announcements), not raw chat
+                Post.post_type.in_(["lesson", "note", "announcement", "image", "video", "link"]),
                 (Post.class_id.in_(taught)) | (Post.class_id.in_(enrolled))
             )
             .order_by(desc(Post.created_at))
