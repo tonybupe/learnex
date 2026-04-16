@@ -157,16 +157,16 @@ export default function AnalyticsPage() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-            {/* KPI Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${kpis.length}, 1fr)`, gap: 12 }}>
+            {/* KPI Cards — compact mobile-first */}
+            <div className="kpi-grid-analytics">
               {kpis.map((k, i) => (
-                <div key={i} className="card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 12, background: `${k.color}15`, border: `1px solid ${k.color}25`, display: "flex", alignItems: "center", justifyContent: "center", color: k.color, flexShrink: 0 }}>
+                <div key={i} className="card kpi-card-compact">
+                  <div className="kpi-icon-sm" style={{ background: `${k.color}12`, border: `1px solid ${k.color}20`, color: k.color }}>
                     {k.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, marginBottom: 2 }}>{k.label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 900, color: k.color }}>{k.value}</div>
+                    <div className="kpi-label-sm">{k.label}</div>
+                    <div className="kpi-val-sm" style={{ color: k.color }}>{k.value}</div>
                   </div>
                 </div>
               ))}
@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="charts-grid-2">
                   {/* Class students bar chart */}
                   <div className="card">
                     <div className="card-head" style={{ marginBottom: 16 }}>

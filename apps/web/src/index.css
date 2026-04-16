@@ -542,3 +542,48 @@ body {
 @keyframes commentFadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 @keyframes pulse    { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
 @keyframes toastIn  { from{opacity:0;transform:translateX(100%)} to{opacity:1;transform:translateX(0)} }
+/* ── Analytics KPI compact cards ─────────────────────────────── */
+.kpi-grid-analytics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 900px) {
+  .kpi-grid-analytics { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .kpi-grid-analytics { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+.kpi-card-compact {
+  padding: 12px 14px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kpi-icon-sm {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.kpi-icon-sm svg { width: 16px; height: 16px; }
+.kpi-label-sm { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 1px; }
+.kpi-val-sm   { font-size: 18px; font-weight: 900; line-height: 1.1; }
+
+/* ── Responsive 2-col chart grid ──────────────────────────────── */
+.charts-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .charts-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── General mobile improvements ──────────────────────────────── */
+@media (max-width: 600px) {
+  .page-section { padding: 12px 10px 48px !important; }
+  .card { border-radius: 12px !important; }
+  .tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
+  .tab-btn { white-space: nowrap; flex-shrink: 0; }
+}
