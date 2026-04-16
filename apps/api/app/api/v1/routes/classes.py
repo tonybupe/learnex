@@ -56,9 +56,9 @@ def list_classes(
 @router.get("/enrolled", response_model=List[ClassResponse])
 def enrolled_classes(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("learner")),
+    current_user: User = Depends(get_current_user),
 ):
-    """Return classes the learner is actively enrolled in."""
+    """Return classes the user has joined as a member (works for all roles)."""
     enrolled_ids = db.query(ClassMember.class_id).filter(
         ClassMember.learner_id == current_user.id,
         ClassMember.status == "active"
@@ -131,7 +131,7 @@ def delete_class(
 
 
 @router.post("/{class_id}/join", response_model=ClassMembershipActionResponse)
-def join_class_route(
+def join_class_route(  # teachers can join other classes as learners
     class_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("learner")),

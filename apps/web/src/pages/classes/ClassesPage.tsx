@@ -31,9 +31,9 @@ function ClassCard({
   const isMember = cls.is_member
   const canEdit = isOwner || isAdmin
   const canDelete = isOwner || isAdmin
-  // Learner join guard: can only join if not already a member and not the teacher
-  const canJoin = isLearner && !isMember
-  const canLeave = isLearner && isMember
+  // Anyone can join a class they are not teaching and not already a member of
+  const canJoin = !isOwner && !isMember
+  const canLeave = !isOwner && isMember
 
   const accentColors = ["#cb26e4","#38bdf8","#22c55e","#f59e0b","#8b5cf6","#06b6d4","#ef4444"]
   const color = accentColors[(cls.id ?? 0) % accentColors.length]
@@ -174,16 +174,16 @@ export default function ClassesPage() {
       const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data as Class[] : []
     },
-    enabled: isLearner,
+    enabled: !!currentUser,
     staleTime: 30000,
   })
 
   const enrolledIds = new Set(myEnrolled.map((c: Class) => c.id))
 
-  // Enrich classes with is_member
+  // Enrich classes with is_member — owner = always member, others check enrollment
   const classes: Class[] = allClasses.map((c: Class) => ({
     ...c,
-    is_member: isLearner ? enrolledIds.has(c.id) : c.teacher_id === currentUser?.id,
+    is_member: c.teacher_id === currentUser?.id || enrolledIds.has(c.id),
   }))
 
   // Mutations
@@ -238,13 +238,14 @@ export default function ClassesPage() {
 
     // Apply tab filter
     if (filter === "mine") {
-      if (isTeacher || isAdmin) result = result.filter(c => c.teacher_id === currentUser?.id)
-      else result = result.filter(c => enrolledIds.has(c.id))
+      // My Classes = classes I created as teacher
+      result = result.filter(c => c.teacher_id === currentUser?.id)
     } else if (filter === "enrolled") {
-      result = result.filter(c => enrolledIds.has(c.id))
+      // Joined Classes = classes I joined as member (not my own)
+      result = result.filter(c => enrolledIds.has(c.id) && c.teacher_id !== currentUser?.id)
     } else if (filter === "other") {
-      if (isTeacher) result = result.filter(c => c.teacher_id !== currentUser?.id)
-      else result = result.filter(c => !enrolledIds.has(c.id))
+      // Discover = classes not owned and not joined
+      result = result.filter(c => c.teacher_id !== currentUser?.id && !enrolledIds.has(c.id))
     }
 
     // Search
@@ -266,22 +267,23 @@ export default function ClassesPage() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Tab counts
-  const mineCount = isTeacher || isAdmin
-    ? classes.filter(c => c.teacher_id === currentUser?.id).length
-    : myEnrolled.length
+  const mineCount = classes.filter(c => c.teacher_id === currentUser?.id).length
   const enrolledCount = myEnrolled.length
-  const otherCount = isTeacher
-    ? classes.filter(c => c.teacher_id !== currentUser?.id).length
-    : classes.filter(c => !enrolledIds.has(c.id)).length
+  const otherCount = classes.filter(c =>
+    c.teacher_id !== currentUser?.id && !enrolledIds.has(c.id)
+  ).length
+
+  const joinedCount = myEnrolled.length  // classes joined as member (not owner)
 
   const TABS = isTeacher || isAdmin ? [
-    { key: "all",   label: "All Classes",   count: classes.length },
-    { key: "mine",  label: "My Classes",    count: mineCount },
-    { key: "other", label: "Other Classes", count: otherCount },
+    { key: "all",      label: "All Classes",    count: classes.length },
+    { key: "mine",     label: "My Classes",     count: mineCount },
+    { key: "enrolled", label: "Joined Classes", count: joinedCount },
+    { key: "other",    label: "Discover",       count: otherCount },
   ] : [
-    { key: "all",      label: "All Classes",      count: classes.length },
-    { key: "enrolled", label: "My Enrolled",       count: enrolledCount },
-    { key: "other",    label: "Discover More",     count: otherCount },
+    { key: "all",      label: "All Classes",  count: classes.length },
+    { key: "enrolled", label: "My Enrolled",  count: enrolledCount },
+    { key: "other",    label: "Discover",     count: otherCount },
   ]
 
   const handleSubmit = (e: React.FormEvent) => {
