@@ -74,14 +74,15 @@ export default function AnalyticsPage() {
   const isLoading = isLearner ? lLoading : tLoading
 
   // Normalize teacher stats - map API fields to display fields
+  // Normalize: API returns classes_count/lessons_count, fallback to direct fetch
   const teacherStats = {
-    total_classes:   tData?.classes_count      ?? myClasses.length,
-    total_lessons:   tData?.lessons_count      ?? myLessons.length,
-    total_students:  tData?.total_learners     ?? 0,
-    total_quizzes:   tData?.quizzes_count      ?? 0,
-    total_posts:     tData?.posts_count        ?? myPosts.length,
-    live_sessions:   tData?.live_sessions_count ?? 0,
-    avg_quiz_score:  tData?.average_quiz_score ?? 0,
+    total_classes:  tData?.classes_count       ?? tData?.total_classes  ?? myClasses.length,
+    total_lessons:  tData?.lessons_count       ?? tData?.total_lessons  ?? myLessons.length,
+    total_students: tData?.total_learners      ?? tData?.total_students ?? 0,
+    total_quizzes:  tData?.quizzes_count       ?? tData?.total_quizzes  ?? 0,
+    total_posts:    tData?.posts_count         ?? tData?.total_posts    ?? myPosts.length,
+    live_sessions:  tData?.live_sessions_count ?? 0,
+    avg_quiz_score: tData?.average_quiz_score  ?? 0,
   }
 
   // Lesson breakdown by type

@@ -51,19 +51,19 @@ export default function TeacherStats() {
     <div className="stats-grid">
       <StatCard
         title="My Classes"
-        value={isLoading ? "..." : data?.total_classes ?? 0}
+        value={isLoading ? "..." : (data?.classes_count ?? data?.total_classes ?? 0)}
         icon={<BookOpen size={20} />}
         color="var(--accent)"
       />
       <StatCard
         title="Students"
-        value={isLoading ? "..." : data?.total_students ?? 0}
+        value={isLoading ? "..." : (data?.total_learners ?? data?.total_students ?? 0)}
         icon={<Users size={20} />}
         color="var(--accent2)"
       />
       <StatCard
         title="Lessons Published"
-        value={isLoading ? "..." : data?.total_lessons ?? 0}
+        value={isLoading ? "..." : (data?.lessons_count ?? data?.total_lessons ?? 0)}
         icon={<GraduationCap size={20} />}
         color="var(--success)"
       />
