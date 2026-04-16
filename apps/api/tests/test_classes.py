@@ -54,10 +54,17 @@ class TestClassesRBAC:
         assert res.status_code == 400
         assert "already" in res.json()["detail"].lower()
 
-    def test_teacher_cannot_join_class(self, client: TestClient, teacher_token: str, teacher_class_id: int):
+    def test_teacher_cannot_join_own_class(self, client: TestClient, teacher_token: str, teacher_class_id: int):
+        """Teacher cannot join their own class - but CAN join other classes."""
         res = client.post(f"/api/v1/classes/{teacher_class_id}/join",
                           headers={"Authorization": f"Bearer {teacher_token}"})
         assert res.status_code == 403
+
+    def test_teacher_can_join_other_class(self, client: TestClient, other_teacher_token: str, teacher_class_id: int):
+        """Teacher can join another teacher class as a member."""
+        res = client.post(f"/api/v1/classes/{teacher_class_id}/join",
+                          headers={"Authorization": f"Bearer {other_teacher_token}"})
+        assert res.status_code in (200, 400)  # 400 = already joined
 
     def test_enrolled_endpoint_for_learner(self, client: TestClient, learner_token: str, teacher_class_id: int):
         client.post(f"/api/v1/classes/{teacher_class_id}/join",
