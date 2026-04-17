@@ -175,6 +175,7 @@ export default function ClassesPage() {
       return Array.isArray(res.data) ? res.data as Class[] : []
     },
     enabled: !!currentUser,
+    refetchOnMount: true,
     staleTime: 30000,
   })
 

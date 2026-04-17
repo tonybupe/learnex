@@ -450,6 +450,17 @@ export default function ClassDetail({ cls, onBack }: Props) {
   const queryClient = useQueryClient()
   const isOwner = (cls.teacher_id ?? cls.teacher?.id) === currentUser?.id
 
+  // Check enrollment via /classes/enrolled (works for all roles, no chicken-and-egg)
+  const { data: enrolledClasses = [] } = useQuery({
+    queryKey: ["classes-enrolled"],
+    queryFn: async () => {
+      const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    },
+    staleTime: 30000,
+  })
+  const isEnrolled = enrolledClasses.some((c: any) => c.id === cls.id)
+
   const { data: lessons = [] } = useQuery({
     queryKey: ["class-lessons", cls.id],
     queryFn: async () => {
@@ -483,8 +494,9 @@ export default function ClassDetail({ cls, onBack }: Props) {
     },
   })
 
-  const isMember = isOwner || isAdmin || members.some((m: ClassMemberData) => m.learner_id === currentUser?.id)
-  const canAccess = isMember || isTeacher || isAdmin
+  // isMember: owner, admin, enrolled (from /classes/enrolled), or any teacher
+  const isMember = isOwner || isAdmin || isEnrolled || (isTeacher && !isLearner)
+  const canAccess = isMember
 
   const visibleLessons = canAccess ? lessons : lessons.filter((l: Lesson) => l.visibility === "public")
   const lockedLessons = canAccess ? [] : lessons.filter((l: Lesson) => l.visibility !== "public")
