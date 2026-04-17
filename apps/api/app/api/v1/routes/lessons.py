@@ -455,6 +455,8 @@ CRITICAL INSTRUCTIONS:
 6. Use ONLY hyphen (-) for bullet points. Never use bullet character (•) or asterisk (*).
 7. For presentation_slides points field, write REAL specific content about {payload.topic}, not generic placeholders like "Core principle 1" or "Example 1"."""
 
+    import json
+
     try:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
@@ -463,9 +465,7 @@ CRITICAL INSTRUCTIONS:
             messages=[{"role": "user", "content": prompt}]
         )
 
-        import json
         raw = message.content[0].text.strip()
-        # Strip markdown code blocks if present
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
@@ -474,15 +474,22 @@ CRITICAL INSTRUCTIONS:
 
         data = json.loads(raw)
 
-        # Ensure content is substantial
         if not data.get("content") or len(data["content"]) < 100:
             raise ValueError("AI returned insufficient content")
 
         return data
 
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"AI returned invalid response: {str(e)}")
+    except anthropic.BadRequestError as e:
+        err_msg = str(e)
+        if "credit" in err_msg.lower() or "balance" in err_msg.lower():
+            raise HTTPException(
+                status_code=402,
+                detail="AI credits exhausted. Please top up your Anthropic account at console.anthropic.com to use AI generation."
+            )
+        raise HTTPException(status_code=400, detail=f"AI request error: {err_msg}")
     except anthropic.APIError as e:
-        raise HTTPException(status_code=503, detail=f"AI service error: {str(e)}")
+        raise HTTPException(status_code=503, detail=f"AI service unavailable: {str(e)}")
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"AI returned invalid response format")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")

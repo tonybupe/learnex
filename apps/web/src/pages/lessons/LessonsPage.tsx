@@ -76,8 +76,13 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
       setResult(data)
       onGenerated(data.content, data)
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || "Generation failed"
-      setError(msg.includes("credit") || msg.includes("billing") ? "AI credits needed." : msg)
+      const status = e?.response?.status
+      const msg = e?.response?.data?.detail || e?.message || "Generation failed"
+      if (status === 402 || msg.toLowerCase().includes("credit") || msg.toLowerCase().includes("balance")) {
+        setError("AI credits exhausted. Top up at console.anthropic.com to continue generating lessons.")
+      } else {
+        setError(msg)
+      }
     } finally { setLoading(false) }
   }
 
