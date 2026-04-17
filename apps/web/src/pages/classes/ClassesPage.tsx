@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react"
 import AppShell from "@/components/layout/AppShell"
+import SubjectSelector from "@/components/subjects/SubjectSelector"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -363,13 +364,12 @@ export default function ClassesPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                 <div className="form-field">
                   <label className="form-label">Subject *</label>
-                  <select className="audit-control select" required value={form.subject_id}
-                    onChange={e => setForm(p => ({ ...p, subject_id: e.target.value }))}>
-                    <option value="">Select subject...</option>
-                    {(Array.isArray(subjects) ? subjects : []).map((s: any) => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
-                    ))}
-                  </select>
+                  <SubjectSelector
+                    value={form.subject_id}
+                    onChange={v => setForm(p => ({ ...p, subject_id: v }))}
+                    required
+                    showMineOnly={true}
+                  />
                 </div>
                 <div className="form-field">
                   <label className="form-label">Grade Level</label>
