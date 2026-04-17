@@ -153,8 +153,10 @@ export default function ResetPasswordPage() {
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>New Password</label>
                   <div style={{ position: "relative" }}>
-                    <input type={showPassword ? "text" : "password"}
+                    <input id="new_password" name="new_password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Min. 6 characters" disabled={loading}
+                      autoComplete="new-password"
                       {...register("new_password")}
                       style={{ width: "100%", padding: "12px 44px 12px 14px", borderRadius: 10, fontSize: 14, border: `1px solid ${errors.new_password ? "var(--danger)" : "var(--border)"}`, background: "var(--bg2)", color: "var(--text)", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
                       onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
@@ -185,8 +187,10 @@ export default function ResetPasswordPage() {
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Confirm Password</label>
                   <div style={{ position: "relative" }}>
-                    <input type={showConfirm ? "text" : "password"}
+                    <input id="confirm_password" name="confirm_password"
+                      type={showConfirm ? "text" : "password"}
                       placeholder="Repeat your password" disabled={loading}
+                      autoComplete="new-password"
                       {...register("confirm_password")}
                       style={{ width: "100%", padding: "12px 44px 12px 14px", borderRadius: 10, fontSize: 14, border: `1px solid ${errors.confirm_password ? "var(--danger)" : "var(--border)"}`, background: "var(--bg2)", color: "var(--text)", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
                       onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}

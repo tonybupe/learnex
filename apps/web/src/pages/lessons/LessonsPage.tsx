@@ -550,7 +550,7 @@ export default function LessonsPage() {
           <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 20, border: "1px solid var(--border)", background: "var(--bg2)" }}>
             <Search size={14} style={{ color: "var(--muted)" }} />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
-              placeholder="Search lessons..."
+              id="search" name="search" placeholder="Search lessons..."
               style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: "var(--text)", width: "100%", fontFamily: "inherit" }} />
             {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex" }}><X size={13} /></button>}
           </div>

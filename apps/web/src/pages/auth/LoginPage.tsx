@@ -157,8 +157,7 @@ export default function LoginPage() {
               <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>
                 Email address
               </label>
-              <input
-                type="email"
+              <input id="email" name="email" type="email" autoComplete="email"
                 placeholder="you@example.com"
                 disabled={loading}
                 {...register("email")}

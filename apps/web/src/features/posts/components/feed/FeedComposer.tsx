@@ -174,7 +174,7 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
 
         <div className="composer-right">
           {/* Textarea */}
-          <textarea
+          <textarea id="post-content" name="post-content"
             ref={textareaRef}
             className="composer-textarea"
             value={content}

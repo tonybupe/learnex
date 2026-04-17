@@ -206,7 +206,7 @@ export default function RegisterPage() {
 
             {/* Full name */}
             <Field label="Full Name" error={errors.full_name?.message}>
-              <input type="text" placeholder="Tony Bupe" disabled={isLoading}
+              <input id="full_name" name="full_name" type="text" placeholder="Tony Bupe" disabled={isLoading}
                 {...register("full_name")} style={inputStyle(!!errors.full_name)}
                 onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
                 onBlur={e => e.currentTarget.style.borderColor = errors.full_name ? "var(--danger)" : "var(--border)"} />
@@ -214,7 +214,7 @@ export default function RegisterPage() {
 
             {/* Email */}
             <Field label="Email address" error={errors.email?.message}>
-              <input type="email" placeholder="you@example.com" disabled={isLoading}
+              <input id="email" name="email" type="email" placeholder="you@example.com" autoComplete="email" disabled={isLoading}
                 {...register("email")} style={inputStyle(!!errors.email)}
                 onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
                 onBlur={e => e.currentTarget.style.borderColor = errors.email ? "var(--danger)" : "var(--border)"} />
@@ -223,7 +223,7 @@ export default function RegisterPage() {
             {/* Phone + Sex row */}
             <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 10 }}>
               <Field label="Phone Number" error={errors.phone_number?.message}>
-                <input type="tel" placeholder="+260971234567" disabled={isLoading}
+                <input id="phone_number" name="phone_number" type="tel" placeholder="+260971234567" autoComplete="tel" disabled={isLoading}
                   {...register("phone_number")} style={inputStyle(!!errors.phone_number)}
                   onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
                   onBlur={e => e.currentTarget.style.borderColor = errors.phone_number ? "var(--danger)" : "var(--border)"} />

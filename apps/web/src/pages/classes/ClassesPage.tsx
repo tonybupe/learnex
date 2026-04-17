@@ -343,20 +343,20 @@ export default function ClassesPage() {
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
                 <div className="form-field">
                   <label className="form-label">Class Title *</label>
-                  <input className="audit-control" required value={form.title}
+                  <input id="class-title" name="class-title" className="audit-control" required value={form.title}
                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                     placeholder="e.g. Mathematics Grade 10" />
                 </div>
                 <div className="form-field">
                   <label className="form-label">Class Code *</label>
-                  <input className="audit-control" required value={form.class_code}
+                  <input id="class-code" name="class-code" className="audit-control" required value={form.class_code}
                     onChange={e => setForm(p => ({ ...p, class_code: e.target.value.toUpperCase() }))}
                     placeholder="e.g. MATH101" />
                 </div>
               </div>
               <div className="form-field">
                 <label className="form-label">Description</label>
-                <input className="audit-control" value={form.description}
+                <input id="class-description" name="class-description" className="audit-control" value={form.description}
                   onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                   placeholder="What will students learn in this class?" />
               </div>
@@ -373,7 +373,7 @@ export default function ClassesPage() {
                 </div>
                 <div className="form-field">
                   <label className="form-label">Grade Level</label>
-                  <input className="audit-control" value={form.grade_level}
+                  <input id="grade-level" name="grade-level" className="audit-control" value={form.grade_level}
                     onChange={e => setForm(p => ({ ...p, grade_level: e.target.value }))}
                     placeholder="e.g. Grade 10" />
                 </div>
@@ -422,7 +422,7 @@ export default function ClassesPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 20, border: "1px solid var(--border)", background: "var(--bg2)", minWidth: 220 }}>
             <Search size={14} style={{ color: "var(--muted)" }} />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
-              placeholder="Search classes..."
+              id="search" name="search" placeholder="Search classes..."
               style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: "var(--text)", width: "100%", fontFamily: "inherit" }} />
             {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex" }}><X size={13} /></button>}
           </div>

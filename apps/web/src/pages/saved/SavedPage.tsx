@@ -208,7 +208,7 @@ export default function SavedPage() {
             <div style={{ flex: 1, minWidth: 180, display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "1px solid var(--border)", background: "var(--bg2)" }}>
               <Search size={14} style={{ color: "var(--muted)", flexShrink: 0 }} />
               <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search saved posts..."
+                id="search" name="search" placeholder="Search saved posts..."
                 style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 13, fontFamily: "inherit", outline: "none" }} />
               {search && (
                 <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex" }}>

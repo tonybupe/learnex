@@ -155,10 +155,12 @@ export default function ForgotPasswordPage() {
                   <div style={{ position: "relative" }}>
                     <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }} />
                     <input
+                      id="identifier" name="identifier"
                       value={identifier}
                       onChange={e => { setIdentifier(e.target.value); setIdentifierError("") }}
                       onKeyDown={e => e.key === "Enter" && handleLookup()}
                       placeholder="you@example.com or +260971234567"
+                      autoComplete="email"
                       style={inputStyle(!!identifierError)}
                       onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
                       onBlur={e => e.currentTarget.style.borderColor = identifierError ? "var(--danger)" : "var(--border)"}
