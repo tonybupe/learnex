@@ -29,7 +29,14 @@ def create_post(db: Session, author: User, payload: PostCreate) -> Post:
 
         if payload.visibility == "class":
             if author.role == "teacher" and classroom.teacher_id != author.id:
-                raise ValueError("Teachers can only post to their own classes")
+                # Check if teacher is an enrolled member of this class
+                enrolled = db.query(ClassMember).filter(
+                    ClassMember.class_id == classroom.id,
+                    ClassMember.learner_id == author.id,
+                    ClassMember.status == "active"
+                ).first()
+                if not enrolled:
+                    raise ValueError("You must be a member of this class to post in it")
 
             if author.role == "learner":
                 membership = (
