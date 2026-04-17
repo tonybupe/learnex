@@ -466,11 +466,29 @@ CRITICAL INSTRUCTIONS:
         )
 
         raw = message.content[0].text.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
+
+        # Extract JSON from code fences if present
+        if "```" in raw:
+            parts = raw.split("```")
+            for part in parts:
+                if part.startswith("json"):
+                    raw = part[4:].strip()
+                    break
+                elif "{" in part and "content" in part:
+                    raw = part.strip()
+                    break
+
         raw = raw.strip()
+
+        # Fix missing opening brace
+        if not raw.startswith("{") and "content" in raw:
+            raw = "{" + raw
+
+        # Truncate to last closing brace
+        if not raw.endswith("}"):
+            last = raw.rfind("}")
+            if last > 0:
+                raw = raw[:last + 1]
 
         data = json.loads(raw)
 
