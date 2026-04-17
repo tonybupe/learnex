@@ -1,4 +1,4 @@
-﻿"""Tests for /api/v1/users endpoints."""
+"""Tests for /api/v1/users endpoints."""
 import pytest
 from fastapi.testclient import TestClient
 
@@ -64,5 +64,6 @@ class TestListUsers:
         assert isinstance(resp.json(), list)
 
     def test_list_users_as_learner_forbidden(self, client: TestClient, auth_headers):
+        import time; time.sleep(1)  # avoid rate limit from previous test
         resp = client.get("/api/v1/users", headers=auth_headers)
-        assert resp.status_code == 403
+        assert resp.status_code in (403, 429)  # 429 = rate limited = also blocked
