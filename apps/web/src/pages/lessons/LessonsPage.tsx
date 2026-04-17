@@ -233,7 +233,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
 
 // ÔöÇÔöÇ Main Page ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export default function LessonsPage() {
-  const { isTeacher, isAdmin, user } = useAuth()
+  const { isTeacher, isAdmin, isLearner, user } = useAuth()
   const currentUser = useAuthStore(s => s.user)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
