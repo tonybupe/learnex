@@ -2,84 +2,81 @@ import { useNavigate } from "react-router-dom"
 import type { Notification } from "../types/notification.types"
 
 const ICONS: Record<string, string> = {
-  follow:         "👤",
-  like:           "❤️",
-  reaction:       "❤️",
-  comment:        "💬",
-  class_invite:   "🎓",
-  class_join:     "🎓",
-  new_lesson:     "📖",
-  lesson:         "📖",
-  quiz_grade:     "📝",
-  quiz:           "📝",
-  live_session:   "🎥",
-  live:           "🎥",
-  announcement:   "📢",
-  new_post:       "📣",
-  post:           "📣",
-  message:        "💌",
-  reminder:       "⏰",
-  system:         "🔔",
-  default:        "🔔",
+  follow_created:     "👤",
+  lesson_published:   "📖",
+  class_post_created: "📣",
+  class_join:         "🎓",
+  class_invite:       "🎓",
+  quiz_grade:         "📝",
+  live_session:       "🎥",
+  comment:            "💬",
+  like:               "❤️",
+  reaction:           "❤️",
+  message:            "💌",
+  reminder:           "⏰",
+  announcement:       "📢",
+  default:            "🔔",
 }
 
-// Valid app routes (must match App.tsx exactly)
-// /home /feed /classes /classes/discover /lessons /quizzes
-// /live-sessions /messages /analytics /discover /settings
-// /profile/:userId /subjects /teacher/dashboard /learner/dashboard /admin/dashboard
+// Map API action_url or entity_type to valid FRONTEND routes
+// API sends: /lessons/34, /users/2, /posts/31 — none of these exist as frontend routes
+function resolveRoute(n: Notification): string {
+  const { entity_type, notification_type } = n
 
-function resolveRoute(n: Notification): string | null {
-  // Use action_url first if it is an internal path
-  if (n.action_url && !n.action_url.startsWith("http")) {
-    return n.action_url
-  }
-
-  const type = (n.notification_type ?? "").toLowerCase()
-  const entity = (n.entity_type ?? "").toLowerCase()
-  const id = n.entity_id
-
-  // Route by entity_type
-  if (entity) {
-    switch (entity) {
-      case "class":
-      case "classroom":    return "/classes"
-      case "lesson":       return "/lessons"
-      case "quiz":         return "/quizzes"
-      case "post":         return "/feed"
-      case "user":         return id ? `/profile/${id}` : "/home"
-      case "live":
-      case "live_session": return "/live-sessions"
-      case "message":      return "/messages"
-      case "subject":      return "/subjects"
-    }
-  }
-
-  // Route by notification_type
+  // Map by notification_type first (most specific)
+  const type = (notification_type ?? "").toLowerCase()
   switch (type) {
-    case "follow":
-    case "new_follower":   return "/home"
-    case "class_invite":
-    case "class_join":
-    case "new_member":     return "/classes"
+    case "lesson_published":
+    case "lesson_update":
     case "new_lesson":
-    case "lesson_update":  return "/lessons"
-    case "quiz_grade":
-    case "quiz_result":
-    case "new_quiz":       return "/quizzes"
-    case "live_session":
-    case "live_starting":  return "/live-sessions"
+      return "/lessons"
+    case "follow_created":
+    case "new_follower":
+    case "follow":
+      return "/home"
+    case "class_post_created":
+    case "new_post":
+    case "post_mention":
     case "comment":
     case "like":
     case "reaction":
-    case "new_post":
-    case "post_mention":   return "/feed"
+      return "/feed"
+    case "class_join":
+    case "class_invite":
+    case "new_member":
+    case "class_update":
+      return "/classes"
+    case "quiz_grade":
+    case "quiz_result":
+    case "new_quiz":
+      return "/quizzes"
+    case "live_session":
+    case "live_starting":
+      return "/live-sessions"
     case "message":
-    case "new_message":    return "/messages"
-    case "announcement":   return "/feed"
-    case "reminder":       return "/home"
+    case "new_message":
+      return "/messages"
+    case "announcement":
+      return "/feed"
+    case "reminder":
+      return "/home"
   }
 
-  return "/home"  // safe fallback — always valid
+  // Fallback by entity_type
+  const entity = (entity_type ?? "").toLowerCase()
+  switch (entity) {
+    case "lesson":       return "/lessons"
+    case "class":
+    case "classroom":    return "/classes"
+    case "quiz":         return "/quizzes"
+    case "post":         return "/feed"
+    case "user":         return "/home"
+    case "live_session": return "/live-sessions"
+    case "message":      return "/messages"
+    case "subject":      return "/subjects"
+  }
+
+  return "/home"
 }
 
 function timeAgo(dateStr: string) {
@@ -100,26 +97,21 @@ type Props = {
 
 export default function NotificationItem({ notification: n, onRead, onClose }: Props) {
   const navigate = useNavigate()
-  const icon = ICONS[n.notification_type] ?? ICONS[n.entity_type ?? ""] ?? ICONS.default
+  const icon = ICONS[n.notification_type] ?? ICONS.default
   const route = resolveRoute(n)
-  const isClickable = !!route
 
   const handleClick = () => {
     if (!n.is_read) onRead(n.id)
-    if (n.action_url?.startsWith("http")) {
-      window.open(n.action_url, "_blank")
-    } else if (route) {
-      navigate(route)
-      onClose()
-    }
+    navigate(route)
+    onClose()
   }
 
   return (
     <div
-      className={`notification-item ${n.is_read ? "" : "unread"} ${isClickable ? "clickable" : ""}`}
+      className={`notification-item ${n.is_read ? "" : "unread"} clickable`}
       onClick={handleClick}
-      title={isClickable ? "Click to view" : undefined}
-      style={{ cursor: isClickable ? "pointer" : "default" }}
+      title="Click to view"
+      style={{ cursor: "pointer" }}
     >
       <div className="notif-icon">{icon}</div>
       <div className="notif-content">
@@ -127,11 +119,9 @@ export default function NotificationItem({ notification: n, onRead, onClose }: P
         <div className="notification-message">{n.message}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
           <div className="notification-time">{timeAgo(n.created_at)}</div>
-          {isClickable && (
-            <span style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700 }}>
-              View →
-            </span>
-          )}
+          <span style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700 }}>
+            View →
+          </span>
         </div>
       </div>
       {!n.is_read && <div className="notif-dot" />}
