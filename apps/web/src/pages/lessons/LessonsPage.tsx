@@ -278,6 +278,17 @@ export default function LessonsPage() {
     },
   })
 
+  // Classes this user has JOINED as member (for teacher enrolled tab)
+  const { data: enrolledClasses = [] } = useQuery({
+    queryKey: ["classes-enrolled"],
+    queryFn: async () => {
+      const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    },
+    staleTime: 30000,
+  })
+  const enrolledClassIds = new Set(enrolledClasses.map((c: any) => c.id))
+
   const { data: subjects = [] } = useQuery({
     queryKey: ["subjects"],
     queryFn: async () => (await api.get("/subjects")).data,
