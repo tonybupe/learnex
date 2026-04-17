@@ -410,32 +410,48 @@ async def generate_lesson_with_ai(
 
     subtopic_part = f" focusing on '{payload.subtopic}'" if payload.subtopic.strip() else ""
 
-    prompt = f"""You are an expert educator. Create a comprehensive, engaging lesson on the topic: "{payload.topic}"{subtopic_part}.
+    prompt = f"""You are a highly experienced educator and curriculum designer. Your task is to write a COMPLETE, DETAILED, and ENGAGING lesson for {level_desc}.
 
-This lesson is for {level_desc}.
+Topic: {payload.topic}{subtopic_part}
 
-Return a JSON object with exactly these fields:
+Write the lesson AS IF you are writing a textbook chapter. Be thorough, detailed, and educational.
+
+Return a JSON object with these exact fields:
+
 {{
-  "content": "Full lesson content in markdown format. Must include:
-    - ## Introduction section explaining what the topic is
-    - ## Key Concepts section with detailed explanations  
-    - ## Examples section with real-world examples and illustrations
-    - ## Summary section with key takeaways
-    - ## Practice Questions section with 3-5 questions
-    At least 500 words of rich educational content.",
-  "summary": "A 2-3 sentence summary of the lesson",
+  "content": "## Introduction\\n\\nWrite 2-3 paragraphs introducing {payload.topic}, why it matters, and what students will learn.\\n\\n## Background\\n\\nProvide historical context or foundational knowledge needed to understand this topic. Write at least 2 detailed paragraphs.\\n\\n## Core Concepts\\n\\nExplain EACH major concept in detail. For each concept:\\n- Define it clearly\\n- Explain how it works\\n- Give a concrete example\\nWrite at least 3-4 paragraphs covering all main concepts.\\n\\n## How It Works (Detailed Explanation)\\n\\nGive a step-by-step or process-based explanation. Use bullet points and numbered lists where helpful. Write at least 3 paragraphs.\\n\\n## Real-World Examples\\n\\nProvide 3-4 specific, relatable real-world examples or applications. Each example should be 1-2 paragraphs.\\n\\n## Common Misconceptions\\n\\nAddress 2-3 common misunderstandings about this topic and correct them.\\n\\n## Key Takeaways\\n\\n- List 5-7 most important points students must remember\\n\\n## Practice Questions\\n\\n1. [Question testing basic understanding]\\n2. [Question testing application]\\n3. [Question testing analysis]\\n4. [Question testing synthesis]\\n5. [Challenge question]\\n\\nNOTE: The content field must be at least 800 words of actual educational text.",
+  "summary": "Write a clear 3-4 sentence summary of what this lesson covers and the most important things to remember about {payload.topic}.",
   "key_terms": [
-    {{"term": "term name", "definition": "clear definition"}},
-    ... (5-8 key terms)
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
+    {{"term": "exact term", "definition": "precise, clear definition in simple language"}}
   ],
-  "youtube_searches": ["search query 1", "search query 2", "search query 3"],
+  "youtube_searches": [
+    "{payload.topic} explained for beginners",
+    "{payload.topic} detailed tutorial",
+    "{payload.topic} real world examples",
+    "{payload.topic} for {payload.level} students"
+  ],
   "presentation_slides": [
-    {{"slide": 1, "title": "slide title", "points": ["point 1", "point 2", "point 3"]}},
-    ... (4-6 slides)
+    {{"slide": 1, "title": "Introduction to {payload.topic}", "points": ["What is {payload.topic}?", "Why does it matter?", "What we will learn today"]}},
+    {{"slide": 2, "title": "Core Concepts", "points": ["First major concept", "Second major concept", "Third major concept"]}},
+    {{"slide": 3, "title": "How It Works", "points": ["Step 1", "Step 2", "Step 3", "Step 4"]}},
+    {{"slide": 4, "title": "Real World Examples", "points": ["Example 1", "Example 2", "Example 3"]}},
+    {{"slide": 5, "title": "Key Takeaways", "points": ["Most important point 1", "Most important point 2", "Most important point 3", "Remember this!"]}},
+    {{"slide": 6, "title": "Practice & Review", "points": ["Question 1", "Question 2", "Further reading"]}}
   ]
 }}
 
-IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No extra text. Just the JSON object."""
+CRITICAL INSTRUCTIONS:
+1. Return ONLY the JSON object. No markdown code blocks. No extra text before or after.
+2. The "content" field must contain REAL, DETAILED educational content - not placeholders.
+3. Write as an expert teacher explaining to students, not as an AI summarizing.
+4. All content must be specific to "{payload.topic}" - no generic filler text.
+5. Minimum 800 words in the content field."""
 
     try:
         client = anthropic.Anthropic(api_key=api_key)
