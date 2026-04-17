@@ -124,7 +124,10 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
       })
       toast.success("Posted!")
       setContent(""); setMedia([]); setActive(false)
-      onCreated?.(post)
+      // Only call onCreated if post has a valid id (not a validation error object)
+      if (post && typeof post === "object" && "id" in post) {
+        onCreated?.(post)
+      }
     } catch (e: any) {
       const msg = e.message || "Failed to post"
       setError(msg); toast.error(msg)
