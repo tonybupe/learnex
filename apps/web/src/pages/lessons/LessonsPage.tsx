@@ -320,7 +320,11 @@ export default function LessonsPage() {
   const classLessons = lessons.filter(l => l.teacher_id !== currentUser?.id)
   const publicLessons = lessons.filter(l => l.visibility === "public" && l.teacher_id !== currentUser?.id)
 
-  const activeSet = tab === "mine" ? myLessons : tab === "public" ? publicLessons : classLessons
+  const activeSet = isLearner && tab === "mine"
+    ? lessons  // backend already returns only accessible lessons for learners
+    : tab === "mine" ? myLessons
+    : tab === "public" ? publicLessons
+    : classLessons
 
   // Filter + search
   const filtered = useMemo(() => {
@@ -581,14 +585,19 @@ export default function LessonsPage() {
           <div className="card" style={{ textAlign: "center", padding: "40px 24px" }}>
             <div style={{ fontSize: 44, marginBottom: 10 }}>📚</div>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>
-              {search ? `No lessons match "${search}"` : tab === "mine" ? "No lessons yet" : "No lessons here"}
+              {search ? `No lessons match "${search}"` : isLearner && tab === "mine" ? "No lessons in your enrolled classes yet" : tab === "mine" ? "No lessons yet" : "No lessons here"}
             </div>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 16px" }}>
-              {isTeacher && tab === "mine" ? "Create your first lesson with AI." : "Try a different filter or tab."}
+              {isLearner && tab === "mine" ? "Join a class to see its lessons here." : isTeacher && tab === "mine" ? "Create your first lesson with AI." : "Try a different filter or tab."}
             </p>
-            {isTeacher && tab === "mine" && (
+            {(isTeacher || isAdmin) && tab === "mine" && (
               <button className="btn btn-primary" onClick={() => setShowForm(true)}>
                 <PlusCircle size={14} /> Create Lesson
+              </button>
+            )}
+            {isLearner && tab === "mine" && (
+              <button className="btn" onClick={() => window.location.href = "/classes"}>
+                Browse Classes →
               </button>
             )}
           </div>

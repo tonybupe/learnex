@@ -339,8 +339,9 @@ export default function LessonDetail({ lesson, onBack }: Props) {
   const canEdit = (isTeacher && l.teacher_id === currentUser?.id) || !!isAdmin
   const isOwner = l.teacher_id === currentUser?.id
   const isPublicLesson = l.visibility === "public"
-  // isMember check — simplified; in full app fetch class membership
-  const isMember = isTeacher || isAdmin || isOwner
+  // For learners: if they can see this lesson (backend returned it), they are a member
+  // Backend only returns class lessons to enrolled learners
+  const isMember = isTeacher || isAdmin || isOwner || isLearner
   const canShare = true // Anyone can share a public lesson to the feed
 
   return (
