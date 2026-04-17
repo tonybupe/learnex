@@ -30,8 +30,8 @@ function CreateSubjectModal({ onCreated, onClose }: {
     onError: (err: any) => setError(err?.response?.data?.detail || "Failed to create subject"),
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
     setError("")
     if (!form.name.trim()) { setError("Name is required"); return }
     if (!form.code.trim()) { setError("Code is required"); return }
@@ -61,7 +61,7 @@ function CreateSubjectModal({ onCreated, onClose }: {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: "20px" }}>
+        <div style={{ padding: "20px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div className="form-field">
               <label className="form-label">Subject Name *</label>
@@ -94,12 +94,12 @@ function CreateSubjectModal({ onCreated, onClose }: {
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4 }}>
               <button type="button" className="btn" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn btn-primary" disabled={createMutation.isPending}>
+              <button type="button" className="btn btn-primary" disabled={createMutation.isPending} onClick={handleSubmit}>
                 <Plus size={14} /> {createMutation.isPending ? "Creating..." : "Create Subject"}
               </button>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
