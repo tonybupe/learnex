@@ -334,15 +334,23 @@ export default function LessonDetail({ lesson, onBack }: Props) {
   const wordCount = l.content.split(/\s+/).filter(Boolean).length
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const slides = l.content.split("\n").filter(line => line.startsWith("## ")).map(l => l.slice(3))
-  // RBAC: only the lesson owner (teacher) or admin can edit/delete
-  // RBAC: only the lesson owner or admin can edit/delete
   const canEdit = (isTeacher && l.teacher_id === currentUser?.id) || !!isAdmin
   const isOwner = l.teacher_id === currentUser?.id
-  const isPublicLesson = l.visibility === "public"
-  // For learners: if they can see this lesson (backend returned it), they are a member
-  // Backend only returns class lessons to enrolled learners
-  const isMember = isTeacher || isAdmin || isOwner || isLearner
-  const canShare = true // Anyone can share a public lesson to the feed
+  const canShare = true
+
+  // Check if user is enrolled in this lesson class (works for learners AND teachers who joined)
+  const { data: enrolledClasses = [] } = useQuery({
+    queryKey: ["classes-enrolled"],
+    queryFn: async () => {
+      const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    },
+    staleTime: 60000,
+  })
+  const isEnrolledInClass = enrolledClasses.some((c: any) => c.id === l.class_id)
+
+  // isMember: owner, admin, OR enrolled (learner/teacher who joined this class)
+  const isMember = isOwner || !!isAdmin || isEnrolledInClass
 
   return (
     <>
