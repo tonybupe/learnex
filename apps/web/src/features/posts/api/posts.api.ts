@@ -621,3 +621,21 @@ export async function getFeedByMode(
     throw transformApiError(apiError)
   }
 }
+// ── SAVE / UNSAVE ─────────────────────────────────────────────────
+export async function savePost(postId: number): Promise<void> {
+  await api.post(`/posts/${postId}/save`)
+}
+
+export async function unsavePost(postId: number): Promise<void> {
+  await api.delete(`/posts/${postId}/save`)
+}
+
+export async function toggleSave(postId: number, isSaved: boolean): Promise<boolean> {
+  if (isSaved) {
+    await unsavePost(postId)
+    return false
+  } else {
+    await savePost(postId)
+    return true
+  }
+}
