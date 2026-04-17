@@ -240,73 +240,79 @@ def make_fallback(topic: str) -> dict:
 
 
 @router.post("/ai/generate")
-def generate_lesson_content(
-    payload: dict,
-    db: Session = Depends(get_db),
+async def generate_lesson_with_ai(
+    payload: AIGenerateRequest,
     current_user: User = Depends(require_roles("teacher", "admin")),
 ):
-    topic = payload.get("topic", "").strip()
-    subtopic = payload.get("subtopic", "").strip()
-    level = payload.get("level", "secondary").strip()
-    if not topic:
-        raise HTTPException(status_code=400, detail="Topic is required")
-
-    full_topic = f"{topic}: {subtopic}" if subtopic else topic
+    """Generate full lesson content using Claude AI."""
+    import os
+    import anthropic
+    import json
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key or api_key == "your-anthropic-api-key-here":
-        return make_fallback(full_topic)
+    if not api_key:
+        raise HTTPException(status_code=503, detail="AI service not configured")
+
+    level_desc = {
+        "primary": "primary school students (ages 6-12)",
+        "secondary": "secondary school students (ages 13-18)",
+        "college": "college students",
+        "university": "university students",
+    }.get(payload.level, "secondary school students")
+
+    subtopic_part = f" - {payload.subtopic}" if payload.subtopic.strip() else ""
+    topic = payload.topic + subtopic_part
+
+    system = "You are an expert teacher who creates detailed educational content. Always respond with valid JSON only, no markdown code blocks."
+
+    user_msg = (
+        f"Create a comprehensive lesson about: {topic}\n"
+        f"Target audience: {level_desc}\n\n"
+        "Respond with a single JSON object containing these exact keys:\n"
+        "- content: string (full lesson in markdown, min 400 words, use \\n for line breaks)\n"
+        "- summary: string (2-3 sentences)\n"
+        "- key_terms: array of objects with keys term and definition (5-7 items)\n"
+        "- youtube_searches: array of 3 search query strings\n"
+        "- presentation_slides: array of 5 objects, each with slide (number), title (string), points (array of 3 strings)\n\n"
+        "Important: Write real educational content specific to the topic. No placeholders."
+    )
 
     try:
-        import anthropic as _anthropic
-        client = _anthropic.Anthropic(api_key=api_key)
-        prompt = f"""You are an expert educator creating a lesson for {level} school students on: "{full_topic}".
-
-Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
-{{
-  "content": "Full lesson notes with ## headings, ### subheadings, - bullet points, **bold key terms**, numbered lists, and clear explanations. At least 600 words. Include an introduction, learning objectives, key concepts with explanations, real-world examples, and a summary.",
-  "summary": "One paragraph summary of the lesson",
-  "key_terms": [
-    {{"term": "term1", "definition": "clear definition"}},
-    {{"term": "term2", "definition": "clear definition"}},
-    {{"term": "term3", "definition": "clear definition"}}
-  ],
-  "youtube_searches": ["specific search query 1", "specific search query 2", "specific search query 3", "specific search query 4"],
-  "image_searches": ["diagram search 1", "diagram search 2", "infographic search"],
-  "resource_links": [
-    {{"title": "Resource name", "url": "https://actual-url.com", "type": "article"}},
-    {{"title": "Khan Academy link", "url": "https://www.khanacademy.org/search?page_search_query={full_topic.replace(' ', '+')}", "type": "course"}},
-    {{"title": "YouTube search", "url": "https://www.youtube.com/results?search_query={full_topic.replace(' ', '+')}", "type": "video"}}
-  ],
-  "diagram_suggestions": ["Concept map showing...", "Flowchart of...", "Timeline of..."],
-  "presentation_slides": [
-    {{"slide": 1, "title": "Introduction", "points": ["point1", "point2", "point3"]}},
-    {{"slide": 2, "title": "Key Concepts", "points": ["point1", "point2", "point3"]}},
-    {{"slide": 3, "title": "Applications", "points": ["point1", "point2", "point3"]}},
-    {{"slide": 4, "title": "Summary", "points": ["takeaway1", "takeaway2", "takeaway3"]}}
-  ]
-}}"""
-
+        client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": prompt}]
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            system=system,
+            messages=[{"role": "user", "content": user_msg}]
         )
-        text = message.content[0].text.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-        return json.loads(text)
 
-    except Exception as e:
+        raw = message.content[0].text.strip()
+
+        # Strip code fences if present
+        if raw.startswith("```"):
+            lines = raw.split("\n")
+            raw = "\n".join(lines[1:-1] if lines[-1] == "```" else lines[1:])
+            raw = raw.strip()
+
+        data = json.loads(raw)
+
+        if not data.get("content") or len(data["content"]) < 50:
+            raise ValueError("AI returned insufficient content")
+
+        return data
+
+    except anthropic.BadRequestError as e:
         err = str(e)
-        if any(w in err.lower() for w in ["credit", "billing", "quota", "insufficient", "overloaded"]):
-            return make_fallback(full_topic)
-        raise HTTPException(status_code=500, detail=f"AI generation failed: {err}")
+        if "credit" in err.lower() or "balance" in err.lower():
+            raise HTTPException(status_code=402, detail="AI credits exhausted. Top up at console.anthropic.com")
+        raise HTTPException(status_code=400, detail=f"AI request error: {err}")
+    except anthropic.APIError as e:
+        raise HTTPException(status_code=503, detail=f"AI service error: {str(e)}")
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
 
-
-# =========================================================
-# LESSON DISCUSSION
-# =========================================================
 
 @router.get("/{lesson_id}/discussion")
 def get_lesson_discussion(
