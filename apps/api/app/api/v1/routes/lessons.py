@@ -377,3 +377,94 @@ def delete_lesson_comment(
     db.delete(comment)
     db.commit()
     return {"message": "Deleted"}
+
+# =========================================================
+# AI LESSON GENERATOR
+# =========================================================
+from pydantic import BaseModel as PydanticBaseModel
+
+class AIGenerateRequest(PydanticBaseModel):
+    topic: str
+    subtopic: str = ""
+    level: str = "secondary"  # primary, secondary, college, university
+
+@router.post("/ai/generate")
+async def generate_lesson_with_ai(
+    payload: AIGenerateRequest,
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    """Generate full lesson content using Claude AI."""
+    import os
+    import anthropic
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="AI service not configured")
+
+    level_desc = {
+        "primary": "primary school students (ages 6-12), use simple language and fun examples",
+        "secondary": "secondary school students (ages 13-18), use clear explanations with real-world examples",
+        "college": "college students, use intermediate academic language with detailed explanations",
+        "university": "university students, use advanced academic language with in-depth analysis",
+    }.get(payload.level, "secondary school students")
+
+    subtopic_part = f" focusing on '{payload.subtopic}'" if payload.subtopic.strip() else ""
+
+    prompt = f"""You are an expert educator. Create a comprehensive, engaging lesson on the topic: "{payload.topic}"{subtopic_part}.
+
+This lesson is for {level_desc}.
+
+Return a JSON object with exactly these fields:
+{{
+  "content": "Full lesson content in markdown format. Must include:
+    - ## Introduction section explaining what the topic is
+    - ## Key Concepts section with detailed explanations  
+    - ## Examples section with real-world examples and illustrations
+    - ## Summary section with key takeaways
+    - ## Practice Questions section with 3-5 questions
+    At least 500 words of rich educational content.",
+  "summary": "A 2-3 sentence summary of the lesson",
+  "key_terms": [
+    {{"term": "term name", "definition": "clear definition"}},
+    ... (5-8 key terms)
+  ],
+  "youtube_searches": ["search query 1", "search query 2", "search query 3"],
+  "presentation_slides": [
+    {{"slide": 1, "title": "slide title", "points": ["point 1", "point 2", "point 3"]}},
+    ... (4-6 slides)
+  ]
+}}
+
+IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No extra text. Just the JSON object."""
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        import json
+        raw = message.content[0].text.strip()
+        # Strip markdown code blocks if present
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
+
+        data = json.loads(raw)
+
+        # Ensure content is substantial
+        if not data.get("content") or len(data["content"]) < 100:
+            raise ValueError("AI returned insufficient content")
+
+        return data
+
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"AI returned invalid response: {str(e)}")
+    except anthropic.APIError as e:
+        raise HTTPException(status_code=503, detail=f"AI service error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
