@@ -15,6 +15,7 @@ import TeacherDashboardPage from "@/pages/teacher/TeacherDashboardPage"
 import LearnerDashboardPage from "@/pages/learner/LearnerDashboardPage"
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage"
 import SubscriptionPage from "@/pages/subscription/SubscriptionPage"
+import SavedPage from "@/pages/saved/SavedPage"
 
 // Shared
 import MessagingPage from "@/pages/shared/MessagingPage"
@@ -81,6 +82,7 @@ export default function App() {
 
         <Route path="/home" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><HomePage /></AuthGuard>} />
         <Route path="/subscription" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SubscriptionPage /></AuthGuard>} />
+        <Route path="/saved" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SavedPage /></AuthGuard>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </QueryClientProvider>
