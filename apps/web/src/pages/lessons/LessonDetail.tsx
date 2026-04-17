@@ -248,7 +248,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
 
 // ── Main Component ─────────────────────────────────────────────────
 export default function LessonDetail({ lesson, onBack }: Props) {
-  const { isTeacher, isAdmin } = useAuth()
+  const { isTeacher, isAdmin, isLearner } = useAuth()
   const currentUser = useAuthStore(s => s.user)
   const queryClient = useQueryClient()
   const commentInputRef = useRef<HTMLInputElement>(null)
