@@ -129,7 +129,15 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
         onCreated?.(post)
       }
     } catch (e: any) {
-      const msg = e.message || "Failed to post"
+      // Extract clean string from axios/API error
+      let msg = "Failed to post"
+      if (typeof e?.response?.data?.detail === "string") {
+        msg = e.response.data.detail
+      } else if (Array.isArray(e?.response?.data?.detail)) {
+        msg = e.response.data.detail.map((d: any) => d.msg || String(d)).join(", ")
+      } else if (typeof e?.message === "string") {
+        msg = e.message
+      }
       setError(msg); toast.error(msg)
     } finally {
       setLoading(false)
