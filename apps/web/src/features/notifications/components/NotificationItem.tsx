@@ -23,53 +23,63 @@ const ICONS: Record<string, string> = {
   default:        "🔔",
 }
 
-// Build the correct route from notification data
+// Valid app routes (must match App.tsx exactly)
+// /home /feed /classes /classes/discover /lessons /quizzes
+// /live-sessions /messages /analytics /discover /settings
+// /profile/:userId /subjects /teacher/dashboard /learner/dashboard /admin/dashboard
+
 function resolveRoute(n: Notification): string | null {
-  // Use action_url if provided
-  if (n.action_url) {
-    // If it starts with http, open externally — else use as path
-    if (n.action_url.startsWith("http")) return null
+  // Use action_url first if it is an internal path
+  if (n.action_url && !n.action_url.startsWith("http")) {
     return n.action_url
   }
 
-  const { entity_type, entity_id, notification_type } = n
+  const type = (n.notification_type ?? "").toLowerCase()
+  const entity = (n.entity_type ?? "").toLowerCase()
+  const id = n.entity_id
 
-  // Route by entity_type + entity_id
-  if (entity_type && entity_id) {
-    switch (entity_type.toLowerCase()) {
+  // Route by entity_type
+  if (entity) {
+    switch (entity) {
       case "class":
-      case "classroom":   return "/classes"
-      case "lesson":      return "/lessons"
-      case "quiz":        return "/quizzes"
-      case "post":        return "/feed"
-      case "user":        return `/profile/${entity_id}`
+      case "classroom":    return "/classes"
+      case "lesson":       return "/lessons"
+      case "quiz":         return "/quizzes"
+      case "post":         return "/feed"
+      case "user":         return id ? `/profile/${id}` : "/home"
       case "live":
       case "live_session": return "/live-sessions"
-      case "message":     return "/messages"
+      case "message":      return "/messages"
+      case "subject":      return "/subjects"
     }
   }
 
   // Route by notification_type
-  switch (notification_type?.toLowerCase()) {
-    case "follow":        return "/profile"
+  switch (type) {
+    case "follow":
+    case "new_follower":   return "/home"
     case "class_invite":
-    case "class_join":    return "/classes"
+    case "class_join":
+    case "new_member":     return "/classes"
     case "new_lesson":
-    case "lesson":        return "/lessons"
+    case "lesson_update":  return "/lessons"
     case "quiz_grade":
-    case "quiz":          return "/quizzes"
+    case "quiz_result":
+    case "new_quiz":       return "/quizzes"
     case "live_session":
-    case "live":          return "/live-sessions"
+    case "live_starting":  return "/live-sessions"
     case "comment":
     case "like":
     case "reaction":
     case "new_post":
-    case "post":          return "/feed"
-    case "message":       return "/messages"
-    case "announcement":  return "/feed"
+    case "post_mention":   return "/feed"
+    case "message":
+    case "new_message":    return "/messages"
+    case "announcement":   return "/feed"
+    case "reminder":       return "/home"
   }
 
-  return null
+  return "/home"  // safe fallback — always valid
 }
 
 function timeAgo(dateStr: string) {
