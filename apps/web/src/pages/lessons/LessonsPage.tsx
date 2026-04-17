@@ -155,7 +155,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
                 {result.presentation_slides.map((s, i) => (
                   <div key={i} style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 12 }}>
                     <div style={{ fontWeight: 800, color: "var(--accent)", marginBottom: 3 }}>Slide {s.slide}: {s.title}</div>
-                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>â€¢ {p}</div>)}
+                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>• {p}</div>)}
                   </div>
                 ))}
               </div>
@@ -198,7 +198,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
                 <Lock size={9} /> class
               </span>
             )}
-            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>Â· {className}</span>}
+            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>· {className}</span>}
           </div>
           <div style={{ fontSize: 11, color: "var(--muted)" }}>{timeAgo(lesson.created_at)}</div>
         </div>
@@ -218,6 +218,11 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
                 onClick={e => { e.stopPropagation(); onDelete() }}>
                 <Trash2 size={13} />
               </button>
+            )}
+            {!canEdit && (
+              <span style={{ padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: "rgba(56,189,248,0.08)", color: "#38bdf8" }}>
+                👁 View only
+              </span>
             )}
             {!canEdit && lesson.visibility === "public" && (
               <span style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 4 }}>
@@ -527,7 +532,7 @@ export default function LessonsPage() {
                   <select className="audit-control select" value={form.visibility}
                     onChange={e => setForm(p => ({ ...p, visibility: e.target.value }))}>
                     <option value="class">ðŸ”’ Class only</option>
-                    <option value="public">ðŸŒ Public (anyone can view)</option>
+                    <option value="public">🌐 Public (anyone can view)</option>
                   </select>
                 </div>
               </div>
