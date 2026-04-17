@@ -98,10 +98,10 @@ export default function NotificationBell() {
           {/* Footer */}
           {notifications.length > 0 && (
             <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)", textAlign: "center" }}>
-              <a href="/notifications" onClick={() => setOpen(false)}
-                style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>
-                View all notifications →
-              </a>
+              <button onClick={() => setOpen(false)}
+                style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                ✓ Close
+              </button>
             </div>
           )}
         </div>
