@@ -25,6 +25,38 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
+// Map notification to valid frontend route (same logic as NotificationItem)
+function notifRoute(n: any): string {
+  const type = (n.notification_type ?? "").toLowerCase()
+  const entity = (n.entity_type ?? "").toLowerCase()
+  switch (type) {
+    case "lesson_published":
+    case "new_lesson":      return "/lessons"
+    case "follow_created":
+    case "new_follower":    return "/home"
+    case "class_post_created":
+    case "comment":
+    case "like":
+    case "reaction":
+    case "new_post":        return "/feed"
+    case "class_join":
+    case "class_invite":    return "/classes"
+    case "quiz_grade":
+    case "new_quiz":        return "/quizzes"
+    case "live_session":    return "/live-sessions"
+    case "message":         return "/messages"
+  }
+  switch (entity) {
+    case "lesson":          return "/lessons"
+    case "class":           return "/classes"
+    case "quiz":            return "/quizzes"
+    case "post":            return "/feed"
+    case "live_session":    return "/live-sessions"
+    case "message":         return "/messages"
+  }
+  return "/home"
+}
+
 export default function RightPanel() {
   const navigate = useNavigate()
   const user = useAuthStore(s => s.user)
@@ -39,13 +71,11 @@ export default function RightPanel() {
     staleTime: 60000,
   })
 
-  // Use classes endpoint to find teachers - accessible to all roles
   const { data: teachers = [] } = useQuery({
     queryKey: ["teachers-panel"],
     queryFn: async () => {
       const res = await api.get("/classes").catch(() => ({ data: [] }))
       const classes = Array.isArray(res.data) ? res.data : []
-      // Extract unique teachers from classes
       const seen = new Set<number>()
       const result: any[] = []
       for (const cls of classes) {
@@ -60,6 +90,11 @@ export default function RightPanel() {
   })
 
   const unread = notifications.filter((n: any) => !n.is_read)
+
+  const handleNotifClick = (n: any) => {
+    if (!n.is_read) markRead(n.id)
+    navigate(notifRoute(n))
+  }
 
   return (
     <div className="right-panel-stack">
@@ -76,19 +111,30 @@ export default function RightPanel() {
           <div className="rp-empty">No notifications yet</div>
         ) : (
           <div className="rp-list">
-            {notifications.slice(0, 4).map((n: any) => (
-              <div key={n.id} className={`rp-notif ${n.is_read ? "" : "unread"}`}
-                onClick={() => markRead(n.id)} style={{ cursor: "pointer" }}>
+            {notifications.slice(0, 5).map((n: any) => (
+              <div key={n.id}
+                className={`rp-notif ${n.is_read ? "" : "unread"}`}
+                onClick={() => handleNotifClick(n)}
+                style={{ cursor: "pointer" }}
+                title="Click to view">
                 <div className="rp-notif-dot" style={{ background: n.is_read ? "var(--border)" : "var(--accent)" }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="rp-notif-msg">{n.title ?? n.message}</div>
                   <div className="rp-notif-time">{timeAgo(n.created_at)}</div>
                 </div>
+                {!n.is_read && (
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
+                )}
               </div>
             ))}
           </div>
         )}
-        <button className="rp-link" onClick={() => navigate("/notifications")}>View all →</button>
+        {/* No "view all" link — /notifications doesn't exist */}
+        {notifications.length > 5 && (
+          <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
+            +{notifications.length - 5} more — open bell icon to view
+          </div>
+        )}
       </div>
 
       {/* Upcoming Sessions */}
@@ -103,7 +149,7 @@ export default function RightPanel() {
         ) : (
           <div className="rp-list">
             {sessions.slice(0, 3).map((s: any) => (
-              <div key={s.id} className="rp-session">
+              <div key={s.id} className="rp-session" onClick={() => navigate("/live-sessions")} style={{ cursor: "pointer" }}>
                 <div className="rp-session-dot" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="rp-session-title">{s.title}</div>
