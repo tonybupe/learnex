@@ -166,3 +166,12 @@
     top: 60px;
   }
 }
+.notification-item.clickable:hover {
+  background: color-mix(in srgb, var(--accent) 5%, var(--card));
+  border-left: 3px solid var(--accent);
+  padding-left: calc(14px - 3px);
+  transition: all 0.15s;
+}
+.notification-item.clickable {
+  transition: all 0.15s;
+}
