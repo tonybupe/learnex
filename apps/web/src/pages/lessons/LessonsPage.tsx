@@ -14,7 +14,7 @@ import {
   ChevronLeft, X, AlertCircle, Filter
 } from "lucide-react"
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface LessonResource { id: number; resource_type: string; url: string; title?: string }
 interface Lesson {
   id: number; title: string; description?: string; content: string
@@ -24,7 +24,7 @@ interface Lesson {
 }
 interface ClassRoom { id: number; title: string; class_code: string; teacher_id?: number }
 
-// â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   note: <FileText size={14} />, video: <Video size={14} />,
   live: <Eye size={14} />, assignment: <BookOpen size={14} />,
@@ -44,7 +44,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// â”€â”€ AI Result types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ AI Result types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface AIResult {
   content: string; summary: string
   key_terms?: { term: string; definition: string }[]
@@ -55,7 +55,7 @@ interface AIResult {
   presentation_slides?: { slide: number; title: string; points: string[] }[]
 }
 
-// â”€â”€ AI Generator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ AI Generator ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function AIGenerator({ topic, subtopic, onGenerated }: {
   topic: string; subtopic: string
   onGenerated: (content: string, result: AIResult) => void
@@ -125,10 +125,10 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
       </button>
       {result && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>âœ… Content generated! Scroll down to edit.</div>
+          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>Ô£à Content generated! Scroll down to edit.</div>
           {result.key_terms && result.key_terms.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>ðŸ“– Key Terms</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒôû Key Terms</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                 {result.key_terms.map((t, i) => <span key={i} className="chip" title={t.definition} style={{ fontSize: 11, cursor: "help" }}>{t.term}</span>)}
               </div>
@@ -136,7 +136,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
           )}
           {result.youtube_searches && result.youtube_searches.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>ðŸŽ¥ Video Suggestions</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒÄÑ Video Suggestions</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {result.youtube_searches.map((q, i) => (
                   <a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`}
@@ -150,12 +150,12 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
           )}
           {result.presentation_slides && result.presentation_slides.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>ðŸ“Š Slide Outline</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒôè Slide Outline</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
                 {result.presentation_slides.map((s, i) => (
                   <div key={i} style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 12 }}>
                     <div style={{ fontWeight: 800, color: "var(--accent)", marginBottom: 3 }}>Slide {s.slide}: {s.title}</div>
-                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>• {p}</div>)}
+                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>ÔÇó {p}</div>)}
                   </div>
                 ))}
               </div>
@@ -167,7 +167,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
   )
 }
 
-// â”€â”€ Lesson Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ Lesson Card ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
   lesson: Lesson; onOpen: () => void; onDelete: () => void; canEdit: boolean; className?: string
 }) {
@@ -198,7 +198,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
                 <Lock size={9} /> class
               </span>
             )}
-            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>· {className}</span>}
+            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>┬À {className}</span>}
           </div>
           <div style={{ fontSize: 11, color: "var(--muted)" }}>{timeAgo(lesson.created_at)}</div>
         </div>
@@ -212,21 +212,16 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
             {lesson.content?.replace(/<[^>]+>/g, "").slice(0, 200)}
           </p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={e => { e.stopPropagation(); onOpen() }}>Open â†’</button>
+            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={e => { e.stopPropagation(); onOpen() }}>Open ÔåÆ</button>
             {canEdit && (
               <button className="btn" style={{ fontSize: 12, padding: "6px 10px", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)" }}
                 onClick={e => { e.stopPropagation(); onDelete() }}>
                 <Trash2 size={13} />
               </button>
             )}
-            {!canEdit && (
-              <span style={{ padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 700, background: "rgba(56,189,248,0.08)", color: "#38bdf8" }}>
-                👁 View only
-              </span>
-            )}
             {!canEdit && lesson.visibility === "public" && (
               <span style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 4 }}>
-                <Globe size={11} /> Shared publicly â€” view only
+                <Globe size={11} /> Shared publicly ÔÇö view only
               </span>
             )}
           </div>
@@ -236,9 +231,9 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
   )
 }
 
-// â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ÔöÇÔöÇ Main Page ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export default function LessonsPage() {
-  const { isTeacher, isAdmin, isLearner, user } = useAuth()
+  const { isTeacher, isAdmin, user } = useAuth()
   const currentUser = useAuthStore(s => s.user)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -274,17 +269,6 @@ export default function LessonsPage() {
     },
     enabled: isTeacher || isAdmin,
   })
-
-  // Classes teacher has JOINED as member
-  const { data: enrolledClasses = [] } = useQuery({
-    queryKey: ["classes-enrolled"],
-    queryFn: async () => {
-      const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
-      return Array.isArray(res.data) ? res.data : []
-    },
-    staleTime: 30000,
-  })
-  const enrolledClassIds = new Set(enrolledClasses.map((c: any) => c.id))
 
   const { data: allClasses = [] } = useQuery({
     queryKey: ["classes-all"],
@@ -332,19 +316,19 @@ export default function LessonsPage() {
   }
 
   // Classify lessons
-  const myLessons = lessons.filter(l => l.teacher_id === currentUser?.id)
-  // Lessons from classes teacher has JOINED as member (not their own)
+  const myLessons = lessons.filter((l: any) => l.teacher_id === currentUser?.id)
   const enrolledLessons = (isTeacher || isAdmin)
-    ? lessons.filter(l => l.teacher_id !== currentUser?.id && enrolledClassIds.has(l.class_id))
+    ? lessons.filter((l: any) => l.teacher_id !== currentUser?.id && enrolledClassIds.has(l.class_id))
     : []
-  const classLessons = lessons.filter(l => l.teacher_id !== currentUser?.id)
-  const publicLessons = lessons.filter(l => l.visibility === "public")
+  const classLessons = lessons.filter((l: any) => l.teacher_id !== currentUser?.id)
+  const publicLessons = lessons.filter((l: any) => l.visibility === "public")
   const activeSet = isLearner && tab === "mine"
     ? lessons
     : tab === "mine" ? myLessons
     : tab === "enrolled" ? enrolledLessons
     : tab === "public" ? publicLessons
     : classLessons
+
   // Filter + search
   const filtered = useMemo(() => {
     return activeSet.filter(l => {
@@ -375,10 +359,10 @@ export default function LessonsPage() {
   }
 
   const TABS = [
-    { key: "mine",     label: isLearner ? "My Enrolled" : "My Lessons",   count: isLearner ? lessons.length : myLessons.length },
-    ...(!isLearner ? [{ key: "enrolled", label: "📚 Joined Classes",       count: enrolledLessons.length }] : []),
-    { key: "class",    label: isLearner ? "All Lessons" : "Other Classes", count: classLessons.length },
-    { key: "public",   label: "🌐 Public",                                 count: publicLessons.length },
+    { key: "mine",     label: isLearner ? "My Enrolled" : "My Lessons",    count: isLearner ? lessons.length : myLessons.length },
+    ...(!isLearner ? [{ key: "enrolled", label: "Joined Classes",           count: enrolledLessons.length }] : []),
+    { key: "class",    label: isLearner ? "All Lessons" : "Other Classes",  count: classLessons.length },
+    { key: "public",   label: "Public",                                     count: publicLessons.length },
   ]
 
   if (activeLesson) return <LessonDetail lesson={activeLesson} onBack={() => setActiveLesson(null)} />
@@ -387,7 +371,7 @@ export default function LessonsPage() {
     <AppShell>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px 48px" }}>
 
-        {/* â”€â”€ Header â”€â”€ */}
+        {/* ÔöÇÔöÇ Header ÔöÇÔöÇ */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -411,14 +395,14 @@ export default function LessonsPage() {
           </div>
         </div>
 
-        {/* â”€â”€ RBAC notice â”€â”€ */}
+        {/* ÔöÇÔöÇ RBAC notice ÔöÇÔöÇ */}
         {isTeacher && (
           <div style={{ padding: "10px 16px", borderRadius: 10, marginBottom: 16, background: "rgba(203,38,228,0.06)", border: "1px solid rgba(203,38,228,0.2)", fontSize: 13, color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
-            ðŸ”’ <span>You can only <strong style={{ color: "var(--text)" }}>create, edit or delete lessons in your own classes</strong>. Other lessons are view-only.</span>
+            ­ƒöÆ <span>You can only <strong style={{ color: "var(--text)" }}>create, edit or delete lessons in your own classes</strong>. Other lessons are view-only.</span>
           </div>
         )}
 
-        {/* â”€â”€ Create Form â”€â”€ */}
+        {/* ÔöÇÔöÇ Create Form ÔöÇÔöÇ */}
         {showForm && (isTeacher || isAdmin) && (
           <div className="card" style={{ padding: 22, marginBottom: 22 }}>
             <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
@@ -469,7 +453,7 @@ export default function LessonsPage() {
               <div className="form-field">
                 <label className="form-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span>Content *</span>
-                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>âœ“ Content loaded â€” edit below</span>}
+                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>Ô£ô Content loaded ÔÇö edit below</span>}
                 </label>
                 <RichEditor value={form.content}
                   onChange={(md) => setForm(p => ({ ...p, content: md }))}
@@ -491,7 +475,7 @@ export default function LessonsPage() {
                     </select>
                   ) : (
                     <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 13, color: "var(--muted)" }}>
-                      No classes â€” create one first
+                      No classes ÔÇö create one first
                     </div>
                   )}
                 </div>
@@ -509,10 +493,10 @@ export default function LessonsPage() {
                   <label className="form-label">Lesson Type</label>
                   <select className="audit-control select" value={form.lesson_type}
                     onChange={e => setForm(p => ({ ...p, lesson_type: e.target.value }))}>
-                    <option value="note">ðŸ“ Note</option>
-                    <option value="video">ðŸŽ¥ Video</option>
-                    <option value="live">ðŸ”´ Live</option>
-                    <option value="assignment">ðŸ“‹ Assignment</option>
+                    <option value="note">­ƒôØ Note</option>
+                    <option value="video">­ƒÄÑ Video</option>
+                    <option value="live">­ƒö┤ Live</option>
+                    <option value="assignment">­ƒôï Assignment</option>
                   </select>
                 </div>
               </div>
@@ -531,8 +515,8 @@ export default function LessonsPage() {
                   <label className="form-label">Visibility</label>
                   <select className="audit-control select" value={form.visibility}
                     onChange={e => setForm(p => ({ ...p, visibility: e.target.value }))}>
-                    <option value="class">ðŸ”’ Class only</option>
-                    <option value="public">🌐 Public (anyone can view)</option>
+                    <option value="class">­ƒöÆ Class only</option>
+                    <option value="public">­ƒîÉ Public (anyone can view)</option>
                   </select>
                 </div>
               </div>
@@ -552,7 +536,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* â”€â”€ Tabs + Filters â”€â”€ */}
+        {/* ÔöÇÔöÇ Tabs + Filters ÔöÇÔöÇ */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
           <div className="tabs-bar" style={{ flex: 1, margin: 0 }}>
             {TABS.map(t => (
@@ -574,17 +558,17 @@ export default function LessonsPage() {
           <div style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 20, border: "1px solid var(--border)", background: "var(--bg2)" }}>
             <Search size={14} style={{ color: "var(--muted)" }} />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
-              id="search" name="search" placeholder="Search lessons..."
+              placeholder="Search lessons..."
               style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: "var(--text)", width: "100%", fontFamily: "inherit" }} />
             {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex" }}><X size={13} /></button>}
           </div>
           <select className="audit-control select" style={{ width: 140, fontSize: 13 }} value={filterType}
             onChange={e => { setFilterType(e.target.value); setPage(1) }}>
             <option value="">All types</option>
-            <option value="note">ðŸ“ Note</option>
-            <option value="video">ðŸŽ¥ Video</option>
-            <option value="live">ðŸ”´ Live</option>
-            <option value="assignment">ðŸ“‹ Assignment</option>
+            <option value="note">­ƒôØ Note</option>
+            <option value="video">­ƒÄÑ Video</option>
+            <option value="live">­ƒö┤ Live</option>
+            <option value="assignment">­ƒôï Assignment</option>
           </select>
           {(isTeacher || isAdmin) && (
             <select className="audit-control select" style={{ width: 130, fontSize: 13 }} value={filterStatus}
@@ -597,33 +581,28 @@ export default function LessonsPage() {
           )}
         </div>
 
-        {/* â”€â”€ Loading â”€â”€ */}
+        {/* ÔöÇÔöÇ Loading ÔöÇÔöÇ */}
         {isLoading && [1,2,3].map(i => <div key={i} className="card" style={{ height: 72, opacity: 0.3, marginBottom: 8 }} />)}
 
-        {/* â”€â”€ Empty â”€â”€ */}
+        {/* ÔöÇÔöÇ Empty ÔöÇÔöÇ */}
         {!isLoading && filtered.length === 0 && (
           <div className="card" style={{ textAlign: "center", padding: "40px 24px" }}>
-            <div style={{ fontSize: 44, marginBottom: 10 }}>ðŸ“š</div>
+            <div style={{ fontSize: 44, marginBottom: 10 }}>­ƒôÜ</div>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>
-              {search ? `No lessons match "${search}"` : isLearner && tab === "mine" ? "No lessons in your enrolled classes yet" : tab === "mine" ? "No lessons yet" : "No lessons here"}
+              {search ? `No lessons match "${search}"` : tab === "mine" ? "No lessons yet" : "No lessons here"}
             </div>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 16px" }}>
-              {isLearner && tab === "mine" ? "Join a class to see its lessons here." : isTeacher && tab === "mine" ? "Create your first lesson with AI." : "Try a different filter or tab."}
+              {isTeacher && tab === "mine" ? "Create your first lesson with AI." : "Try a different filter or tab."}
             </p>
-            {(isTeacher || isAdmin) && tab === "mine" && (
+            {isTeacher && tab === "mine" && (
               <button className="btn btn-primary" onClick={() => setShowForm(true)}>
                 <PlusCircle size={14} /> Create Lesson
-              </button>
-            )}
-            {isLearner && tab === "mine" && (
-              <button className="btn" onClick={() => window.location.href = "/classes"}>
-                Browse Classes â†’
               </button>
             )}
           </div>
         )}
 
-        {/* â”€â”€ Lessons grouped by class â”€â”€ */}
+        {/* ÔöÇÔöÇ Lessons grouped by class ÔöÇÔöÇ */}
         {!isLoading && Object.keys(byClass).length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {Object.entries(byClass).map(([classId, classLessons]) => {
@@ -634,7 +613,7 @@ export default function LessonsPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 14px", borderRadius: 999, border: "1px solid var(--border)", background: "var(--card)", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}>
-                      ðŸŽ“ {clsName}
+                      ­ƒÄô {clsName}
                       <span className="chip" style={{ fontSize: 10 }}>{classLessons.length}</span>
                     </div>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
@@ -658,7 +637,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* â”€â”€ Pagination â”€â”€ */}
+        {/* ÔöÇÔöÇ Pagination ÔöÇÔöÇ */}
         {!isLoading && totalPages > 1 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 28 }}>
             <button className="btn" style={{ fontSize: 12, padding: "7px 14px" }}
@@ -680,7 +659,7 @@ export default function LessonsPage() {
         {/* Pagination info */}
         {!isLoading && filtered.length > 0 && (
           <div style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "var(--muted)" }}>
-            Showing {Math.min((page-1)*PAGE_SIZE+1, filtered.length)}â€“{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length} lessons
+            Showing {Math.min((page-1)*PAGE_SIZE+1, filtered.length)}ÔÇô{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length} lessons
           </div>
         )}
       </div>
