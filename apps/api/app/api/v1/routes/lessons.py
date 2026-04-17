@@ -63,16 +63,26 @@ def list_lessons(
     current_user: User = Depends(get_current_user),
 ):
     q = lesson_query(db)
-    # Teachers: mine=true returns only their own lessons
-    if mine and current_user.role in ("teacher",):
-        q = q.filter(Lesson.teacher_id == current_user.id)
-    # Learners: only see published lessons in their enrolled classes
-    if current_user.role == "learner":
-        from app.models.class_member import ClassMember
-        enrolled_class_ids = db.query(ClassMember.class_id).filter(
-            ClassMember.learner_id == current_user.id,
-            ClassMember.status == "active"
-        ).subquery()
+    # Get enrolled class IDs for any role (teachers can join classes too)
+    from app.models.class_member import ClassMember
+    enrolled_class_ids = db.query(ClassMember.class_id).filter(
+        ClassMember.learner_id == current_user.id,
+        ClassMember.status == "active"
+    ).subquery()
+
+    if current_user.role == "teacher" or current_user.role == "admin":
+        if mine:
+            # mine=true: only own lessons
+            q = q.filter(Lesson.teacher_id == current_user.id)
+        else:
+            # Show: own lessons + lessons in joined classes (published) + public lessons
+            q = q.filter(
+                (Lesson.teacher_id == current_user.id) |
+                (Lesson.class_id.in_(enrolled_class_ids) & (Lesson.status == "published")) |
+                (Lesson.visibility == "public")
+            )
+    elif current_user.role == "learner":
+        # Learners: published lessons in enrolled classes + public lessons
         q = q.filter(
             (Lesson.visibility == "public") |
             (Lesson.class_id.in_(enrolled_class_ids))
