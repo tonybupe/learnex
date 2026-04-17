@@ -419,7 +419,7 @@ Write the lesson AS IF you are writing a textbook chapter. Be thorough, detailed
 Return a JSON object with these exact fields:
 
 {{
-  "content": "## Introduction\\n\\nWrite 2-3 paragraphs introducing {payload.topic}, why it matters, and what students will learn.\\n\\n## Background\\n\\nProvide historical context or foundational knowledge needed to understand this topic. Write at least 2 detailed paragraphs.\\n\\n## Core Concepts\\n\\nExplain EACH major concept in detail. For each concept:\\n- Define it clearly\\n- Explain how it works\\n- Give a concrete example\\nWrite at least 3-4 paragraphs covering all main concepts.\\n\\n## How It Works (Detailed Explanation)\\n\\nGive a step-by-step or process-based explanation. Use bullet points and numbered lists where helpful. Write at least 3 paragraphs.\\n\\n## Real-World Examples\\n\\nProvide 3-4 specific, relatable real-world examples or applications. Each example should be 1-2 paragraphs.\\n\\n## Common Misconceptions\\n\\nAddress 2-3 common misunderstandings about this topic and correct them.\\n\\n## Key Takeaways\\n\\n- List 5-7 most important points students must remember\\n\\n## Practice Questions\\n\\n1. [Question testing basic understanding]\\n2. [Question testing application]\\n3. [Question testing analysis]\\n4. [Question testing synthesis]\\n5. [Challenge question]\\n\\nNOTE: The content field must be at least 800 words of actual educational text.",
+  "content": "IMPORTANT: Use only - for bullet points, never use • or * characters.\\n\\n## Introduction\\n\\nWrite 2-3 paragraphs introducing {payload.topic}, why it matters, and what students will learn.\\n\\n## Background\\n\\nProvide historical context or foundational knowledge needed to understand this topic. Write at least 2 detailed paragraphs.\\n\\n## Core Concepts\\n\\nExplain EACH major concept in detail. For each concept:\\n- Define it clearly\\n- Explain how it works\\n- Give a concrete example\\nWrite at least 3-4 paragraphs covering all main concepts.\\n\\n## How It Works (Detailed Explanation)\\n\\nGive a step-by-step or process-based explanation. Use bullet points and numbered lists where helpful. Write at least 3 paragraphs.\\n\\n## Real-World Examples\\n\\nProvide 3-4 specific, relatable real-world examples or applications. Each example should be 1-2 paragraphs.\\n\\n## Common Misconceptions\\n\\nAddress 2-3 common misunderstandings about this topic and correct them.\\n\\n## Key Takeaways\\n\\n- List 5-7 most important points students must remember\\n\\n## Practice Questions\\n\\n1. [Question testing basic understanding]\\n2. [Question testing application]\\n3. [Question testing analysis]\\n4. [Question testing synthesis]\\n5. [Challenge question]\\n\\nNOTE: The content field must be at least 800 words of actual educational text.",
   "summary": "Write a clear 3-4 sentence summary of what this lesson covers and the most important things to remember about {payload.topic}.",
   "key_terms": [
     {{"term": "exact term", "definition": "precise, clear definition in simple language"}},
@@ -451,7 +451,9 @@ CRITICAL INSTRUCTIONS:
 2. The "content" field must contain REAL, DETAILED educational content - not placeholders.
 3. Write as an expert teacher explaining to students, not as an AI summarizing.
 4. All content must be specific to "{payload.topic}" - no generic filler text.
-5. Minimum 800 words in the content field."""
+5. Minimum 800 words in the content field.
+6. Use ONLY hyphen (-) for bullet points. Never use bullet character (•) or asterisk (*).
+7. For presentation_slides points field, write REAL specific content about {payload.topic}, not generic placeholders like "Core principle 1" or "Example 1"."""
 
     try:
         client = anthropic.Anthropic(api_key=api_key)

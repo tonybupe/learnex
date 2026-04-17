@@ -113,7 +113,17 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
     const start = contentLines.findIndex(l => l === `## ${title}`)
     if (start < 0) return []
     const end = contentLines.findIndex((l, i) => i > start && l.startsWith("## "))
-    return contentLines.slice(start + 1, end < 0 ? undefined : end).filter(l => l.trim())
+    return contentLines
+      .slice(start + 1, end < 0 ? undefined : end)
+      .filter(l => l.trim())
+      .map(l => l
+        .replace(/^[-*•]\s+/, "")        // remove bullet markers
+        .replace(/^\d+\.\s+/, "")         // remove numbered list markers
+        .replace(/^#+\s+/, "")            // remove heading markers
+        .replace(/\*\*(.*?)\*\*/g, "$1")  // remove bold markers
+        .trim()
+      )
+      .filter(l => l.length > 0)
   }
 
   return (
@@ -154,9 +164,8 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
               <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", maxWidth: 600, margin: "0 auto" }}>
                 {getSlideContent(slides[slide]).slice(0, 7).map((line, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "rgba(255,255,255,0.82)", fontSize: 18, lineHeight: 1.6, padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    {line.startsWith("- ") ? (
-                      <><span style={{ color: "#cb26e4", fontSize: 22, lineHeight: 1.3, flexShrink: 0 }}>◆</span><span>{line.slice(2)}</span></>
-                    ) : <span>{line}</span>}
+                    <span style={{ color: "#cb26e4", fontSize: 22, lineHeight: 1.3, flexShrink: 0 }}>◆</span>
+                    <span>{line}</span>
                   </div>
                 ))}
               </div>
