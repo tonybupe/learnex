@@ -109,14 +109,23 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
         setMedia(prev => prev.map((item, idx) => idx === i ? { ...item, uploading: true } : item))
         try {
           const result = await uploadMedia(m.file, () => {})
-          attachments.push({ file_url: result.url, attachment_type: result.attachment_type, file_name: result.file_name || m.file.name, mime_type: result.mime_type || m.file.type })
+          // Determine attachment_type from file mime type as fallback
+          const attType = result.attachment_type ||
+            (m.file.type.startsWith("video/") ? "video" :
+             m.file.type.startsWith("image/") ? "image" : "file")
+          attachments.push({
+            file_url: result.url,
+            attachment_type: attType,
+            file_name: (result as any).file_name || m.file.name || "upload",
+            mime_type: (result as any).mime_type || m.file.type || "application/octet-stream",
+          })
           setMedia(prev => prev.map((item, idx) => idx === i ? { ...item, uploading: false, uploaded: true } : item))
         } catch (e: any) {
           throw new Error(`Failed to upload ${m.file.name}`)
         }
       }
       const post = await createPost({
-        content: text || " ",
+        content: text.length > 0 ? text : (media.length > 0 ? "📷" : " "),
         post_type: media.length > 0 ? (media[0].type === "video" ? "video" : "image") : "text",
         visibility: "public",
         title: text.slice(0, 60) || "Post",
