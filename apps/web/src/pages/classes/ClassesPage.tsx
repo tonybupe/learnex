@@ -197,7 +197,12 @@ export default function ClassesPage() {
       setForm({ title: "", description: "", class_code: "", subject_id: "", grade_level: "", visibility: "public" })
       setError("")
     },
-    onError: (err: any) => setError(err?.response?.data?.detail || "Failed to create class"),
+    onError: (err: any) => {
+      const detail = err?.response?.data?.detail
+      if (typeof detail === "string") setError(detail)
+      else if (Array.isArray(detail)) setError(detail.map((d: any) => d.msg || String(d)).join(", "))
+      else setError("Failed to create class")
+    },
   })
 
   const deleteMutation = useMutation({
