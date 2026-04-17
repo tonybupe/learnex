@@ -244,7 +244,7 @@ export default function LessonsPage() {
   const [search, setSearch] = useState("")
   const [filterType, setFilterType] = useState("")
   const [filterStatus, setFilterStatus] = useState("")
-  const [tab, setTab] = useState<"mine"|"class"|"public">("mine")
+  const [tab, setTab] = useState<"mine"|"enrolled"|"class"|"public">("mine")
   const [page, setPage] = useState(1)
   const [form, setForm] = useState({
     title: "", subtopic: "", description: "", content: "",
@@ -269,6 +269,17 @@ export default function LessonsPage() {
     },
     enabled: isTeacher || isAdmin,
   })
+
+  // Classes teacher has JOINED as member
+  const { data: enrolledClasses = [] } = useQuery({
+    queryKey: ["classes-enrolled"],
+    queryFn: async () => {
+      const res = await api.get("/classes/enrolled").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    },
+    staleTime: 30000,
+  })
+  const enrolledClassIds = new Set(enrolledClasses.map((c: any) => c.id))
 
   const { data: allClasses = [] } = useQuery({
     queryKey: ["classes-all"],
