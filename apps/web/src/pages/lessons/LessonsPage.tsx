@@ -128,7 +128,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
           <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>Ô£à Content generated! Scroll down to edit.</div>
           {result.key_terms && result.key_terms.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒôû Key Terms</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>📖 Key Terms</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                 {result.key_terms.map((t, i) => <span key={i} className="chip" title={t.definition} style={{ fontSize: 11, cursor: "help" }}>{t.term}</span>)}
               </div>
@@ -136,7 +136,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
           )}
           {result.youtube_searches && result.youtube_searches.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒÄÑ Video Suggestions</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>🎥 Video Suggestions</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {result.youtube_searches.map((q, i) => (
                   <a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`}
@@ -150,7 +150,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
           )}
           {result.presentation_slides && result.presentation_slides.length > 0 && (
             <div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>­ƒôè Slide Outline</div>
+              <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>📊 Slide Outline</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
                 {result.presentation_slides.map((s, i) => (
                   <div key={i} style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 12 }}>
@@ -409,7 +409,7 @@ export default function LessonsPage() {
         {/* ÔöÇÔöÇ RBAC notice ÔöÇÔöÇ */}
         {isTeacher && (
           <div style={{ padding: "10px 16px", borderRadius: 10, marginBottom: 16, background: "rgba(203,38,228,0.06)", border: "1px solid rgba(203,38,228,0.2)", fontSize: 13, color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
-            ­ƒöÆ <span>You can only <strong style={{ color: "var(--text)" }}>create, edit or delete lessons in your own classes</strong>. Other lessons are view-only.</span>
+            🔒 <span>You can only <strong style={{ color: "var(--text)" }}>create, edit or delete lessons in your own classes</strong>. Other lessons are view-only.</span>
           </div>
         )}
 
@@ -504,10 +504,10 @@ export default function LessonsPage() {
                   <label className="form-label">Lesson Type</label>
                   <select className="audit-control select" value={form.lesson_type}
                     onChange={e => setForm(p => ({ ...p, lesson_type: e.target.value }))}>
-                    <option value="note">­ƒôØ Note</option>
-                    <option value="video">­ƒÄÑ Video</option>
-                    <option value="live">­ƒö┤ Live</option>
-                    <option value="assignment">­ƒôï Assignment</option>
+                    <option value="note">📝 Note</option>
+                    <option value="video">🎥 Video</option>
+                    <option value="live">🔴 Live</option>
+                    <option value="assignment">📋 Assignment</option>
                   </select>
                 </div>
               </div>
@@ -526,8 +526,8 @@ export default function LessonsPage() {
                   <label className="form-label">Visibility</label>
                   <select className="audit-control select" value={form.visibility}
                     onChange={e => setForm(p => ({ ...p, visibility: e.target.value }))}>
-                    <option value="class">­ƒöÆ Class only</option>
-                    <option value="public">­ƒîÉ Public (anyone can view)</option>
+                    <option value="class">🔒 Class only</option>
+                    <option value="public">🌐 Public (anyone can view)</option>
                   </select>
                 </div>
               </div>
@@ -576,10 +576,10 @@ export default function LessonsPage() {
           <select className="audit-control select" style={{ width: 140, fontSize: 13 }} value={filterType}
             onChange={e => { setFilterType(e.target.value); setPage(1) }}>
             <option value="">All types</option>
-            <option value="note">­ƒôØ Note</option>
-            <option value="video">­ƒÄÑ Video</option>
-            <option value="live">­ƒö┤ Live</option>
-            <option value="assignment">­ƒôï Assignment</option>
+            <option value="note">📝 Note</option>
+            <option value="video">🎥 Video</option>
+            <option value="live">🔴 Live</option>
+            <option value="assignment">📋 Assignment</option>
           </select>
           {(isTeacher || isAdmin) && (
             <select className="audit-control select" style={{ width: 130, fontSize: 13 }} value={filterStatus}
@@ -598,7 +598,7 @@ export default function LessonsPage() {
         {/* ÔöÇÔöÇ Empty ÔöÇÔöÇ */}
         {!isLoading && filtered.length === 0 && (
           <div className="card" style={{ textAlign: "center", padding: "40px 24px" }}>
-            <div style={{ fontSize: 44, marginBottom: 10 }}>­ƒôÜ</div>
+            <div style={{ fontSize: 44, marginBottom: 10 }}>📚</div>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>
               {search ? `No lessons match "${search}"` : tab === "mine" ? "No lessons yet" : "No lessons here"}
             </div>
@@ -624,7 +624,7 @@ export default function LessonsPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 14px", borderRadius: 999, border: "1px solid var(--border)", background: "var(--card)", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}>
-                      ­ƒÄô {clsName}
+                      🎓 {clsName}
                       <span className="chip" style={{ fontSize: 10 }}>{classLessons.length}</span>
                     </div>
                     <div style={{ height: 1, flex: 1, background: "var(--border)" }} />
