@@ -36,9 +36,11 @@ export default function LearnerDashboardPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["learner-dashboard"],
+    queryKey: ["learner-dashboard", user?.id],
     queryFn: async () => (await api.get("/analytics/dashboard/learner")).data,
-    retry: false, staleTime: 60000,
+    retry: 2,
+    staleTime: 0,
+    enabled: !!user?.id,
   })
 
   const { data: sessions = [] } = useQuery({
@@ -53,7 +55,7 @@ export default function LearnerDashboardPage() {
   const { data: analytics } = useQuery({
     queryKey: ["learner-activity", user?.id],
     queryFn: async () => (await api.get(`/analytics/users/${user?.id}/activity`)).data,
-    enabled: !!user?.id, retry: false, staleTime: 60000,
+    enabled: !!user?.id, retry: 1, staleTime: 0,
   })
 
   const ACTIONS = [

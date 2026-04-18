@@ -126,9 +126,9 @@ export default function TeacherDashboardPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["teacher-dashboard"],
+    queryKey: ["teacher-dashboard", user?.id],
     queryFn: async () => (await api.get("/analytics/dashboard/teacher")).data,
-    retry: false, staleTime: 60000,
+    retry: 2, staleTime: 0,
   })
 
   const { data: sessions = [] } = useQuery({
@@ -137,13 +137,13 @@ export default function TeacherDashboardPage() {
       const res = await api.get("/live-sessions/upcoming").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data : []
     },
-    staleTime: 60000,
+    staleTime: 0,
   })
 
   const { data: activity } = useQuery({
     queryKey: ["teacher-activity", user?.id],
     queryFn: async () => (await api.get(`/analytics/users/${user?.id}/activity`)).data,
-    enabled: !!user?.id, retry: false, staleTime: 60000,
+    enabled: !!user?.id, retry: 2, staleTime: 0,
   })
 
   const { data: classes = [] } = useQuery({
@@ -152,7 +152,7 @@ export default function TeacherDashboardPage() {
       const res = await api.get("/classes?mine=true").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data : (res.data?.items ?? [])
     },
-    staleTime: 60000,
+    staleTime: 0,
   })
 
   const { data: lessons = [] } = useQuery({
@@ -161,7 +161,7 @@ export default function TeacherDashboardPage() {
       const res = await api.get("/lessons?mine=true&limit=10").catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data : (res.data?.items ?? [])
     },
-    staleTime: 60000,
+    staleTime: 0,
   })
 
   // Derived stats
