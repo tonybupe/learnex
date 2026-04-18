@@ -35,7 +35,7 @@ export default function LearnerDashboardPage() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
-  const { data: stats, isLoading, isError, error } = useQuery({
+  const { data: stats, isLoading } = useQuery({
     queryKey: ["learner-dashboard", user?.id],
     queryFn: async () => (await api.get("/analytics/dashboard/learner")).data,
     retry: 2,
@@ -97,17 +97,12 @@ export default function LearnerDashboardPage() {
         {/* ── BODY ── */}
         <div className="dash-body">
 
-          {/* Stats debug */}
-          {isError && <div style={{color:"red",padding:8,fontSize:12}}>Stats error: {String(error)}</div>}
-          {!isLoading && !stats && <div style={{color:"orange",padding:8,fontSize:12}}>Stats loaded but undefined</div>}
-          {stats && <div style={{color:"green",padding:8,fontSize:11}}>✓ enrolled={stats.enrolled_classes_count} lessons={stats.lesson_count}</div>}
-
           {/* Stats */}
           <div className="stats-grid" style={{ gap: 14 }}>
-            <StatCard title="Enrolled Classes"  value={isLoading ? "—" : stats?.enrolled_classes_count ?? 0}                          icon={<GraduationCap size={20} />} color="#cb26e4" />
-            <StatCard title="Available Lessons" value={isLoading ? "—" : stats?.lesson_count ?? 0}                                       icon={<BookOpen size={20} />}      color="#38bdf8" />
-            <StatCard title="Quizzes Taken"     value={isLoading ? "—" : stats?.quiz_attempts_count ?? 0}                                icon={<CheckSquare size={20} />}   color="#22c55e" />
-            <StatCard title="Avg. Quiz Score"   value={isLoading ? "—" : `${Math.round(stats?.average_quiz_score ?? 0)}%`}               icon={<Star size={20} />}          color="#f59e0b" />
+            <StatCard title="Enrolled Classes"  value={stats?.enrolled_classes_count ?? (isLoading ? "..." : 0)}  icon={<GraduationCap size={20} />} color="#cb26e4" />
+            <StatCard title="Available Lessons" value={stats?.lesson_count ?? (isLoading ? "..." : 0)}                icon={<BookOpen size={20} />}      color="#38bdf8" />
+            <StatCard title="Quizzes Taken"     value={stats?.quiz_attempts_count ?? (isLoading ? "..." : 0)}         icon={<CheckSquare size={20} />}   color="#22c55e" />
+            <StatCard title="Avg. Quiz Score"   value={`${Math.round(stats?.average_quiz_score ?? 0)}%`}              icon={<Star size={20} />}          color="#f59e0b" />
           </div>
 
           {/* Quick Actions */}
