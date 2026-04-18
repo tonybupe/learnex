@@ -10,9 +10,10 @@ type Props = {
   onLoadMore?: () => void
   error?: string | null
   onRetry?: () => void
+  onPostDelete?: (postId: number) => void
 }
 
-function FeedList({ posts, loading, loadingMore = false, hasMore = false, onLoadMore, error = null, onRetry }: Props) {
+function FeedList({ posts, loading, loadingMore = false, hasMore = false, onLoadMore, error = null, onRetry, onPostDelete }: Props) {
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const [showBackToTop, setShowBackToTop] = useState(false)
