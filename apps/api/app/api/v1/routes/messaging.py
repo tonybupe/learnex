@@ -424,7 +424,8 @@ manager = ConnectionManager()
 
 @router.websocket("/ws/{conversation_id}")
 async def websocket_endpoint(websocket: WebSocket, conversation_id: int, token: str = None, db: Session = Depends(get_db)):
-    from app.core.security import decode_access_token
+    from jose import jwt, JWTError
+    from app.core.config import settings
     from app.models.conversation_participant import ConversationParticipant
 
     # Authenticate via token query param
@@ -433,9 +434,9 @@ async def websocket_endpoint(websocket: WebSocket, conversation_id: int, token: 
         return
 
     try:
-        payload = decode_access_token(token)
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
         user_id = int(payload.get("sub", 0))
-    except Exception:
+    except (JWTError, Exception):
         await websocket.close(code=4001, reason="Invalid token")
         return
 
