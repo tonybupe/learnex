@@ -83,14 +83,91 @@ def list_my_conversations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    from sqlalchemy.orm import joinedload as jl
+    from app.models.conversation_participant import ConversationParticipant
+
+    conv_ids = db.query(ConversationParticipant.conversation_id).filter(
+        ConversationParticipant.user_id == current_user.id
+    ).subquery()
+
     conversations = (
         db.query(Conversation)
-        .join(Conversation.participants)
-        .filter_by(user_id=current_user.id)
+        .options(
+            jl(Conversation.participants).joinedload("user").joinedload("profile"),
+            jl(Conversation.messages)
+        )
+        .filter(Conversation.id.in_(conv_ids))
         .order_by(Conversation.updated_at.desc())
         .all()
     )
-    return conversations
+
+    # Enrich with last_message and unread_count
+    from app.models.message import Message as Msg
+    result = []
+    for conv in conversations:
+        last = db.query(Msg).filter(
+            Msg.conversation_id == conv.id,
+            Msg.is_deleted == False
+        ).order_by(Msg.created_at.desc()).first()
+
+        participant = next((p for p in conv.participants if p.user_id == current_user.id), None)
+        unread = 0
+        if participant and participant.last_read_message_id:
+            unread = db.query(Msg).filter(
+                Msg.conversation_id == conv.id,
+                Msg.id > participant.last_read_message_id,
+                Msg.sender_id != current_user.id
+            ).count()
+        elif participant:
+            unread = db.query(Msg).filter(
+                Msg.conversation_id == conv.id,
+                Msg.sender_id != current_user.id
+            ).count()
+
+        conv_dict = {
+            "id": conv.id,
+            "conversation_type": conv.conversation_type,
+            "title": conv.title,
+            "class_id": conv.class_id,
+            "lesson_id": getattr(conv, "lesson_id", None),
+            "created_by_id": conv.created_by_id,
+            "is_active": conv.is_active,
+            "created_at": conv.created_at,
+            "updated_at": conv.updated_at,
+            "unread_count": unread,
+            "last_message": {
+                "id": last.id,
+                "content": last.content,
+                "sender_id": last.sender_id,
+                "created_at": last.created_at,
+                "is_deleted": last.is_deleted,
+            } if last else None,
+            "participants": [
+                {
+                    "id": p.id,
+                    "conversation_id": p.conversation_id,
+                    "user_id": p.user_id,
+                    "role": p.role,
+                    "is_muted": p.is_muted,
+                    "last_read_message_id": p.last_read_message_id,
+                    "created_at": p.created_at,
+                    "updated_at": p.updated_at,
+                    "user": {
+                        "id": p.user.id,
+                        "full_name": p.user.full_name,
+                        "email": p.user.email,
+                        "role": p.user.role,
+                        "profile": {
+                            "avatar_url": p.user.profile.avatar_url if p.user.profile else None,
+                            "bio": p.user.profile.bio if p.user.profile else None,
+                        } if p.user and p.user.profile else None
+                    } if p.user else None
+                }
+                for p in conv.participants
+            ]
+        }
+        result.append(conv_dict)
+    return result
 
 
 @router.get("/{conversation_id}", response_model=ConversationResponse)
@@ -188,6 +265,11 @@ def create_message(
     conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Security: only participants can send messages
+    participant = next((p for p in conversation.participants if p.user_id == current_user.id), None)
+    if not participant:
+        raise HTTPException(status_code=403, detail="You are not a participant in this conversation")
 
     try:
         return send_message(
@@ -302,18 +384,39 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ws/{conversation_id}")
-async def websocket_endpoint(websocket: WebSocket, conversation_id: int):
+async def websocket_endpoint(websocket: WebSocket, conversation_id: int, token: str = None, db: Session = Depends(get_db)):
+    from app.core.security import decode_access_token
+    from app.models.conversation_participant import ConversationParticipant
+
+    # Authenticate via token query param
+    if not token:
+        await websocket.close(code=4001, reason="Authentication required")
+        return
+
+    try:
+        payload = decode_access_token(token)
+        user_id = int(payload.get("sub", 0))
+    except Exception:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+
+    # Verify participant
+    participant = db.query(ConversationParticipant).filter(
+        ConversationParticipant.conversation_id == conversation_id,
+        ConversationParticipant.user_id == user_id
+    ).first()
+
+    if not participant:
+        await websocket.close(code=4003, reason="Access denied")
+        return
 
     await manager.connect(conversation_id, websocket)
 
     try:
-
         while True:
-
             data = await websocket.receive_json()
-
-            await manager.broadcast(conversation_id, data)
-
+            # Only broadcast if sender matches token
+            if data.get("sender_id") == user_id:
+                await manager.broadcast(conversation_id, data)
     except WebSocketDisconnect:
-
         manager.disconnect(conversation_id, websocket)
