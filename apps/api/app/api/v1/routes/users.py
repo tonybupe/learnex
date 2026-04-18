@@ -182,6 +182,21 @@ async def upload_cover(
 # LIST USERS (ADMIN ONLY)
 # =========================================================
 
+
+@router.get("/search", response_model=List[PublicUserResponse])
+def search_users(
+    q: str = "",
+    limit: int = 30,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = db.query(User).filter(User.is_active == True, User.id != current_user.id)
+    if q.strip():
+        query = query.filter(
+            (User.full_name.ilike(f"%{q}%")) | (User.email.ilike(f"%{q}%"))
+        )
+    return query.order_by(User.full_name).limit(limit).all()
+
 @router.get("", response_model=List[UserResponse])
 def list_users(
     db: Session = Depends(get_db),
