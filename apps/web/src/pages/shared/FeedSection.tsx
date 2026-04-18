@@ -112,6 +112,11 @@ export default function FeedSection() {
     }
   }
 
+  const handlePostDelete = (postId: number) => {
+    // Instant optimistic removal from feed
+    setPosts(prev => prev.filter(p => p.id !== postId))
+  }
+
   const activeTab = FEED_TABS.find(t => t.value === mode)!
 
   return (
@@ -176,6 +181,7 @@ export default function FeedSection() {
         onLoadMore={handleLoadMore}
         error={error}
         onRetry={() => loadFeed(mode, 1, false)}
+        onPostDelete={handlePostDelete}
       />
     </div>
   )

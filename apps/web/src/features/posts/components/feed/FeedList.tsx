@@ -94,6 +94,7 @@ function FeedList({ posts, loading, loadingMore = false, hasMore = false, onLoad
             post={post}
             isOptimistic={post.is_optimistic}
             animationDelay={index < 5 ? index * 0.05 : 0}
+            onPostDelete={onPostDelete}
           />
         ))}
       </div>
