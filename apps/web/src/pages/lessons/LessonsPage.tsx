@@ -56,7 +56,7 @@ interface AIResult {
   presentation_slides?: { slide: number; title: string; points: string[] }[]
 }
 
-// ── AI Generator ──────────────────────────────────────────────────ÔöÇ
+// ── AI Generator ───────────────────────────────────────────────────
 function AIGenerator({ topic, subtopic, onGenerated }: {
   topic: string; subtopic: string
   onGenerated: (content: string, result: AIResult) => void
@@ -131,7 +131,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
       </button>
       {result && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>Ô£à Content generated! Scroll down to edit.</div>
+          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>✅ Content generated! Scroll down to edit.</div>
           {result.key_terms && result.key_terms.length > 0 && (
             <div>
               <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 6 }}>📖 Key Terms</div>
