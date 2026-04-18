@@ -218,7 +218,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
             {lesson.content?.replace(/<[^>]+>/g, "").slice(0, 200)}
           </p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={e => { e.stopPropagation(); onOpen() }}>Open ÔåÆ</button>
+            <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 16px" }} onClick={e => { e.stopPropagation(); onOpen() }}>Open →</button>
             {canEdit && (
               <button className="btn" style={{ fontSize: 12, padding: "6px 10px", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)" }}
                 onClick={e => { e.stopPropagation(); onDelete() }}>
