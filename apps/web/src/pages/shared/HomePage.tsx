@@ -19,7 +19,7 @@ export default function HomePage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
   const { data: stats } = useQuery({
-    queryKey: ["home-stats", user?.role],
+    queryKey: ["home-stats", user?.id, user?.role],
     queryFn: async () => {
       const ep = isAdmin ? "/analytics/dashboard/admin"
         : isTeacher ? "/analytics/dashboard/teacher"
@@ -27,7 +27,7 @@ export default function HomePage() {
       const res = await api.get(ep).catch(() => ({ data: {} }))
       return res.data
     },
-    staleTime: 60000, retry: false,
+    staleTime: 0, retry: 2, enabled: !!user?.id,
   })
 
   const teacherLinks = [
@@ -65,8 +65,8 @@ export default function HomePage() {
     { label: "Classes",  value: stats?.total_classes ?? stats?.classes_count ?? "—",  color: "#cb26e4" },
     { label: "Lessons",  value: stats?.total_lessons ?? stats?.lessons_count ?? "—",  color: "#38bdf8" },
   ] : [
-    { label: "Enrolled",  value: stats?.enrolled_classes  ?? "—",                                                          color: "#cb26e4" },
-    { label: "Lessons",   value: stats?.completed_lessons ?? "—",                                                          color: "#38bdf8" },
+    { label: "Enrolled",  value: stats?.enrolled_classes_count ?? 0,                                                               color: "#cb26e4" },
+    { label: "Lessons",   value: stats?.lesson_count ?? 0,                                                                         color: "#38bdf8" },
     { label: "Avg Score", value: stats?.average_quiz_score != null ? (Number(stats.average_quiz_score).toFixed(1) + "%") : "—", color: "#22c55e" },
   ]
 
