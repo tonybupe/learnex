@@ -138,7 +138,7 @@ export default function MessagesPage() {
 
   // ── Queries ──
   const { data: conversations = [], isLoading: convLoading } = useQuery({
-    queryKey: ["conversations"],
+    queryKey: ["conversations", user?.id],
     queryFn: async () => {
       const res = await api.get(endpoints.messaging.list)
       return Array.isArray(res.data) ? res.data as Conversation[] : []
@@ -147,7 +147,7 @@ export default function MessagesPage() {
   })
 
   const { data: messages = [], isLoading: msgLoading } = useQuery({
-    queryKey: ["messages", activeConv?.id],
+    queryKey: ["messages", activeConv?.id, user?.id],
     queryFn: async () => {
       const res = await api.get(endpoints.messaging.messages(activeConv!.id))
       return Array.isArray(res.data) ? res.data as Message[] : []
@@ -187,7 +187,7 @@ export default function MessagesPage() {
       queryClient.setQueryData(["messages", activeConv?.id], (old: Message[] = []) =>
         old.map(m => m.temp ? newMsg : m)
       )
-      queryClient.invalidateQueries({ queryKey: ["conversations"] })
+      queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
     },
     onError: () => {
       queryClient.setQueryData(["messages", activeConv?.id], (old: Message[] = []) =>
@@ -211,7 +211,7 @@ export default function MessagesPage() {
       return res.data as Conversation
     },
     onSuccess: (conv) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] })
+      queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
       setActiveConv(conv)
       setShowNewChat(false)
       setMobileView("chat")
@@ -232,7 +232,7 @@ export default function MessagesPage() {
           queryClient.setQueryData(["messages", activeConv.id], (old: Message[] = []) =>
             old.find(m => m.id === data.id) ? old : [...old, data]
           )
-          queryClient.invalidateQueries({ queryKey: ["conversations"] })
+          queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
         }
       } catch {}
     }
@@ -268,7 +268,7 @@ export default function MessagesPage() {
     setMobileView("chat")
     setShowProfile(false)
     api.post(endpoints.messaging.markRead(conv.id), {}).catch(() => {})
-    queryClient.invalidateQueries({ queryKey: ["conversations"] })
+    queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
   }
 
   const handleFollow = async () => {

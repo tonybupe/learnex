@@ -1,6 +1,8 @@
 // features/auth/auth.store.ts
 
+import { queryClient } from "@/lib/queryClient"
 import { create } from "zustand"
+import { queryClient } from "@/lib/queryClient"
 import { persist, createJSONStorage } from "zustand/middleware"
 
 import type { AuthUser } from "@/types/api"
