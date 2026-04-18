@@ -97,9 +97,9 @@ export default function LearnerDashboardPage() {
 
           {/* Stats */}
           <div className="stats-grid" style={{ gap: 14 }}>
-            <StatCard title="Enrolled Classes"  value={isLoading ? "—" : stats?.enrolled_classes ?? stats?.enrolled_classes_count ?? 0}  icon={<GraduationCap size={20} />} color="#cb26e4" />
-            <StatCard title="Lessons Completed" value={isLoading ? "—" : stats?.completed_lessons ?? stats?.lesson_count ?? 0}            icon={<BookOpen size={20} />}      color="#38bdf8" />
-            <StatCard title="Quizzes Taken"     value={isLoading ? "—" : stats?.quizzes_taken ?? stats?.quiz_attempts_count ?? 0}         icon={<CheckSquare size={20} />}   color="#22c55e" />
+            <StatCard title="Enrolled Classes"  value={isLoading ? "—" : stats?.enrolled_classes_count ?? 0}                          icon={<GraduationCap size={20} />} color="#cb26e4" />
+            <StatCard title="Available Lessons" value={isLoading ? "—" : stats?.lesson_count ?? 0}                                       icon={<BookOpen size={20} />}      color="#38bdf8" />
+            <StatCard title="Quizzes Taken"     value={isLoading ? "—" : stats?.quiz_attempts_count ?? 0}                                icon={<CheckSquare size={20} />}   color="#22c55e" />
             <StatCard title="Avg. Quiz Score"   value={isLoading ? "—" : `${Math.round(stats?.average_quiz_score ?? 0)}%`}               icon={<Star size={20} />}          color="#f59e0b" />
           </div>
 

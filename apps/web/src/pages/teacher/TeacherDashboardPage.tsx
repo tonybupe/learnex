@@ -165,9 +165,9 @@ export default function TeacherDashboardPage() {
   })
 
   // Derived stats
-  const totalClasses   = stats?.total_classes   ?? classes.length ?? 0
-  const totalLearners  = stats?.total_learners  ?? stats?.total_students ?? 0
-  const totalLessons   = stats?.total_lessons   ?? lessons.length ?? 0
+  const totalClasses   = stats?.classes_count   ?? classes.length ?? 0
+  const totalLearners  = stats?.total_learners  ?? 0
+  const totalLessons   = stats?.lessons_count   ?? lessons.length ?? 0
   const totalQuizzes   = stats?.total_quiz_attempts ?? 0
   const postsCount     = activity?.posts_count  ?? 0
   const sessionsHosted = activity?.live_sessions_hosted_count ?? 0
