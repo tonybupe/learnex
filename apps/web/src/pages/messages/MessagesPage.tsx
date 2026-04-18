@@ -612,29 +612,32 @@ export default function MessagesPage() {
 
                           {/* Hover action toolbar */}
                           {hoveredMsg === msg.id && !msg.is_deleted && !msg.temp && (
-                            <div style={{ position: "absolute", top: -40, [isOwn ? "left" : "right"]: 0, zIndex: 20, display: "flex", alignItems: "center", gap: 2, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 24, padding: "4px 8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
-                              {["👍","❤️","😂","😮","😢","🙏"].map(emoji => (
-                                <button key={emoji}
-                                  onClick={() => api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji }).catch(() => {})}
-                                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: "1px 3px", borderRadius: 6, lineHeight: 1, transition: "transform 0.15s" }}
-                                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.4)"}
-                                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = "scale(1)"}>
-                                  {emoji}
+                            <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 4, flexDirection: isOwn ? "row-reverse" : "row" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 1, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 24, padding: "3px 6px", boxShadow: "0 2px 12px rgba(0,0,0,0.12)" }}>
+                                {["👍","❤️","😂","😮","😢","🙏"].map(em => (
+                                  <button key={em}
+                                    onClick={() => api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji: em }).catch(() => {})}
+                                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, padding: "2px 3px", borderRadius: 6, lineHeight: 1, transition: "transform 0.15s" }}
+                                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.35)"}
+                                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = "scale(1)"}>
+                                    {em}
+                                  </button>
+                                ))}
+                                <div style={{ width: 1, height: 16, background: "var(--border)", margin: "0 3px" }} />
+                                <button onClick={() => { setReplyTo(msg); setTimeout(() => inputRef.current?.focus(), 50) }}
+                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 7px", borderRadius: 10, fontSize: 11, color: "var(--muted)", fontWeight: 700, whiteSpace: "nowrap" }}
+                                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--accent)"}
+                                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
+                                  ↩
                                 </button>
-                              ))}
-                              <div style={{ width: 1, height: 18, background: "var(--border)", margin: "0 4px" }} />
-                              <button onClick={() => { setReplyTo(msg); setTimeout(() => inputRef.current?.focus(), 50) }}
-                                style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 8px", borderRadius: 12, fontSize: 12, color: "var(--muted)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4, transition: "color 0.15s" }}
-                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--accent)"}
-                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
-                                ↩ Reply
-                              </button>
-                              {isOwn && (
-                                <button onClick={() => { if (window.confirm("Delete this message?")) deleteMutation.mutate(msg.id) }}
-                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 8px", borderRadius: 12, fontSize: 12, color: "var(--danger)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-                                  🗑 Delete
-                                </button>
-                              )}
+                                {isOwn && (
+                                  <button onClick={() => { if (window.confirm("Delete?")) deleteMutation.mutate(msg.id) }}
+                                    style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", borderRadius: 10, fontSize: 12, color: "var(--danger)", fontWeight: 700 }}
+                                    title="Delete message">
+                                    🗑
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           )}
 
