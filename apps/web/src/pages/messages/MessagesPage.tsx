@@ -184,14 +184,15 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Load users
+  // Load users with live search
   useEffect(() => {
     if (!showNewChat) return
-    api.get("/users").then(res => {
+    const q = userSearch.trim()
+    api.get(`/users/search?q=${encodeURIComponent(q)}&limit=30`).then(res => {
       const all = Array.isArray(res.data) ? res.data : res.data?.items ?? []
       setUsers(all.filter((u: UserMini) => u.id !== user?.id))
     }).catch(() => {})
-  }, [showNewChat])
+  }, [showNewChat, userSearch])
 
   const handleSend = useCallback(() => {
     const text = message.trim()
