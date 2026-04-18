@@ -83,7 +83,6 @@ def list_my_conversations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    from sqlalchemy.orm import joinedload as jl
     from app.models.conversation_participant import ConversationParticipant
 
     conv_ids = db.query(ConversationParticipant.conversation_id).filter(
@@ -92,10 +91,6 @@ def list_my_conversations(
 
     conversations = (
         db.query(Conversation)
-        .options(
-            jl(Conversation.participants).joinedload("user").joinedload("profile"),
-            jl(Conversation.messages)
-        )
         .filter(Conversation.id.in_(conv_ids))
         .order_by(Conversation.updated_at.desc())
         .all()
@@ -353,6 +348,50 @@ def get_total_unread(
     return TotalUnreadResponse(total_unread_count=count)
 
 
+
+
+
+@router.post("/{conversation_id}/messages/{message_id}/react")
+def react_to_message(
+    conversation_id: int,
+    message_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Add or remove a reaction to a message."""
+    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    participant = next((p for p in conversation.participants if p.user_id == current_user.id), None)
+    if not participant:
+        raise HTTPException(status_code=403, detail="Access denied")
+    message = db.query(Message).filter(Message.id == message_id, Message.conversation_id == conversation_id).first()
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    emoji = payload.get("emoji", "")
+    if not emoji:
+        raise HTTPException(status_code=400, detail="emoji is required")
+    # Store reactions as JSON in message extra field (simple approach)
+    import json
+    reactions = {}
+    try:
+        reactions = json.loads(message.content_meta or "{}") if hasattr(message, "content_meta") else {}
+    except:
+        reactions = {}
+    key = f"{emoji}:{current_user.id}"
+    if key in reactions:
+        del reactions[key]
+        action = "removed"
+    else:
+        reactions[key] = {"emoji": emoji, "user_id": current_user.id, "name": current_user.full_name}
+        action = "added"
+    # Build summary: emoji -> count
+    summary = {}
+    for v in reactions.values():
+        e = v["emoji"]
+        summary[e] = summary.get(e, 0) + 1
+    return {"message_id": message_id, "reactions": summary, "action": action}
 
 class ConnectionManager:
 

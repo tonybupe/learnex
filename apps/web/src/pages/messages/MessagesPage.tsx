@@ -131,6 +131,9 @@ export default function MessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [replyTo, setReplyTo] = useState<Message | null>(null)
+  const [hoveredMsg, setHoveredMsg] = useState<number | null>(null)
+  const [msgMenuId, setMsgMenuId] = useState<number | null>(null)
 
   // ── Queries ──
   const { data: conversations = [], isLoading: convLoading } = useQuery({
@@ -192,6 +195,15 @@ export default function MessagesPage() {
     }
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: async (msgId: number) => api.delete(`/messaging/messages/${msgId}`),
+    onSuccess: (_, msgId) => {
+      queryClient.setQueryData(["messages", activeConv?.id], (old: Message[] = []) =>
+        old.map(m => m.id === msgId ? { ...m, is_deleted: true, content: "" } : m)
+      )
+    }
+  })
+
   const startDirectMutation = useMutation({
     mutationFn: async (recipientId: number) => {
       const res = await api.post(endpoints.messaging.startDirect, { recipient_user_id: recipientId })
@@ -243,10 +255,12 @@ export default function MessagesPage() {
   const handleSend = useCallback(() => {
     const text = message.trim()
     if (!text || !activeConv) return
-    sendMutation.mutate(text)
+    const content = replyTo ? `> ${replyTo.sender?.full_name ?? "Someone"}: ${replyTo.content.slice(0, 60)}${replyTo.content.length > 60 ? "..." : ""}\n\n${text}` : text
+    sendMutation.mutate(content)
     setMessage("")
+    setReplyTo(null)
     inputRef.current?.focus()
-  }, [message, activeConv, sendMutation])
+  }, [message, activeConv, sendMutation, replyTo])
 
   const openConversation = (conv: Conversation) => {
     setActiveConv(conv)
@@ -615,7 +629,19 @@ export default function MessagesPage() {
                           }}>
                             {msg.is_deleted
                               ? <span style={{ fontStyle: "italic", opacity: 0.6, fontSize: 13 }}>Message deleted</span>
-                              : <span style={{ fontSize: 14, lineHeight: 1.55, wordBreak: "break-word" }}>{msg.content}</span>
+                              : msg.content.startsWith("> ")
+                                ? (() => {
+                                    const lines = msg.content.split("\n\n")
+                                    const quote = lines[0].replace(/^> /, "")
+                                    const rest = lines.slice(1).join("\n\n")
+                                    return (
+                                      <div>
+                                        <div style={{ borderLeft: "3px solid rgba(255,255,255,0.4)", paddingLeft: 8, marginBottom: 6, fontSize: 12, opacity: 0.7, fontStyle: "italic" }}>{quote}</div>
+                                        <span style={{ fontSize: 14, lineHeight: 1.55, wordBreak: "break-word" }}>{rest}</span>
+                                      </div>
+                                    )
+                                  })()
+                                : <span style={{ fontSize: 14, lineHeight: 1.55, wordBreak: "break-word" }}>{msg.content}</span>
                             }
                           </div>
 
@@ -636,6 +662,20 @@ export default function MessagesPage() {
                 })}
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Reply Preview */}
+              {replyTo && (
+                <div style={{ padding: "8px 16px", background: "rgba(203,38,228,0.06)", borderTop: "1px solid rgba(203,38,228,0.15)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 3, borderRadius: 2, background: "var(--accent)", alignSelf: "stretch", flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 2 }}>Replying to {replyTo.sender?.full_name ?? "message"}</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{replyTo.content.slice(0, 80)}</div>
+                  </div>
+                  <button onClick={() => setReplyTo(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex", flexShrink: 0 }}>
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
 
               {/* Input Bar */}
               <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)", background: "var(--card)", display: "flex", alignItems: "center", gap: 8 }}>
