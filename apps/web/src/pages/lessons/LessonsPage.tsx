@@ -227,7 +227,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
             )}
             {!canEdit && lesson.visibility === "public" && (
               <span style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 4 }}>
-                <Globe size={11} /> Shared publicly ÔÇö view only
+                <Globe size={11} /> Shared publicly — view only
               </span>
             )}
           </div>
@@ -470,7 +470,7 @@ export default function LessonsPage() {
               <div className="form-field">
                 <label className="form-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span>Content *</span>
-                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>Ô£ô Content loaded ÔÇö edit below</span>}
+                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>Ô£ô Content loaded — edit below</span>}
                 </label>
                 <RichEditor value={form.content}
                   onChange={(md) => setForm(p => ({ ...p, content: md }))}
@@ -492,7 +492,7 @@ export default function LessonsPage() {
                     </select>
                   ) : (
                     <div style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 13, color: "var(--muted)" }}>
-                      No classes ÔÇö create one first
+                      No classes — create one first
                     </div>
                   )}
                 </div>
