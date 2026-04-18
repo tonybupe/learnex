@@ -19,7 +19,7 @@ from app.services.lesson_service import add_lesson_resource, create_lesson, upda
 
 router = APIRouter()
 
-class AIGenerateRequest(PydanticBaseModel):
+class AIGenerateRequest(BaseModel):
     topic: str
     subtopic: str = ""
     level: str = "secondary"  # primary, secondary, college, university
@@ -394,7 +394,6 @@ def delete_lesson_comment(
 # =========================================================
 # AI LESSON GENERATOR
 # =========================================================
-from pydantic import BaseModel as PydanticBaseModel
 
 @router.post("/ai/generate")
 async def generate_lesson_with_ai(
