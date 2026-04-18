@@ -30,7 +30,7 @@ body {
   --text:  #0d1117;
   --muted: rgba(13,17,23,0.50);
   --border: rgba(13,17,23,0.09);
-  --card:  #ffffff;
+  --card:  #ffffff; /* pure white for sidebars */
   --card2: #f8fafc;
   --shadow:  0 8px 32px rgba(0,0,0,0.10);
   --shadow2: 0 2px 10px rgba(0,0,0,0.06);
@@ -111,7 +111,7 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 16px; gap: 12px;
 }
-.dark .topbar { background: rgba(22,27,34,0.95); backdrop-filter: blur(12px); }
+.dark .topbar { background: #161b22; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
 .topbar-left, .topbar-right { display: flex; align-items: center; gap: 10px; }
 
