@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Dict, List
 
 router = APIRouter()
@@ -99,7 +99,7 @@ def get_conversation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    conversation = db.query(Conversation).options(joinedload(Conversation.participants).joinedload('user').joinedload('profile')).filter(Conversation.id == conversation_id).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
@@ -141,8 +141,10 @@ def list_messages(
     if not participant:
         raise HTTPException(status_code=403, detail="You do not have access to this conversation")
 
+    from sqlalchemy.orm import joinedload as jl
     return (
         db.query(Message)
+        .options(jl(Message.sender).joinedload("profile"))
         .filter(Message.conversation_id == conversation_id)
         .order_by(Message.created_at.asc())
         .all()

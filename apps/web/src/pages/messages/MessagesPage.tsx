@@ -7,22 +7,24 @@ import { useAuthStore } from "@/features/auth/auth.store"
 import {
   Search, Send, Plus, MoreVertical, Phone, Video,
   ArrowLeft, CheckCheck, Check, MessageCircle, X,
-  Smile, Paperclip, Mic, Image, Users, GraduationCap,
-  BookOpen, Circle
+  Smile, Paperclip, Image, Users, GraduationCap,
+  BookOpen, Circle, Bell, Shield, Trash2, UserPlus,
+  UserMinus, MapPin, Globe, Briefcase, ChevronRight
 } from "lucide-react"
 
-interface UserMini { id: number; full_name: string; email: string; role: string; profile?: { avatar_url?: string } }
+interface UserMini { id: number; full_name: string; email: string; role: string; profile?: { avatar_url?: string; bio?: string | null } }
+interface Participant { id: number; user_id: number; role: string; is_muted: boolean; user?: UserMini }
 interface Message {
   id: number; conversation_id: number; sender_id: number
   content: string; message_type: string; is_edited: boolean
   is_deleted: boolean; created_at: string; updated_at: string
-  sender?: UserMini; temp?: boolean; error?: boolean
+  sender?: UserMini; temp?: boolean; error?: boolean; reactions?: Record<string,number>
 }
 interface Conversation {
   id: number; conversation_type: string; title?: string
   class_id?: number; lesson_id?: number; created_by_id?: number
   is_active: boolean; created_at: string; updated_at: string
-  participants?: any[]; last_message?: Message; unread_count?: number
+  participants?: Participant[]; last_message?: Message; unread_count?: number
 }
 
 function timeAgo(d: string) {
@@ -92,6 +94,9 @@ export default function MessagesPage() {
   const [showNewChat, setShowNewChat] = useState(false)
   const [users, setUsers] = useState<UserMini[]>([])
   const [mobileView, setMobileView] = useState<"list"|"chat">("list")
+  const [showProfile, setShowProfile] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [blockedUsers, setBlockedUsers] = useState<number[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -227,6 +232,34 @@ export default function MessagesPage() {
 
   const unreadTotal = conversations.reduce((sum, c) => sum + (c.unread_count ?? 0), 0)
 
+  // Get the other participant in a direct conversation
+  const getOtherParticipant = (conv: Conversation): UserMini | null => {
+    if (!conv.participants) return null
+    const other = conv.participants.find(p => p.user_id !== user?.id)
+    return other?.user ?? null
+  }
+
+  const otherUser = activeConv ? getOtherParticipant(activeConv) : null
+
+  const handleFollow = async (userId: number) => {
+    try {
+      await api.post(`/users/${userId}/follow`, {})
+      queryClient.invalidateQueries({ queryKey: ["follow-stats", userId] })
+    } catch (e: any) {
+      if (e?.response?.status === 400) {
+        await api.delete(`/users/${userId}/follow`)
+        queryClient.invalidateQueries({ queryKey: ["follow-stats", userId] })
+      }
+    }
+  }
+
+  const { data: followStats } = useQuery({
+    queryKey: ["follow-stats", otherUser?.id],
+    queryFn: async () => (await api.get(`/users/${otherUser!.id}/follow-stats`)).data,
+    enabled: !!otherUser?.id,
+    retry: false,
+  })
+
   return (
     <AppShell>
       <div style={{ display: "flex", height: "calc(100vh - 72px)", background: "var(--bg)", borderRadius: 20, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
@@ -312,7 +345,9 @@ export default function MessagesPage() {
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", cursor: "pointer", background: isActive ? "color-mix(in srgb, var(--accent) 8%, var(--card))" : "transparent", borderLeft: isActive ? "3px solid var(--accent)" : "3px solid transparent", transition: "all 0.15s" }}
                   onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "var(--bg2)" }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent" }}>
-                  <ConvIcon type={conv.conversation_type} />
+                  {conv.conversation_type === "direct" && getOtherParticipant(conv)
+                  ? <Avatar name={getOtherParticipant(conv)!.full_name} size={44} url={getOtherParticipant(conv)!.profile?.avatar_url} online={false} />
+                  : <ConvIcon type={conv.conversation_type} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                       <span style={{ fontWeight: hasUnread ? 800 : 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 160 }}>{getConvTitle(conv)}</span>
@@ -363,27 +398,60 @@ export default function MessagesPage() {
                   className="mobile-only">
                   <ArrowLeft size={18} />
                 </button>
-                <ConvIcon type={activeConv.conversation_type} />
+                {activeConv.conversation_type === "direct" && otherUser
+                  ? <Avatar name={otherUser.full_name} size={42} url={otherUser.profile?.avatar_url} online={true} />
+                  : <ConvIcon type={activeConv.conversation_type} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>{getConvTitle(activeConv)}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15 }}>{activeConv.conversation_type === "direct" && otherUser ? otherUser.full_name : getConvTitle(activeConv)}</div>
                   <div style={{ fontSize: 12, color: "var(--muted)", display: "flex", alignItems: "center", gap: 5 }}>
                     <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e" }} />
                     {activeConv.conversation_type === "direct" ? "Active now" : `${activeConv.participants?.length ?? 0} participants`}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 4 }}>
+                <div style={{ display: "flex", gap: 4, position: "relative" }}>
                   {[
-                    { icon: <Phone size={17} />, title: "Call" },
-                    { icon: <Video size={17} />, title: "Video call" },
-                    { icon: <MoreVertical size={17} />, title: "More options" },
+                    { icon: <Phone size={17} />, title: "Voice call", onClick: () => {} },
+                    { icon: <Video size={17} />, title: "Video call", onClick: () => {} },
+                    { icon: <Users size={17} />, title: "View profile", onClick: () => setShowProfile(v => !v) },
                   ].map((btn, i) => (
-                    <button key={i} title={btn.title}
+                    <button key={i} title={btn.title} onClick={btn.onClick}
                       style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", transition: "all 0.15s" }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--border)"; (e.currentTarget as HTMLElement).style.color = "var(--text)" }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg2)"; (e.currentTarget as HTMLElement).style.color = "var(--muted)" }}>
                       {btn.icon}
                     </button>
                   ))}
+
+                  {/* More options */}
+                  <div style={{ position: "relative" }}>
+                    <button title="More options" onClick={() => setShowMoreMenu(v => !v)}
+                      style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: showMoreMenu ? "var(--border)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", transition: "all 0.15s" }}>
+                      <MoreVertical size={17} />
+                    </button>
+                    {showMoreMenu && (
+                      <>
+                        <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setShowMoreMenu(false)} />
+                        <div style={{ position: "absolute", top: 42, right: 0, zIndex: 100, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.15)", minWidth: 220, overflow: "hidden" }}>
+                          {[
+                            { label: "View Profile", icon: <Users size={15} />, color: "var(--text)", onClick: () => { setShowProfile(true); setShowMoreMenu(false) } },
+                            { label: "Search in conversation", icon: <Search size={15} />, color: "var(--text)", onClick: () => setShowMoreMenu(false) },
+                            { label: "Mute notifications", icon: <Bell size={15} />, color: "var(--text)", onClick: () => setShowMoreMenu(false) },
+                            { label: "Mark as unread", icon: <MessageCircle size={15} />, color: "var(--text)", onClick: () => setShowMoreMenu(false) },
+                            { label: "Clear chat", icon: <Trash2 size={15} />, color: "var(--text)", onClick: () => { if (window.confirm("Clear all messages? This cannot be undone.")) setShowMoreMenu(false) } },
+                            { label: "Block user", icon: <Shield size={15} />, color: "var(--danger)", onClick: () => { if (otherUser && window.confirm(`Block ${otherUser.full_name}?`)) { setBlockedUsers(p => [...p, otherUser.id]); setShowMoreMenu(false) } } },
+                            { label: "Delete conversation", icon: <Trash2 size={15} />, color: "var(--danger)", onClick: () => { if (window.confirm("Delete this conversation?")) setShowMoreMenu(false) } },
+                          ].map((item, i) => (
+                            <button key={i} onClick={item.onClick}
+                              style={{ width: "100%", padding: "11px 16px", display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", cursor: "pointer", color: item.color, fontSize: 14, fontFamily: "inherit", textAlign: "left", borderBottom: i < 5 ? "1px solid var(--border)" : "none" }}
+                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--bg2)"}
+                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "none"}>
+                              {item.icon} {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
