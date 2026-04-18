@@ -18,7 +18,7 @@ export const api = axios.create({
     import.meta.env.VITE_API_BASE_URL ??
     "http://localhost:8000/api/v1",
 
-  timeout: 15000,
+  timeout: 60000, // 60s - AI generation needs more time
 
   headers: {
     "Content-Type": "application/json"

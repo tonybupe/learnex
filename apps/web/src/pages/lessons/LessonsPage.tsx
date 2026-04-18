@@ -127,7 +127,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
       )}
       <button className="btn btn-primary" style={{ alignSelf: "flex-start", fontSize: 13 }}
         onClick={generate} disabled={loading || !topic.trim()}>
-        {loading ? <><span className="spinner-small" /> Generating...</> : <><Sparkles size={14} /> Generate with AI</>}
+        {loading ? <><span className="spinner-small" /> Generating lesson... (30-60s)</> : <><Sparkles size={14} /> Generate with AI</>}
       </button>
       {result && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
