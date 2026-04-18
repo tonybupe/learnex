@@ -35,7 +35,7 @@ export default function LearnerDashboardPage() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ["learner-dashboard", user?.id],
     queryFn: async () => (await api.get("/analytics/dashboard/learner")).data,
     retry: 2,
@@ -96,6 +96,11 @@ export default function LearnerDashboardPage() {
 
         {/* ── BODY ── */}
         <div className="dash-body">
+
+          {/* Stats debug */}
+          {isError && <div style={{color:"red",padding:8,fontSize:12}}>Stats error: {String(error)}</div>}
+          {!isLoading && !stats && <div style={{color:"orange",padding:8,fontSize:12}}>Stats loaded but undefined</div>}
+          {stats && <div style={{color:"green",padding:8,fontSize:11}}>✓ enrolled={stats.enrolled_classes_count} lessons={stats.lesson_count}</div>}
 
           {/* Stats */}
           <div className="stats-grid" style={{ gap: 14 }}>
