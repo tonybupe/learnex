@@ -16,6 +16,7 @@ const BASE_MENU = [
   { label: "Discover",      icon: Search,           path: "/discover",      roles: ["admin","teacher","learner"] },
   { label: "Saved",         icon: Bookmark,         path: "/saved",         roles: ["admin","teacher","learner"] },
   { label: "Analytics",     icon: BarChart2,        path: "/analytics",     roles: ["admin","teacher"] },
+  { label: "My Dashboard",  icon: LayoutDashboard,  path: "/learner/dashboard", roles: ["learner"] },
   { label: "My Dashboard",  icon: LayoutDashboard,  path: "/teacher/dashboard", roles: ["teacher"] },
   { label: "My Dashboard",  icon: LayoutDashboard,  path: "/admin/dashboard",   roles: ["admin"] },
   { label: "AI Plans",      icon: Sparkles,         path: "/subscription",  roles: ["admin","teacher"] },
