@@ -149,7 +149,6 @@ def list_messages(
     )
     # Manually attach sender info
     from app.models.user import User as UserModel
-    from app.models.profile import UserProfile
     result = []
     for msg in msgs:
         sender = db.query(UserModel).filter(UserModel.id == msg.sender_id).first()
@@ -170,9 +169,9 @@ def list_messages(
                 "email": sender.email,
                 "role": sender.role,
                 "profile": {
-                    "avatar_url": sender.profile.avatar_url if sender.profile else None,
-                    "bio": sender.profile.bio if sender.profile else None,
-                } if sender and sender.profile else None
+                    "avatar_url": sender.profile.avatar_url if hasattr(sender, "profile") and sender.profile else None,
+                    "bio": sender.profile.bio if hasattr(sender, "profile") and sender.profile else None,
+                } if sender else None
             } if sender else None
         }
         result.append(msg_dict)
