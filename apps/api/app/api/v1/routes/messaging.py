@@ -141,14 +141,42 @@ def list_messages(
     if not participant:
         raise HTTPException(status_code=403, detail="You do not have access to this conversation")
 
-    from sqlalchemy.orm import joinedload as jl
-    return (
+    msgs = (
         db.query(Message)
-        .options(jl(Message.sender).joinedload("profile"))
         .filter(Message.conversation_id == conversation_id)
         .order_by(Message.created_at.asc())
         .all()
     )
+    # Manually attach sender info
+    from app.models.user import User as UserModel
+    from app.models.profile import UserProfile
+    result = []
+    for msg in msgs:
+        sender = db.query(UserModel).filter(UserModel.id == msg.sender_id).first()
+        msg_dict = {
+            "id": msg.id,
+            "conversation_id": msg.conversation_id,
+            "sender_id": msg.sender_id,
+            "content": msg.content,
+            "message_type": msg.message_type,
+            "media_file_id": msg.media_file_id,
+            "is_edited": msg.is_edited,
+            "is_deleted": msg.is_deleted,
+            "created_at": msg.created_at,
+            "updated_at": msg.updated_at,
+            "sender": {
+                "id": sender.id,
+                "full_name": sender.full_name,
+                "email": sender.email,
+                "role": sender.role,
+                "profile": {
+                    "avatar_url": sender.profile.avatar_url if sender.profile else None,
+                    "bio": sender.profile.bio if sender.profile else None,
+                } if sender and sender.profile else None
+            } if sender else None
+        }
+        result.append(msg_dict)
+    return result
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse)

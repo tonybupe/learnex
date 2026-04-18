@@ -243,11 +243,11 @@ export default function MessagesPage() {
 
   const handleFollow = async (userId: number) => {
     try {
-      await api.post(`/users/${userId}/follow`, {})
+      await api.post(`/social/${userId}/follow`, {})
       queryClient.invalidateQueries({ queryKey: ["follow-stats", userId] })
     } catch (e: any) {
       if (e?.response?.status === 400) {
-        await api.delete(`/users/${userId}/follow`)
+        await api.delete(`/social/${userId}/follow`)
         queryClient.invalidateQueries({ queryKey: ["follow-stats", userId] })
       }
     }
@@ -255,7 +255,7 @@ export default function MessagesPage() {
 
   const { data: followStats } = useQuery({
     queryKey: ["follow-stats", otherUser?.id],
-    queryFn: async () => (await api.get(`/users/${otherUser!.id}/follow-stats`)).data,
+    queryFn: async () => (await api.get(`/social/${otherUser!.id}/follow-stats`)).data,
     enabled: !!otherUser?.id,
     retry: false,
   })
