@@ -15,7 +15,7 @@ import {
   ChevronLeft, X, AlertCircle, Filter
 } from "lucide-react"
 
-// ÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Types ──────────────────────────────────────────────────────────
 interface LessonResource { id: number; resource_type: string; url: string; title?: string }
 interface Lesson {
   id: number; title: string; description?: string; content: string
@@ -25,7 +25,7 @@ interface Lesson {
 }
 interface ClassRoom { id: number; title: string; class_code: string; teacher_id?: number }
 
-// ÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Constants ──────────────────────────────────────────────────────
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   note: <FileText size={14} />, video: <Video size={14} />,
   live: <Eye size={14} />, assignment: <BookOpen size={14} />,
@@ -45,7 +45,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// ÔöÇÔöÇ AI Result types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── AI Result types ────────────────────────────────────────────────
 interface AIResult {
   content: string; summary: string
   key_terms?: { term: string; definition: string }[]
@@ -56,7 +56,7 @@ interface AIResult {
   presentation_slides?: { slide: number; title: string; points: string[] }[]
 }
 
-// ÔöÇÔöÇ AI Generator ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── AI Generator ──────────────────────────────────────────────────ÔöÇ
 function AIGenerator({ topic, subtopic, onGenerated }: {
   topic: string; subtopic: string
   onGenerated: (content: string, result: AIResult) => void
@@ -173,7 +173,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
   )
 }
 
-// ÔöÇÔöÇ Lesson Card ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Lesson Card ────────────────────────────────────────────────────
 function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
   lesson: Lesson; onOpen: () => void; onDelete: () => void; canEdit: boolean; className?: string
 }) {
@@ -204,7 +204,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
                 <Lock size={9} /> class
               </span>
             )}
-            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>┬À {className}</span>}
+            {className && <span style={{ fontSize: 10, color: "var(--muted)" }}>· {className}</span>}
           </div>
           <div style={{ fontSize: 11, color: "var(--muted)" }}>{timeAgo(lesson.created_at)}</div>
         </div>
@@ -237,7 +237,7 @@ function LessonCard({ lesson, onOpen, onDelete, canEdit, className }: {
   )
 }
 
-// ÔöÇÔöÇ Main Page ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Main Page ──────────────────────────────────────────────────────
 export default function LessonsPage() {
   const { isTeacher, isAdmin, isLearner, user } = useAuth()
   const currentUser = useAuthStore(s => s.user)
@@ -388,7 +388,7 @@ export default function LessonsPage() {
     <AppShell>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px 48px" }}>
 
-        {/* ÔöÇÔöÇ Header ÔöÇÔöÇ */}
+        {/* ── Header ── */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -412,14 +412,14 @@ export default function LessonsPage() {
           </div>
         </div>
 
-        {/* ÔöÇÔöÇ RBAC notice ÔöÇÔöÇ */}
+        {/* ── RBAC notice ── */}
         {isTeacher && (
           <div style={{ padding: "10px 16px", borderRadius: 10, marginBottom: 16, background: "rgba(203,38,228,0.06)", border: "1px solid rgba(203,38,228,0.2)", fontSize: 13, color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
             🔒 <span>You can only <strong style={{ color: "var(--text)" }}>create, edit or delete lessons in your own classes</strong>. Other lessons are view-only.</span>
           </div>
         )}
 
-        {/* ÔöÇÔöÇ Create Form ÔöÇÔöÇ */}
+        {/* ── Create Form ── */}
         {showForm && (isTeacher || isAdmin) && (
           <div className="card" style={{ padding: 22, marginBottom: 22 }}>
             <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
@@ -470,7 +470,7 @@ export default function LessonsPage() {
               <div className="form-field">
                 <label className="form-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span>Content *</span>
-                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>Ô£ô Content loaded — edit below</span>}
+                  {form.content && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>✔ Content loaded — edit below</span>}
                 </label>
                 <RichEditor value={form.content}
                   onChange={(md) => setForm(p => ({ ...p, content: md }))}
@@ -552,7 +552,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ Tabs + Filters ÔöÇÔöÇ */}
+        {/* ── Tabs + Filters ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
           <div className="tabs-bar" style={{ flex: 1, margin: 0 }}>
             {TABS.map(t => (
@@ -597,10 +597,10 @@ export default function LessonsPage() {
           )}
         </div>
 
-        {/* ÔöÇÔöÇ Loading ÔöÇÔöÇ */}
+        {/* ── Loading ── */}
         {isLoading && [1,2,3].map(i => <div key={i} className="card" style={{ height: 72, opacity: 0.3, marginBottom: 8 }} />)}
 
-        {/* ÔöÇÔöÇ Empty ÔöÇÔöÇ */}
+        {/* ── Empty ── */}
         {!isLoading && filtered.length === 0 && (
           <div className="card" style={{ textAlign: "center", padding: "40px 24px" }}>
             <div style={{ fontSize: 44, marginBottom: 10 }}>📚</div>
@@ -618,7 +618,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ Lessons grouped by class ÔöÇÔöÇ */}
+        {/* ── Lessons grouped by class ── */}
         {!isLoading && Object.keys(byClass).length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {Object.entries(byClass).map(([classId, classLessons]) => {
@@ -653,7 +653,7 @@ export default function LessonsPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ Pagination ÔöÇÔöÇ */}
+        {/* ── Pagination ── */}
         {!isLoading && totalPages > 1 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 28 }}>
             <button className="btn" style={{ fontSize: 12, padding: "7px 14px" }}
