@@ -161,7 +161,7 @@ function AIGenerator({ topic, subtopic, onGenerated }: {
                 {result.presentation_slides.map((s, i) => (
                   <div key={i} style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", fontSize: 12 }}>
                     <div style={{ fontWeight: 800, color: "var(--accent)", marginBottom: 3 }}>Slide {s.slide}: {s.title}</div>
-                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>ÔÇó {p}</div>)}
+                    {s.points.map((p, j) => <div key={j} style={{ color: "var(--muted)", paddingLeft: 8 }}>• {p}</div>)}
                   </div>
                 ))}
               </div>
@@ -675,7 +675,7 @@ export default function LessonsPage() {
         {/* Pagination info */}
         {!isLoading && filtered.length > 0 && (
           <div style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "var(--muted)" }}>
-            Showing {Math.min((page-1)*PAGE_SIZE+1, filtered.length)}ÔÇô{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length} lessons
+            Showing {Math.min((page-1)*PAGE_SIZE+1, filtered.length)}–{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length} lessons
           </div>
         )}
       </div>
