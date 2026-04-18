@@ -18,7 +18,6 @@ import SubscriptionPage from "@/pages/subscription/SubscriptionPage"
 import SavedPage from "@/pages/saved/SavedPage"
 
 // Shared
-import MessagingPage from "@/pages/shared/MessagingPage"
 import UnauthorizedPage from "@/pages/shared/UnauthorizedPage"
 import NotFoundPage from "@/pages/shared/NotFoundPage"
 import FeedPage from "@/pages/shared/FeedSection"
@@ -67,7 +66,6 @@ export default function App() {
         <Route path="/learner/dashboard" element={<AuthGuard allowedRoles={["learner"]}><LearnerDashboardPage /></AuthGuard>} />
 
         <Route path="/feed" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><FeedPage /></AuthGuard>} />
-        <Route path="/messages" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><MessagingPage /></AuthGuard>} />
         <Route path="/classes" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ClassesPage /></AuthGuard>} />
         <Route path="/classes/discover" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><DiscoverClassesPage /></AuthGuard>} />
         <Route path="/subjects" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SubjectsPage /></AuthGuard>} />
