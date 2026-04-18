@@ -606,7 +606,38 @@ export default function MessagesPage() {
                           </div>
                         )}
 
-                        <div style={{ maxWidth: "65%", display: "flex", flexDirection: "column", alignItems: isOwn ? "flex-end" : "flex-start" }}>
+                        <div style={{ maxWidth: "65%", display: "flex", flexDirection: "column", alignItems: isOwn ? "flex-end" : "flex-start", position: "relative" }}
+                          onMouseEnter={() => setHoveredMsg(msg.id)}
+                          onMouseLeave={() => setHoveredMsg(null)}>
+
+                          {/* Hover action toolbar */}
+                          {hoveredMsg === msg.id && !msg.is_deleted && !msg.temp && (
+                            <div style={{ position: "absolute", top: -40, [isOwn ? "left" : "right"]: 0, zIndex: 20, display: "flex", alignItems: "center", gap: 2, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 24, padding: "4px 8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+                              {["👍","❤️","😂","😮","😢","🙏"].map(emoji => (
+                                <button key={emoji}
+                                  onClick={() => api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji }).catch(() => {})}
+                                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: "1px 3px", borderRadius: 6, lineHeight: 1, transition: "transform 0.15s" }}
+                                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.4)"}
+                                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = "scale(1)"}>
+                                  {emoji}
+                                </button>
+                              ))}
+                              <div style={{ width: 1, height: 18, background: "var(--border)", margin: "0 4px" }} />
+                              <button onClick={() => { setReplyTo(msg); setTimeout(() => inputRef.current?.focus(), 50) }}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 8px", borderRadius: 12, fontSize: 12, color: "var(--muted)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4, transition: "color 0.15s" }}
+                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--accent)"}
+                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
+                                ↩ Reply
+                              </button>
+                              {isOwn && (
+                                <button onClick={() => { if (window.confirm("Delete this message?")) deleteMutation.mutate(msg.id) }}
+                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 8px", borderRadius: 12, fontSize: 12, color: "var(--danger)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                                  🗑 Delete
+                                </button>
+                              )}
+                            </div>
+                          )}
+
                           {showName && !isOwn && (
                             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 4, paddingLeft: 4 }}>
                               {msg.sender?.full_name ?? "Unknown"}
@@ -631,12 +662,12 @@ export default function MessagesPage() {
                               ? <span style={{ fontStyle: "italic", opacity: 0.6, fontSize: 13 }}>Message deleted</span>
                               : msg.content.startsWith("> ")
                                 ? (() => {
-                                    const lines = msg.content.split("\n\n")
-                                    const quote = lines[0].replace(/^> /, "")
-                                    const rest = lines.slice(1).join("\n\n")
+                                    const parts = msg.content.split("\n\n")
+                                    const quote = parts[0].replace(/^> /, "")
+                                    const rest = parts.slice(1).join("\n\n")
                                     return (
                                       <div>
-                                        <div style={{ borderLeft: "3px solid rgba(255,255,255,0.4)", paddingLeft: 8, marginBottom: 6, fontSize: 12, opacity: 0.7, fontStyle: "italic" }}>{quote}</div>
+                                        <div style={{ borderLeft: `3px solid ${isOwn ? "rgba(255,255,255,0.5)" : "var(--accent)"}`, paddingLeft: 8, marginBottom: 6, fontSize: 12, opacity: 0.75, fontStyle: "italic", lineHeight: 1.4 }}>{quote}</div>
                                         <span style={{ fontSize: 14, lineHeight: 1.55, wordBreak: "break-word" }}>{rest}</span>
                                       </div>
                                     )
@@ -650,7 +681,7 @@ export default function MessagesPage() {
                             <span style={{ fontSize: 10, color: "var(--muted)" }}>{formatTime(msg.created_at)}</span>
                             {msg.is_edited && <span style={{ fontSize: 10, color: "var(--muted)" }}>· edited</span>}
                             {isOwn && (
-                              msg.error ? <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Failed to send</span>
+                              msg.error ? <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Failed</span>
                               : msg.temp ? <Circle size={10} style={{ color: "var(--muted)", opacity: 0.5 }} />
                               : <CheckCheck size={12} style={{ color: "var(--accent)" }} />
                             )}
