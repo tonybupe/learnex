@@ -134,6 +134,7 @@ export default function MessagesPage() {
   const [replyTo, setReplyTo] = useState<Message | null>(null)
   const [hoveredMsg, setHoveredMsg] = useState<number | null>(null)
   const [msgMenuId, setMsgMenuId] = useState<number | null>(null)
+  const [msgReactions, setMsgReactions] = useState<Record<number, Record<string,number>>>({})
 
   // ── Queries ──
   const { data: conversations = [], isLoading: convLoading } = useQuery({
@@ -616,7 +617,19 @@ export default function MessagesPage() {
                               <div style={{ display: "flex", alignItems: "center", gap: 1, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 24, padding: "3px 6px", boxShadow: "0 2px 12px rgba(0,0,0,0.12)" }}>
                                 {["👍","❤️","😂","😮","😢","🙏"].map(em => (
                                   <button key={em}
-                                    onClick={() => api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji: em }).catch(() => {})}
+                                    onClick={() => {
+                                      api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji: em })
+                                        .then((res: any) => {
+                                          setMsgReactions(prev => ({ ...prev, [msg.id]: res.data.reactions }))
+                                        }).catch(() => {
+                                          // optimistic fallback
+                                          setMsgReactions(prev => {
+                                            const cur = { ...(prev[msg.id] ?? {}) }
+                                            cur[em] = (cur[em] ?? 0) + 1
+                                            return { ...prev, [msg.id]: cur }
+                                          })
+                                        })
+                                    }}
                                     style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, padding: "2px 3px", borderRadius: 6, lineHeight: 1, transition: "transform 0.15s" }}
                                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.35)"}
                                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = "scale(1)"}>
@@ -678,6 +691,23 @@ export default function MessagesPage() {
                                 : <span style={{ fontSize: 14, lineHeight: 1.55, wordBreak: "break-word" }}>{msg.content}</span>
                             }
                           </div>
+
+                          {/* Reactions display */}
+                          {msgReactions[msg.id] && Object.keys(msgReactions[msg.id]).length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                              {Object.entries(msgReactions[msg.id]).map(([emoji, count]) => (
+                                <button key={emoji}
+                                  onClick={() => {
+                                    api.post(`/messaging/${activeConv!.id}/messages/${msg.id}/react`, { emoji })
+                                      .then((res: any) => setMsgReactions(prev => ({ ...prev, [msg.id]: res.data.reactions })))
+                                      .catch(() => {})
+                                  }}
+                                  style={{ display: "flex", alignItems: "center", gap: 3, padding: "2px 8px", borderRadius: 20, background: isOwn ? "rgba(255,255,255,0.15)" : "var(--bg2)", border: `1px solid ${isOwn ? "rgba(255,255,255,0.2)" : "var(--border)"}`, cursor: "pointer", fontSize: 13, fontWeight: 700, color: isOwn ? "white" : "var(--text)" }}>
+                                  {emoji} <span style={{ fontSize: 11 }}>{count as number}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Time + status */}
                           <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3, paddingLeft: isOwn ? 0 : 4 }}>
