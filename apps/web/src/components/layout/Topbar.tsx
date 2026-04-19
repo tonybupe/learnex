@@ -74,8 +74,8 @@ export default function Topbar() {
             <Search size={20} />
           </button>
 
-          {/* Messages - desktop only */}
-          <button className="icon-btn desktop-only" onClick={() => navigate("/messages")} aria-label="Messages" style={{ position: "relative" }}>
+          {/* Messages */}
+          <button className="icon-btn" onClick={() => navigate("/messages")} aria-label="Messages" style={{ position: "relative" }}>
             <MessageCircle size={20} />
             {totalUnread > 0 && (
               <span style={{
@@ -91,8 +91,8 @@ export default function Topbar() {
             )}
           </button>
 
-          {/* Notifications - desktop only */}
-          <span className="desktop-only"><NotificationBell /></span>
+          {/* Notifications */}
+          <NotificationBell />
 
           {/* User avatar + name */}
           <button className="user-profile-mini clickable" onClick={() => navigate(`/profile/${user?.id}`)}
