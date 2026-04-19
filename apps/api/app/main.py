@@ -46,11 +46,11 @@ app.add_middleware(
         "https://learnex.co.zm",
         "https://www.learnex.co.zm",
         "https://*.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60, redis_url=settings.redis_url)
 
