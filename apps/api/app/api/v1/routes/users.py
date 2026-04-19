@@ -1,6 +1,6 @@
 import os
 import uuid
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
@@ -100,6 +100,36 @@ def save_upload(file_bytes: bytes, filename: str) -> str:
 
 @router.get("/me", response_model=UserResponse)
 def get_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return build_user_response(db, current_user)
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update current user basic details: full_name, phone_number, sex."""
+    allowed = {"full_name", "phone_number", "sex"}
+    for field, value in payload.items():
+        if field in allowed and value is not None:
+            setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
+    return build_user_response(db, current_user)
+
+@router.put("/me", response_model=UserResponse)
+def update_me_put(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """PUT alias for PATCH /me."""
+    allowed = {"full_name", "phone_number", "sex"}
+    for field, value in payload.items():
+        if field in allowed and value is not None:
+            setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
     return build_user_response(db, current_user)
 
 
