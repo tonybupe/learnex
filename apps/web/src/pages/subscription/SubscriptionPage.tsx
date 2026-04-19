@@ -404,7 +404,7 @@ function PlanCard({ plan, yearly, onSelect }: { plan: typeof PLANS[0]; yearly: b
         }}>
         {plan.cta}
       </button>
-      </button>
+
     </div>
   )
 }
