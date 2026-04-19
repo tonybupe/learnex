@@ -64,7 +64,7 @@ export default function Topbar() {
             <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Sparkles size={15} style={{ color: "white" }} />
             </div>
-            <span className="brand-name" style={{ display: isMobile ? "none" : undefined }} style={{ fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
+            <span className="brand-name" style={{ display: isMobile ? "none" : undefined, fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
           </button>
 
           {/* Desktop search */}
