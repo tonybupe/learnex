@@ -1185,3 +1185,24 @@ div[style*="position: fixed"][style*="zIndex: 1000"],
 div[style*="position: fixed"][style*="z-index: 1000"] {
   z-index: 800 !important;
 }
+/* =========================================
+   TOPBAR MOBILE - FINAL CLEAN RULE
+   (overrides all previous conflicting rules)
+========================================= */
+@media (max-width: 640px) {
+  .topbar {
+    height: 50px !important;
+    padding: 0 4px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+    gap: 2px !important;
+  }
+  .topbar::-webkit-scrollbar { display: none !important; }
+  .topbar-left { flex-shrink: 0 !important; gap: 2px !important; }
+  .topbar-right { flex-shrink: 0 !important; gap: 2px !important; flex-wrap: nowrap !important; }
+  .topbar .icon-btn { width: 32px !important; height: 32px !important; min-width: 32px !important; flex-shrink: 0 !important; }
+  .topbar .user-profile-mini { flex-shrink: 0 !important; min-width: 36px !important; }
+}

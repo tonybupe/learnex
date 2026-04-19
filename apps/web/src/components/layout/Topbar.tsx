@@ -50,18 +50,18 @@ export default function Topbar() {
 
   return (
     <>
-      <header className="topbar" role="banner" style={{ height: isMobile ? "50px" : undefined, padding: isMobile ? "0 6px" : undefined, gap: isMobile ? "2px" : undefined }}>
+      <header className="topbar" role="banner" style={{ height: isMobile ? "50px" : undefined, overflowX: isMobile ? "auto" : undefined, overflowY: isMobile ? "hidden" : undefined, flexWrap: "nowrap" }}>
         {/* ── LEFT ── */}
-        <div className="topbar-left" style={{ gap: isMobile ? "2px" : undefined }}>
+        <div className="topbar-left" style={{ gap: isMobile ? "4px" : undefined, flexShrink: 0 }}>
           {/* Mobile hamburger */}
           <button className="icon-btn mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <Menu size={20} />
+            <Menu size={isMobile ? 18 : 20} />
           </button>
 
           {/* Brand */}
           <button className="brand-card" onClick={() => navigate("/home")}
             style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: isMobile ? 26 : 30, height: isMobile ? 26 : 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Sparkles size={15} style={{ color: "white" }} />
             </div>
             <span className="brand-name" style={{ display: isMobile ? "none" : undefined, fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
@@ -74,7 +74,7 @@ export default function Topbar() {
         </div>
 
         {/* ── RIGHT ── */}
-        <div className="topbar-right" style={{ gap: isMobile ? "1px" : undefined }}>
+        <div className="topbar-right" style={{ gap: isMobile ? "4px" : undefined, flexShrink: 0, flexWrap: "nowrap" }}>
           {/* Mobile search icon */}
           <button className="icon-btn mobile-only" onClick={() => setMobileSearchOpen(true)} aria-label="Search">
             <Search size={20} />
@@ -82,7 +82,7 @@ export default function Topbar() {
 
           {/* Messages */}
           <button className="icon-btn" onClick={() => navigate("/messages")} aria-label="Messages" style={{ position: "relative" }}>
-            <MessageCircle size={20} />
+            <MessageCircle size={isMobile ? 17 : 20} />
             {totalUnread > 0 && (
               <span style={{
                 position: "absolute", top: -3, right: -3,
