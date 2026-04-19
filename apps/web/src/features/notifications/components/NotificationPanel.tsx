@@ -43,6 +43,7 @@ export default function NotificationPanel() {
           key={n.id}
           notification={n}
           onRead={markRead}
+          onClose={() => {}}
         />
 
       ))}

@@ -428,7 +428,7 @@ export async function getComments(
     const data = raw.map((c: any) => transformComment(c))
     return {
       data,
-      metadata: { page: params?.page ?? 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1, has_next_page: false, prev_page: null },
+      metadata: { page: params?.page ?? 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1, has_next_page: false, has_prev_page: false, prev_page: null },
     }
   } catch (error) {
     const apiError = handleApiError(error, "Failed to load comments")

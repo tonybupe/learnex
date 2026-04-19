@@ -146,7 +146,7 @@ function CommentList({
             key={comment.id} 
             comment={comment} 
             onDelete={onDelete}
-            onReply={onCommentReply}
+            onReply={onCommentReply as any}
             isHighlighted={highlightedCommentId === comment.id}
             animationDelay={index < 5 ? index * 0.05 : 0}
           />

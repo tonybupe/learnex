@@ -44,7 +44,7 @@ export function UserProfile({ user, isOwnProfile }: Props) {
   --------------------------------------- */
 
   const displayName = user.full_name || 'User'
-  const avatarUrl = user.profile?.avatar_url || null
+  const avatarUrl = user.profile?.avatar_url_url || null
 
   const bio = user.profile?.bio || 'No bio yet'
   const location = user.profile?.location

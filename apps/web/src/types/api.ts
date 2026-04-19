@@ -66,7 +66,8 @@ export type UserProfileDetails = {
 export type UserProfile = BaseUser & {
   followers_count: number
   following_count: number
-
+  name?: string
+  avatar_url?: string | null
   profile?: UserProfileDetails | null
 }
 

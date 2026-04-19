@@ -24,16 +24,16 @@ export function UserCard({
     <div className={`user-card user-card-${size}`}>
       <Link to={`/profile/${user.id}`} className="user-card-link">
         <UserAvatar 
-          src={user.avatar_url} 
-          name={user.name} 
+          src={user.profile?.avatar_url}
+          name={user.full_name}
           size={size === 'lg' ? 'xl' : size} 
         />
         
         <div className="user-card-info">
-          <h3 className="user-card-name">{user.name}</h3>
+          <h3 className="user-card-name">{user.full_name}</h3>
           <p className="user-card-role">{user.role}</p>
-          {user.bio && size === 'lg' && (
-            <p className="user-card-bio">{user.bio}</p>
+          {user.profile?.bio && size === "lg" && (
+            <p className="user-card-bio">{user.profile?.bio}</p>
           )}
         </div>
       </Link>

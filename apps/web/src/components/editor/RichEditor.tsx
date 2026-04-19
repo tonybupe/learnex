@@ -314,9 +314,9 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
         {/* Align */}
         <div className="tiptap-tool-group">
-          <Btn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={isActive({ textAlign: "left" })} title="Left">⬜</Btn>
-          <Btn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={isActive({ textAlign: "center" })} title="Center">⬛</Btn>
-          <Btn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={isActive({ textAlign: "right" })} title="Right">⬜</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={isActive("left")} title="Left">⬜</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={isActive("center")} title="Center">⬛</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={isActive("right")} title="Right">⬜</Btn>
         </div>
         <div className="tiptap-divider" />
 

@@ -25,7 +25,7 @@ export default function DeleteAccountModal({ isOpen, onClose, userId }: DeleteAc
 
     try {
       setError('');
-      await deleteAccount.mutateAsync(userId);
+      await deleteAccount.mutateAsync();
       // onClose will not be called as user will be redirected
     } catch (err) {
       setError('Failed to delete account. Please try again.');
