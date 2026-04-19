@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: learnex-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile.prod
+    dockerContext: ./apps/api
+    plan: starter
+    region: frankfurt
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres.iklaxfhwyausxuxrnpfe
+      - key: POSTGRES_PASSWORD
+        value: RIb4mC2iZCV04G53
+      - key: POSTGRES_HOST
+        value: aws-1-eu-north-1.pooler.supabase.com
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        value: postgres
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: REDIS_URL
+        fromService:
+          name: learnex-redis
+          type: redis
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: https://learnex-app.vercel.app,https://learnex.co.zm
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  - type: redis
+    name: learnex-redis
+    plan: free
+    region: frankfurt
+    maxmemoryPolicy: allkeys-lru
