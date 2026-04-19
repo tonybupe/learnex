@@ -1149,3 +1149,39 @@ body {
     margin-bottom: 20px !important;
   }
 }
+/* =========================================
+   MOBILE DRAWERS - ALWAYS ON TOP
+========================================= */
+/* Topbar z-index */
+.shell-topbar { z-index: 100 !important; }
+.topbar { z-index: 100 !important; }
+
+/* Mobile sidebar drawer - above topbar */
+.mobile-drawer {
+  z-index: 600 !important;
+}
+.mobile-overlay {
+  z-index: 599 !important;
+}
+.mobile-sidebar-card {
+  z-index: 601 !important;
+}
+
+/* Mobile right panel bottom drawer - above topbar */
+.mobile-bottom-drawer {
+  z-index: 600 !important;
+}
+.mobile-bottom-card {
+  z-index: 601 !important;
+}
+
+/* Mobile search overlay - above topbar */
+.gsearch-mobile-overlay {
+  z-index: 700 !important;
+}
+
+/* Any fixed modal overlay - above everything */
+div[style*="position: fixed"][style*="zIndex: 1000"],
+div[style*="position: fixed"][style*="z-index: 1000"] {
+  z-index: 800 !important;
+}
