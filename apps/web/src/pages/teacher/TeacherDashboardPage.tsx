@@ -343,14 +343,14 @@ export default function TeacherDashboardPage() {
                   </ResponsiveContainer>
                 </div>
 
+                {/* Engagement rings */}
+                <div className="card" style={{ padding: "18px 20px" }}>
+                  <div style={{ fontWeight: 800, marginBottom: 16 }}>📊 Real Metrics</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <EngagementRing value={Math.min(100,engagementRate)} label="Quiz Attempts" color="#cb26e4" />
                     <EngagementRing value={Math.min(100,completionRate)} label="Published"     color="#22c55e" />
                     <EngagementRing value={Math.min(100,avgScore)}       label="Avg Score"     color="#38bdf8" />
                     <EngagementRing value={Math.min(100,quizPassRate)}   label="Pass Rate"     color="#f59e0b" />
-                    <EngagementRing value={engagementRate}  label="Engagement" color="#cb26e4" />
-                    <EngagementRing value={completionRate}  label="Completion"  color="#22c55e" />
-                    <EngagementRing value={quizPassRate}    label="Quiz Pass"   color="#38bdf8" />
-                    <EngagementRing value={retentionRate}   label="Retention"   color="#f59e0b" />
                   </div>
                 </div>
               </div>
