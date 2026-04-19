@@ -948,3 +948,45 @@ body {
   /* Hide theme toggle on mobile to save space */
   .theme-toggle-btn { display: none !important; }
 }
+/* =========================================
+   TOPBAR MOBILE - SLIM & FIT ALL ICONS
+========================================= */
+@media (max-width: 640px) {
+  /* Slim topbar height */
+  .topbar {
+    height: 50px !important;
+    padding: 0 6px !important;
+    gap: 2px !important;
+  }
+
+  /* Left side - compact */
+  .topbar-left { gap: 2px !important; }
+
+  /* Right side - compact */
+  .topbar-right { gap: 1px !important; }
+
+  /* All icon buttons smaller */
+  .icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+  }
+  .icon-btn svg { width: 17px !important; height: 17px !important; }
+
+  /* Hide brand name text - keep icon only */
+  .brand-name { display: none !important; }
+
+  /* Hide desktop search bar */
+  .topbar-search { display: none !important; }
+
+  /* User profile - avatar only, no text */
+  .user-profile-mini {
+    padding: 3px !important;
+    border-radius: 50% !important;
+  }
+  .user-profile-mini .desktop-only { display: none !important; }
+
+  /* Hide theme toggle on mobile to save space */
+  .theme-toggle-btn { display: none !important; }
+}
