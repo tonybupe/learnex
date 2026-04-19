@@ -30,7 +30,7 @@ export function useFollow(userId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: socialKeys.stats(userId) });
       queryClient.invalidateQueries({ queryKey: socialKeys.followers(userId) });
-      queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) });
+      queryClient.invalidateQueries({ queryKey: userKeys.myProfile() });
     },
   });
 
@@ -39,7 +39,7 @@ export function useFollow(userId: number) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: socialKeys.stats(userId) });
       queryClient.invalidateQueries({ queryKey: socialKeys.followers(userId) });
-      queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) });
+      queryClient.invalidateQueries({ queryKey: userKeys.myProfile() });
     },
   });
 

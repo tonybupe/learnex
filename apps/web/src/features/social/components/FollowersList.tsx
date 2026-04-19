@@ -19,6 +19,9 @@ const toUserProfile = (user: any): UserProfile => ({
   followers_count: user.followers_count || 0,
   following_count: user.following_count || 0,
   created_at: user.created_at || new Date().toISOString(),
+  is_active: user.is_active ?? true,
+  is_verified: user.is_verified ?? false,
+  updated_at: user.updated_at || new Date().toISOString(),
   updated_at: user.updated_at || new Date().toISOString(),
 });
 
@@ -58,7 +61,7 @@ export function FollowersList({ userId }: FollowersListProps) {
     );
   }
 
-  const followers = Array.isArray(data) ? data : (data?.items ?? []) ?? [];
+  const followers = Array.isArray(data) ? data : ((data as any)?.items ?? []) ?? [];
 
   if (followers.length === 0) {
     return (
