@@ -423,14 +423,14 @@ export default function TeacherDashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-                  { label: "Quiz Attempts",    value: engagementRate,  color: "#cb26e4", icon: "❤️", desc: `${stats?.total_quiz_attempts ?? 0} total attempts by learners` },
-                  { label: "Published Lessons",value: completionRate,  color: "#22c55e", icon: "✅", desc: `${publishedLessons} of ${totalLessons} lessons published` },
-                  { label: "Avg Quiz Score",   value: avgScore,        color: "#38bdf8", icon: "🎯", desc: `Average score across ${stats?.total_quiz_attempts ?? 0} attempts` },
-                  { label: "Learner Ratio",    value: retentionRate,   color: "#f59e0b", icon: "🔁", desc: `${totalLearners} learners across ${totalClasses} classes` },
-                  { label: "Engagement Rate",  value: engagementRate,  color: "#cb26e4", icon: "❤️", desc: "Learners actively interacting" },
-                  { label: "Lesson Completion", value: completionRate,  color: "#22c55e", icon: "✅", desc: "Lessons finished by learners" },
-                  { label: "Quiz Pass Rate",    value: quizPassRate,    color: "#38bdf8", icon: "🎯", desc: "Quizzes passed first attempt" },
-                  { label: "Retention Rate",    value: retentionRate,   color: "#f59e0b", icon: "🔁", desc: "Learners returning weekly" },
+
+              {/* Real metrics cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+                {[
+                  { label: "Quiz Attempts",    value: engagementRate,  color: "#cb26e4", icon: "❤️", desc: `${stats?.total_quiz_attempts ?? 0} total by ${totalLearners} learners` },
+                  { label: "Published",        value: completionRate,  color: "#22c55e", icon: "✅", desc: `${publishedLessons} of ${totalLessons} lessons live` },
+                  { label: "Avg Quiz Score",   value: avgScore,        color: "#38bdf8", icon: "🎯", desc: `Across ${stats?.total_quiz_attempts ?? 0} attempts` },
+                  { label: "Learner Ratio",    value: retentionRate,   color: "#f59e0b", icon: "🔁", desc: `${totalLearners} across ${totalClasses} classes` },
                 ].map(m => (
                   <div key={m.label} className="card" style={{ padding: "18px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>{m.icon}</div>
