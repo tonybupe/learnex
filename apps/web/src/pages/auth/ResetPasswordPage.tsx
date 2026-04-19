@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>New Password</label>
                   <div style={{ position: "relative" }}>
-                    <input id="new_password" name="new_password"
+                    <input id="new_password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Min. 6 characters" disabled={loading}
                       autoComplete="new-password"
@@ -187,7 +187,7 @@ export default function ResetPasswordPage() {
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Confirm Password</label>
                   <div style={{ position: "relative" }}>
-                    <input id="confirm_password" name="confirm_password"
+                    <input id="confirm_password"
                       type={showConfirm ? "text" : "password"}
                       placeholder="Repeat your password" disabled={loading}
                       autoComplete="new-password"

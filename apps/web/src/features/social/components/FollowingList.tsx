@@ -11,7 +11,7 @@ interface FollowingListProps {
 // Helper function to convert AuthUser to UserProfile
 const toUserProfile = (user: any): UserProfile => ({
   id: user.id,
-  name: user.name,
+  name: user.full_name,
   email: user.email,
   role: user.role,
   avatar: user.avatar || user.avatar_url || null, // Use 'avatar' not 'avatar_url'

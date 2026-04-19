@@ -334,3 +334,7 @@ export type ApiError = {
   message?: string
   status_code?: number
 }
+// Follow response types
+export type FollowersResponse = UserProfile[]
+export type FollowingResponse = UserProfile[]
+export type FollowActionResponse = { message: string; is_following: boolean }

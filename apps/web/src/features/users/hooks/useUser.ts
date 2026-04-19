@@ -132,7 +132,7 @@ export function useUploadAvatar() {
           ...store.user,
           profile: {
             ...store.user.profile,
-            avatar: data.avatar_url,
+            avatar_url: data.avatar_url,
           },
         })
       }
