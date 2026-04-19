@@ -1052,3 +1052,100 @@ body {
     flex-shrink: 0 !important;
   }
 }
+/* =========================================
+   TOPBAR MOBILE - HORIZONTAL SCROLL
+========================================= */
+@media (max-width: 640px) {
+  .topbar {
+    height: 52px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+  }
+  .topbar::-webkit-scrollbar { display: none !important; }
+
+  .topbar-left {
+    flex-shrink: 0 !important;
+    gap: 4px !important;
+  }
+  .topbar-right {
+    flex-shrink: 0 !important;
+    gap: 4px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Keep icons reasonable size */
+  .topbar .icon-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    flex-shrink: 0 !important;
+  }
+  .topbar .user-profile-mini {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* =========================================
+   PROFILE PAGE - HORIZONTAL SCROLL FOR TABS
+   VERTICAL SCROLL FOR CONTENT
+========================================= */
+@media (max-width: 768px) {
+  /* Profile tabs - horizontal scroll */
+  .profile-tabs,
+  div[style*="display: flex"][style*="borderBottom"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+  }
+  .profile-tabs::-webkit-scrollbar { display: none !important; }
+
+  /* Profile edit modal - vertical scroll */
+  div[style*="position: fixed"][style*="inset: 0"] {
+    overflow-y: auto !important;
+    align-items: flex-start !important;
+    padding: 12px !important;
+  }
+  div[style*="position: fixed"][style*="inset: 0"] > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  /* Settings page tabs - horizontal scroll */
+  .settings-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+  .settings-tabs::-webkit-scrollbar { display: none !important; }
+
+  /* Settings content - full vertical scroll */
+  .settings-content {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 80px !important;
+  }
+
+  /* All modals scrollable on mobile */
+  .modal-overlay {
+    overflow-y: auto !important;
+    padding: 12px !important;
+    align-items: flex-start !important;
+  }
+  .modal-card {
+    max-height: none !important;
+    overflow-y: visible !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+}
