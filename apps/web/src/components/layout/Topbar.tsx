@@ -18,6 +18,12 @@ export default function Topbar() {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const { totalUnread } = useUnreadMessages()
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 640)
+    window.addEventListener("resize", handler)
+    return () => window.removeEventListener("resize", handler)
+  }, [])
 
   // Close mobile search on ESC
   useEffect(() => {
@@ -44,9 +50,9 @@ export default function Topbar() {
 
   return (
     <>
-      <header className="topbar" role="banner">
+      <header className="topbar" role="banner" style={{ height: isMobile ? "50px" : undefined, padding: isMobile ? "0 6px" : undefined, gap: isMobile ? "2px" : undefined }}>
         {/* ── LEFT ── */}
-        <div className="topbar-left">
+        <div className="topbar-left" style={{ gap: isMobile ? "2px" : undefined }}>
           {/* Mobile hamburger */}
           <button className="icon-btn mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu">
             <Menu size={20} />
@@ -58,7 +64,7 @@ export default function Topbar() {
             <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Sparkles size={15} style={{ color: "white" }} />
             </div>
-            <span className="brand-name desktop-only" style={{ fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
+            <span className="brand-name" style={{ display: isMobile ? "none" : undefined }} style={{ fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
           </button>
 
           {/* Desktop search */}
@@ -68,7 +74,7 @@ export default function Topbar() {
         </div>
 
         {/* ── RIGHT ── */}
-        <div className="topbar-right">
+        <div className="topbar-right" style={{ gap: isMobile ? "1px" : undefined }}>
           {/* Mobile search icon */}
           <button className="icon-btn mobile-only" onClick={() => setMobileSearchOpen(true)} aria-label="Search">
             <Search size={20} />
@@ -96,7 +102,7 @@ export default function Topbar() {
 
           {/* User avatar + name */}
           <button className="user-profile-mini clickable" onClick={() => navigate(`/profile/${user?.id}`)}
-            style={{ background: "none", border: "1px solid var(--border)", borderRadius: 24, padding: "4px var(--profile-pad, 12px) 4px 4px", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}
+            style={{ background: "none", border: "1px solid var(--border)", borderRadius: isMobile ? "50%" : 24, padding: isMobile ? "3px" : "4px 12px 4px 4px", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = accentColor}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"}>
             <div style={{ width: 28, height: 28, borderRadius: "50%", background: accentColor, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
