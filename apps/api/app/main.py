@@ -45,7 +45,7 @@ app.add_middleware(
         "https://learnex-app.vercel.app",
         "https://learnex.co.zm",
         "https://www.learnex.co.zm",
-    ],
+        "https://*.vercel.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

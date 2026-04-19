@@ -13,6 +13,7 @@ from app.models.user import User
 from app.models.user_profile import UserProfile
 from app.schemas.user import PublicUserResponse, UserResponse
 from app.schemas.user_profile import UserProfileResponse, UpdateUserProfileRequest
+from app.services.storage_service import upload_file as supabase_upload
 
 router = APIRouter()
 
@@ -175,7 +176,10 @@ async def upload_avatar(
     if len(content) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large. Max 10MB.")
 
-    url = save_upload(content, file.filename or "avatar.jpg")
+    try:
+        url = supabase_upload(content, ct, folder=f"avatars/{current_user.id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     profile = ensure_profile(db, current_user.id)
     profile.avatar_url = url
     db.commit()
@@ -201,7 +205,10 @@ async def upload_cover(
     if len(content) > 20 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large. Max 20MB.")
 
-    url = save_upload(content, file.filename or "cover.jpg")
+    try:
+        url = supabase_upload(content, ct, folder=f"covers/{current_user.id}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     profile = ensure_profile(db, current_user.id)
     profile.cover_url = url
     db.commit()
