@@ -11,11 +11,11 @@ interface FollowersListProps {
 // Helper function to convert AuthUser to UserProfile
 const toUserProfile = (user: any): UserProfile => ({
   id: user.id,
-  name: user.full_name,
+  full_name: user.full_name,
   email: user.email,
   role: user.role,
-  avatar: user.avatar || user.avatar_url || null, // Use 'avatar' not 'avatar_url'
-  bio: user.bio || null,
+  avatar_url: user.avatar_url || user.avatar || null,
+  profile: user.profile || null,
   followers_count: user.followers_count || 0,
   following_count: user.following_count || 0,
   created_at: user.created_at || new Date().toISOString(),
@@ -58,7 +58,7 @@ export function FollowersList({ userId }: FollowersListProps) {
     );
   }
 
-  const followers = data?.pages.flatMap((page) => page.items) ?? [];
+  const followers = Array.isArray(data) ? data : (data?.items ?? []) ?? [];
 
   if (followers.length === 0) {
     return (

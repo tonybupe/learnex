@@ -396,7 +396,7 @@ function PlanCard({ plan, yearly, onSelect }: { plan: typeof PLANS[0]; yearly: b
 
       {/* CTA */}
       <button disabled={plan.ctaDisabled} onClick={onSelect} style={{
-          padding: "12px", borderRadius: 12, border: "none", cursor: plan.ctaDisabled ? "default" : "pointer",
+          padding: "12px", borderRadius: 12, cursor: plan.ctaDisabled ? "default" : "pointer",
           background: plan.ctaDisabled ? "var(--bg2)" : isBest ? plan.color : `${plan.color}15`,
           color: plan.ctaDisabled ? "var(--muted)" : isBest ? "white" : plan.color,
           fontWeight: 800, fontSize: 14, fontFamily: "inherit", transition: "all 0.15s",

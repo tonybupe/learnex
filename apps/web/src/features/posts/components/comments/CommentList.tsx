@@ -147,8 +147,8 @@ function CommentList({
             comment={comment} 
             onDelete={onDelete}
             onReply={onCommentReply as any}
-            isHighlighted={highlightedCommentId === comment.id}
-            animationDelay={index < 5 ? index * 0.05 : 0}
+            // isHighlighted={highlightedCommentId === comment.id}
+            // animationDelay={index < 5 ? index * 0.05 : 0}
           />
         ))}
       </div>

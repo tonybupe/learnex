@@ -35,7 +35,7 @@ export default function Topbar() {
   const displayName = (() => {
     if (!user) return "User"
     const u = user as AuthUser & { full_name?: string }
-    return u.full_name || u.name || "User"
+    return u.full_name || "User"
   })()
 
   const firstName = displayName.split(" ")[0]

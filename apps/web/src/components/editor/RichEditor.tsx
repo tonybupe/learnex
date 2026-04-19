@@ -184,7 +184,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
             if (!line.trim()) return "<p></p>"
             return `<p>${line}</p>`
           }).join("")
-      editor.commands.setContent(html, false)
+      editor.commands.setContent(html)
       setTimeout(() => { isUpdatingFromExternal.current = false }, 100)
     }
   }, [value, editor])
