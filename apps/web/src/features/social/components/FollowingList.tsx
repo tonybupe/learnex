@@ -22,7 +22,7 @@ const toUserProfile = (user: any): UserProfile => ({
   is_active: user.is_active ?? true,
   is_verified: user.is_verified ?? false,
   updated_at: user.updated_at || new Date().toISOString(),
-  updated_at: user.updated_at || new Date().toISOString(),
+
 });
 
 export function FollowingList({ userId }: FollowingListProps) {
