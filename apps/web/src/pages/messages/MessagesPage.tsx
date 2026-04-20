@@ -805,9 +805,9 @@ export default function MessagesPage() {
                           </div>
                         </div>
                       </div>
-                  })
-                })
-                {/* Typing Indicator */}
+                    </div>
+                  )}
+                )}
                 {Object.keys(typingUsers).length > 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 16px 8px" }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--muted)", flexShrink: 0 }}>
