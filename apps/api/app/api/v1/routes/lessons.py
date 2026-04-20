@@ -20,6 +20,12 @@ from app.services.lesson_service import add_lesson_resource, create_lesson, upda
 
 router = APIRouter()
 
+@router.get("/debug/key")
+def debug_key():
+    import os
+    key = os.environ.get("ANTHROPIC_API_KEY", "NOT_SET")
+    return {"key_length": len(key), "key_start": key[:15] if key != "NOT_SET" else "NOT_SET", "key_end": key[-8:] if key != "NOT_SET" else "NOT_SET"}
+
 class AIGenerateRequest(BaseModel):
     topic: str
     subtopic: str = ""
