@@ -798,7 +798,7 @@ export default function MessagesPage() {
                             {isOwn && (
                               msg.error ? <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Failed</span>
                               : msg.temp ? <Circle size={10} style={{ color: "var(--muted)", opacity: 0.5 }} />
-                              : readReceipts[msg.id] ? <CheckCheck size={12} style={{ color: "#38bdf8" }} title={`Read by ${readReceipts[msg.id].name}`} />
+                              : readReceipts[msg.id] ? <CheckCheck size={12} style={{ color: "#38bdf8" }} title="Read" />
                               : deliveredMsgs.has(msg.id) ? <CheckCheck size={12} style={{ color: "var(--muted)" }} title="Delivered" />
                               : <Check size={12} style={{ color: "var(--muted)", opacity: 0.6 }} title="Sent" />
                           </div>

@@ -276,10 +276,10 @@ export default function SettingsPage() {
                 {t.icon} {t.label}
                 {tab === t.key && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />}
               </button>
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, background: tab === t.key ? `color-mix(in srgb, var(--accent) 12%, var(--card))` : "transparent", color: tab === t.key ? "var(--accent)" : t.key === "danger" ? "var(--danger)" : "var(--muted)", transition: "all 0.15s", textAlign: "left" }}>
-                {t.icon} {t.label}
-                {tab === t.key && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />}
-              </button>
+
+
+
+
             ))}
           </div>
 
