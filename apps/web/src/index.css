@@ -1206,3 +1206,102 @@ div[style*="position: fixed"][style*="z-index: 1000"] {
   .topbar .icon-btn { width: 32px !important; height: 32px !important; min-width: 32px !important; flex-shrink: 0 !important; }
   .topbar .user-profile-mini { flex-shrink: 0 !important; min-width: 36px !important; }
 }
+/* =========================================
+   AUTH PAGES - MOBILE FIRST
+========================================= */
+.auth-input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.auth-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(203,38,228,0.08);
+}
+.auth-input::placeholder { color: var(--muted); }
+.auth-input.error { border-color: var(--danger); }
+.auth-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.auth-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.auth-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #cb26e4, #8b5cf6);
+  color: white;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(203,38,228,0.35);
+  font-family: inherit;
+}
+.auth-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(203,38,228,0.4); }
+.auth-btn:active { transform: translateY(0); }
+.auth-btn:disabled {
+  background: var(--bg2);
+  color: var(--muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.auth-server-error {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: var(--danger);
+  font-size: 13px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Mobile auth adjustments */
+@media (max-width: 768px) {
+  .auth-input { padding: 12px 14px; font-size: 16px; } /* 16px prevents iOS zoom */
+  .auth-btn { padding: 15px; font-size: 16px; }
+
+  /* Ensure auth pages scroll properly */
+  .auth-page {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Fix iOS input zoom */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
