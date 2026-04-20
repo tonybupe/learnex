@@ -60,7 +60,7 @@ export default function RegisterPage() {
     if (loading) return
     setLoading(true)
     setServerError("")
-    try:
+    try {
       const { access_token } = await registerApi(values)
       const me = await getMe(access_token)
       setSession(access_token, me)
