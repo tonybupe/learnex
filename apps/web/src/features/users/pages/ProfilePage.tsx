@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
@@ -73,7 +73,7 @@ function UserListModal({ title, userId, type, onClose }: { title: string; userId
   })
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-      <div style={{ background: "var(--card)", borderRadius: 18, width: "100%", maxWidth: 420, maxHeight: "72vh", display: "flex", flexDirection: "column", border: "1px solid var(--border)", boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
+      <div style={{ background: "var(--card)", borderRadius: 18, width: "100%", maxWidth: isMobile ? "95vw" : 420, maxHeight: isMobile ? "90vh" : "72vh", display: "flex", flexDirection: "column", border: "1px solid var(--border)", boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
           <span style={{ fontWeight: 800, fontSize: 16 }}>{title}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex", width: 32, height: 32, borderRadius: "50%", alignItems: "center", justifyContent: "center" }}>
@@ -113,6 +113,12 @@ export default function ProfilePage() {
   const currentUser = useAuthStore(s => s.user)
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<"about"|"posts">("about")
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768)
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener("resize", h)
+    return () => window.removeEventListener("resize", h)
+  }, [])
   const [modal, setModal] = useState<"followers"|"following"|null>(null)
 
   const id = Number(userId)
@@ -151,9 +157,9 @@ export default function ProfilePage() {
 
   if (isLoading) return (
     <AppShell>
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: isMobile ? "12px 8px 80px" : "20px 16px" }}>
         <div className="card" style={{ height: 320, opacity: 0.3, borderRadius: 20 }} />
-        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, marginTop: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "280px 1fr", gap: 16, marginTop: 16 }}>
           <div className="card" style={{ height: 300, opacity: 0.3, borderRadius: 16 }} />
           <div className="card" style={{ height: 300, opacity: 0.3, borderRadius: 16 }} />
         </div>
@@ -186,7 +192,7 @@ export default function ProfilePage() {
     <AppShell>
       {modal && <UserListModal title={modal === "followers" ? "Followers" : "Following"} userId={id} type={modal} onClose={() => setModal(null)} />}
 
-      <div style={{ maxWidth: 900, margin: "0 auto", paddingBottom: 48 }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", paddingBottom: isMobile ? 80 : 48 }}>
 
         {/* Cover */}
         <div style={{ height: 220, background: coverUrl ? "transparent" : `linear-gradient(135deg, ${rc.color}cc 0%, #8b5cf6aa 100%)`, borderRadius: "0 0 24px 24px", position: "relative", overflow: "hidden" }}>
@@ -280,7 +286,7 @@ export default function ProfilePage() {
 
         {/* About Tab */}
         {tab === "about" && (
-          <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "280px 1fr", gap: 16, alignItems: "start" }}>
 
             {/* Left Column */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>

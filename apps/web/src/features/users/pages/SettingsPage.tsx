@@ -60,6 +60,12 @@ export default function SettingsPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>("profile")
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768)
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener("resize", h)
+    return () => window.removeEventListener("resize", h)
+  }, [])
   const [toast, setToast] = useState<{ type: "success"|"error"; msg: string } | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteText, setDeleteText] = useState("")
@@ -186,7 +192,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <div style={{ maxWidth: 940, margin: "0 auto", padding: "20px 16px 48px" }}>
+      <div style={{ maxWidth: 940, margin: "0 auto", padding: isMobile ? "12px 10px 80px" : "20px 16px 48px" }}>
 
         {/* Toast */}
         {toast && (
@@ -203,10 +209,10 @@ export default function SettingsPage() {
           <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>Manage your account, profile and preferences</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 20, alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "240px 1fr", gap: isMobile ? 12 : 20, alignItems: "start" }}>
 
           {/* Sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "column", gap: 4 }}>
             {/* User Card */}
             <div className="card" style={{ padding: 20, textAlign: "center", marginBottom: 8, overflow: "hidden" }}>
               <div style={{ height: 64, borderRadius: 10, marginBottom: -32, background: user.profile?.cover_url ? "transparent" : `linear-gradient(135deg, ${roleColor}cc, #8b5cf6cc)`, overflow: "hidden", position: "relative" }}>
@@ -250,11 +256,26 @@ export default function SettingsPage() {
               <button className="btn" style={{ width: "100%", marginTop: 12, fontSize: 12 }} onClick={() => navigate(`/profile/${user.id}`)}>
                 <Eye size={12} /> View Profile
               </button>
-            </div>
+            </div>}
 
             {/* Nav */}
-            {TABS.map(t => (
+            {/* Tab navigation - horizontal scroll on mobile */}
+            {isMobile && (
+              <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "4px 0 8px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+                {TABS.map(t => (
+                  <button key={t.key} onClick={() => setTab(t.key)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 20, border: `1px solid ${tab === t.key ? "var(--accent)" : "var(--border)"}`, cursor: "pointer", fontSize: 12, fontWeight: 700, background: tab === t.key ? "var(--accent)" : "var(--card)", color: tab === t.key ? "white" : t.key === "danger" ? "var(--danger)" : "var(--muted)", whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s", fontFamily: "inherit" }}>
+                    {t.icon} {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!isMobile && TABS.map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, background: tab === t.key ? "color-mix(in srgb, var(--accent) 12%, var(--card))" : "transparent", color: tab === t.key ? "var(--accent)" : t.key === "danger" ? "var(--danger)" : "var(--muted)", transition: "all 0.15s", textAlign: "left" }}>
+                {t.icon} {t.label}
+                {tab === t.key && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />}
+              </button>
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, background: tab === t.key ? `color-mix(in srgb, var(--accent) 12%, var(--card))` : "transparent", color: tab === t.key ? "var(--accent)" : t.key === "danger" ? "var(--danger)" : "var(--muted)", transition: "all 0.15s", textAlign: "left" }}>
                 {t.icon} {t.label}
                 {tab === t.key && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />}
