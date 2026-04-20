@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import { MessageCircle, LayoutList, Search, LogOut, Menu, X, Sparkles, Bell } from "lucide-react"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { useNavigate } from "react-router-dom"
@@ -18,14 +18,14 @@ export default function Topbar() {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const { totalUnread } = useUnreadMessages()
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 640)
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768)
+
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= 640)
+    const handler = () => setIsMobile(window.innerWidth <= 768)
     window.addEventListener("resize", handler)
     return () => window.removeEventListener("resize", handler)
   }, [])
 
-  // Close mobile search on ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileSearchOpen(false) }
     document.addEventListener("keydown", handler)
@@ -48,99 +48,154 @@ export default function Topbar() {
   const roleColor: Record<string, string> = { admin: "#ef4444", teacher: "#cb26e4", learner: "#38bdf8" }
   const accentColor = roleColor[user?.role ?? "learner"] ?? "var(--accent)"
 
+  // ── Icon button style ──
+  const iconBtn = (extra?: React.CSSProperties): React.CSSProperties => ({
+    width: isMobile ? 36 : 38,
+    height: isMobile ? 36 : 38,
+    borderRadius: 10,
+    border: "1px solid var(--border)",
+    background: "var(--bg2)",
+    color: "var(--muted)",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    position: "relative",
+    transition: "all 0.15s",
+    ...extra,
+  })
+
   return (
     <>
-      <header className="topbar" role="banner" style={{ height: isMobile ? "50px" : undefined, overflowX: isMobile ? "auto" : undefined, overflowY: isMobile ? "hidden" : undefined, flexWrap: "nowrap" }}>
-        {/* ── LEFT ── */}
-        <div className="topbar-left" style={{ gap: isMobile ? "4px" : undefined, flexShrink: 0 }}>
-          {/* Mobile hamburger */}
-          <button className="icon-btn mobile-only" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <Menu size={isMobile ? 18 : 20} />
-          </button>
-
-          {/* Brand */}
-          <button className="brand-card" onClick={() => navigate("/home")}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 10 }}>
-            <div style={{ width: isMobile ? 26 : 30, height: isMobile ? 26 : 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Sparkles size={15} style={{ color: "white" }} />
+      {/* ── DESKTOP TOPBAR ── */}
+      {!isMobile && (
+        <header className="topbar" role="banner">
+          <div className="topbar-left">
+            <button className="brand-card" onClick={() => navigate("/home")}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 10 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Sparkles size={15} style={{ color: "white" }} />
+              </div>
+              <span style={{ fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
+            </button>
+            <div className="topbar-search">
+              <GlobalSearch />
             </div>
-            <span className="brand-name" style={{ display: isMobile ? "none" : undefined, fontWeight: 900, fontSize: 17, letterSpacing: "-0.02em" }}>Learnex</span>
+          </div>
+          <div className="topbar-right">
+            <button className="icon-btn" onClick={() => navigate("/messages")} aria-label="Messages" style={{ position: "relative" }}>
+              <MessageCircle size={20} />
+              {totalUnread > 0 && (
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 999, background: "var(--danger)", color: "white", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid var(--bg)" }}>
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </span>
+              )}
+            </button>
+            <NotificationBell />
+            <button className="user-profile-mini clickable" onClick={() => navigate(`/profile/${user?.id}`)}
+              style={{ background: "none", border: "1px solid var(--border)", borderRadius: 24, padding: "4px 12px 4px 4px", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = accentColor}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: accentColor, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+                {displayName[0]?.toUpperCase() ?? "U"}
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", lineHeight: 1.2 }}>{firstName}</div>
+                <div style={{ fontSize: 10, color: accentColor, fontWeight: 700, textTransform: "capitalize" }}>{user?.role}</div>
+              </div>
+            </button>
+            <ThemeToggle />
+            <button onClick={handleLogout} className="icon-btn" aria-label="Logout"
+              style={{ color: "var(--muted)" }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--danger)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
+              <LogOut size={18} />
+            </button>
+            <button className="icon-btn" onClick={() => setRightPanelOpen(true)} aria-label="Activity panel">
+              <LayoutList size={20} />
+            </button>
+          </div>
+        </header>
+      )}
+
+      {/* ── MOBILE TOPBAR ── */}
+      {isMobile && (
+        <header role="banner" style={{
+          height: 52, display: "flex", alignItems: "center",
+          padding: "0 8px", gap: 6,
+          background: "var(--card)",
+          borderBottom: "1px solid var(--border)",
+          position: "sticky", top: 0, zIndex: 100,
+          flexShrink: 0,
+        }}>
+          {/* Hamburger */}
+          <button onClick={() => setMenuOpen(true)} aria-label="Open menu" style={iconBtn()}>
+            <Menu size={18} />
           </button>
 
-          {/* Desktop search */}
-          <div className="topbar-search desktop-only">
-            <GlobalSearch />
-          </div>
-        </div>
+          {/* Logo */}
+          <button onClick={() => navigate("/home")}
+            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, padding: "4px 6px", borderRadius: 8, flexShrink: 0 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg,#cb26e4,#38bdf8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Sparkles size={13} style={{ color: "white" }} />
+            </div>
+            <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: "-0.02em", background: "linear-gradient(90deg,#cb26e4,#38bdf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Learnex
+            </span>
+          </button>
 
-        {/* ── RIGHT ── */}
-        <div className="topbar-right" style={{ gap: isMobile ? "4px" : undefined, flexShrink: 0, flexWrap: "nowrap" }}>
-          {/* Mobile search icon */}
-          <button className="icon-btn mobile-only" onClick={() => setMobileSearchOpen(true)} aria-label="Search">
-            <Search size={20} />
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
+
+          {/* Search */}
+          <button onClick={() => setMobileSearchOpen(true)} aria-label="Search" style={iconBtn()}>
+            <Search size={17} />
           </button>
 
           {/* Messages */}
-          <button className="icon-btn" onClick={() => navigate("/messages")} aria-label="Messages" style={{ position: "relative" }}>
-            <MessageCircle size={isMobile ? 17 : 20} />
+          <button onClick={() => navigate("/messages")} aria-label="Messages" style={iconBtn({ position: "relative" })}>
+            <MessageCircle size={17} />
             {totalUnread > 0 && (
-              <span style={{
-                position: "absolute", top: -3, right: -3,
-                minWidth: 16, height: 16, borderRadius: 999,
-                background: "var(--danger)", color: "white",
-                fontSize: 9, fontWeight: 900, display: "flex",
-                alignItems: "center", justifyContent: "center",
-                padding: "0 3px", border: "2px solid var(--bg)",
-              }}>
+              <span style={{ position: "absolute", top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 999, background: "var(--danger)", color: "white", fontSize: 8, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid var(--card)", zIndex: 1 }}>
                 {totalUnread > 99 ? "99+" : totalUnread}
               </span>
             )}
           </button>
 
           {/* Notifications */}
-          <NotificationBell />
+          <div style={{ flexShrink: 0 }}>
+            <NotificationBell />
+          </div>
 
-          {/* User avatar + name */}
-          <button className="user-profile-mini clickable" onClick={() => navigate(`/profile/${user?.id}`)}
-            style={{ background: "none", border: "1px solid var(--border)", borderRadius: isMobile ? "50%" : 24, padding: isMobile ? "3px" : "4px 12px 4px 4px", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = accentColor}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: accentColor, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
-              {displayName[0]?.toUpperCase() ?? "U"}
-            </div>
-            <div className="desktop-only" style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", lineHeight: 1.2 }}>{firstName}</div>
-              <div style={{ fontSize: 10, color: accentColor, fontWeight: 700, textTransform: "capitalize" }}>{user?.role}</div>
-            </div>
+          {/* Theme */}
+          <div style={{ flexShrink: 0 }}>
+            <ThemeToggle />
+          </div>
+
+          {/* Avatar */}
+          <button onClick={() => navigate(`/profile/${user?.id}`)} aria-label="Profile"
+            style={{ width: 34, height: 34, borderRadius: "50%", background: accentColor, border: `2px solid ${accentColor}30`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 13, flexShrink: 0, cursor: "pointer" }}>
+            {displayName[0]?.toUpperCase() ?? "U"}
           </button>
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* Logout */}
-          <button onClick={handleLogout} className="icon-btn" aria-label="Logout"
-            style={{ color: "var(--muted)" }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--danger)"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
-            <LogOut size={18} />
+          {/* Right panel */}
+          <button onClick={() => setRightPanelOpen(true)} aria-label="Activity" style={iconBtn()}>
+            <LayoutList size={17} />
           </button>
-          {/* Right panel (mobile) - after logout */}
-          <button className="icon-btn mobile-only" onClick={() => setRightPanelOpen(true)} aria-label="Activity panel">
-            <LayoutList size={20} />
-          </button>
-
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Mobile Search Overlay */}
       {mobileSearchOpen && (
-        <div className="gsearch-mobile-overlay" onClick={e => { if (e.target === e.currentTarget) setMobileSearchOpen(false) }}>
-          <div className="gsearch-mobile-box">
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 700, display: "flex", alignItems: "flex-start", padding: "12px 12px 0" }}
+          onClick={e => { if (e.target === e.currentTarget) setMobileSearchOpen(false) }}>
+          <div style={{ background: "var(--card)", borderRadius: 16, width: "100%", padding: 16, border: "1px solid var(--border)", boxShadow: "0 16px 48px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <span style={{ fontWeight: 800, fontSize: 16 }}>Search Learnex</span>
               <button onClick={() => setMobileSearchOpen(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", display: "flex" }}>
-                <X size={20} />
+                style={{ background: "var(--bg2)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
+                <X size={16} />
               </button>
             </div>
             <GlobalSearch onClose={() => setMobileSearchOpen(false)} />
