@@ -7,7 +7,7 @@ import { useAuthStore } from "@/features/auth/auth.store"
 import { useNavigate } from "react-router-dom"
 import {
   Search, Send, Plus, MoreVertical, Phone, Video,
-  ArrowLeft, CheckCheck, MessageCircle, X, Lock,
+  ArrowLeft, CheckCheck, Check, MessageCircle, X, Lock,
   Smile, Image, Users, GraduationCap, BookOpen, Shield,
   Bell, Trash2, UserPlus, UserMinus, Globe, Info,
   Circle, ChevronDown, Edit3
@@ -135,6 +135,12 @@ export default function MessagesPage() {
   const [hoveredMsg, setHoveredMsg] = useState<number | null>(null)
   const [msgMenuId, setMsgMenuId] = useState<number | null>(null)
   const [msgReactions, setMsgReactions] = useState<Record<number, Record<string,number>>>({})
+  const [typingUsers, setTypingUsers] = useState<Record<number, string>>({}) // userId -> name
+  const [onlineUsers, setOnlineUsers] = useState<number[]>([])
+  const [readReceipts, setReadReceipts] = useState<Record<number, {by: number, name: string, at: string}>>({}) // msgId -> read info
+  const [deliveredMsgs, setDeliveredMsgs] = useState<Set<number>>(new Set())
+  const typingTimeoutRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
+  const isTypingRef = useRef(false)
 
   // ── Queries ──
   const { data: conversations = [], isLoading: convLoading } = useQuery({
@@ -219,25 +225,98 @@ export default function MessagesPage() {
     }
   })
 
-  // ── WebSocket ──
+  // ── WebSocket with real-time features ──
   useEffect(() => {
     if (!activeConv) return
     const token = localStorage.getItem("learnex_access_token")
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL || "ws://localhost:8000"}/api/v1/messaging/ws/${activeConv.id}?token=${token}`)
+    const wsUrl = `${import.meta.env.VITE_WS_URL || "ws://localhost:8000"}/api/v1/messaging/ws/${activeConv.id}?token=${token}`
+    const ws = new WebSocket(wsUrl)
     wsRef.current = ws
+
+    ws.onopen = () => {
+      // Send delivered for latest messages on open
+      ws.send(JSON.stringify({ type: "ping" }))
+    }
+
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data)
-        if (data.sender_id !== user?.id) {
-          queryClient.setQueryData(["messages", activeConv.id], (old: Message[] = []) =>
-            old.find(m => m.id === data.id) ? old : [...old, data]
-          )
-          queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
+
+        if (data.type === "message") {
+          // New message from another user
+          if (data.sender_id !== user?.id) {
+            queryClient.setQueryData(["messages", activeConv.id, user?.id], (old: Message[] = []) =>
+              old.find(m => m.id === data.id) ? old : [...old, data]
+            )
+            queryClient.invalidateQueries({ queryKey: ["conversations", user?.id] })
+            // Send read receipt immediately since we are viewing
+            ws.send(JSON.stringify({ type: "read", message_id: data.id }))
+            // Send delivered
+            ws.send(JSON.stringify({ type: "delivered", message_id: data.id }))
+          }
+        } else if (data.type === "typing") {
+          // Another user is typing
+          const uid = data.user_id as number
+          if (data.is_typing) {
+            setTypingUsers(prev => ({ ...prev, [uid]: data.user_name }))
+            // Clear after 3s of no updates
+            if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid])
+            typingTimeoutRef.current[uid] = setTimeout(() => {
+              setTypingUsers(prev => { const n = {...prev}; delete n[uid]; return n })
+            }, 3000)
+          } else {
+            setTypingUsers(prev => { const n = {...prev}; delete n[uid]; return n })
+          }
+        } else if (data.type === "read_receipt") {
+          setReadReceipts(prev => ({ ...prev, [data.message_id]: { by: data.read_by, name: data.read_by_name, at: data.read_at } }))
+        } else if (data.type === "delivered") {
+          if (data.message_id) {
+            setDeliveredMsgs(prev => new Set([...prev, data.message_id]))
+          }
+        } else if (data.type === "presence") {
+          setOnlineUsers(data.online_users || [])
+        } else if (data.type === "pong") {
+          // keepalive ok
         }
       } catch {}
     }
-    return () => ws.close()
+
+    ws.onclose = () => {
+      setOnlineUsers([])
+      setTypingUsers({})
+    }
+
+    // Ping every 30s to keep connection alive
+    const ping = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ping" }))
+    }, 30000)
+
+    return () => {
+      ws.close()
+      clearInterval(ping)
+      Object.values(typingTimeoutRef.current).forEach(clearTimeout)
+    }
   }, [activeConv?.id])
+
+  // Send typing indicator
+  const sendTyping = useCallback((isTyping: boolean) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "typing", is_typing: isTyping }))
+    }
+  }, [])
+
+  // Handle input change with typing indicator
+  const handleMessageChange = useCallback((val: string) => {
+    setMessage(val)
+    if (!isTypingRef.current && val.length > 0) {
+      isTypingRef.current = true
+      sendTyping(true)
+    } else if (isTypingRef.current && val.length === 0) {
+      isTypingRef.current = false
+      sendTyping(false)
+    }
+  }, [sendTyping])
+
 
   // Auto scroll
   useEffect(() => {
@@ -256,6 +335,9 @@ export default function MessagesPage() {
   const handleSend = useCallback(() => {
     const text = message.trim()
     if (!text || !activeConv) return
+    // Stop typing indicator
+    isTypingRef.current = false
+    sendTyping(false)
     const content = replyTo ? `> ${replyTo.sender?.full_name ?? "Someone"}: ${replyTo.content.slice(0, 60)}${replyTo.content.length > 60 ? "..." : ""}\n\n${text}` : text
     sendMutation.mutate(content)
     setMessage("")
@@ -477,7 +559,7 @@ export default function MessagesPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0, cursor: "pointer" }}
                   onClick={() => setShowProfile(v => !v)}>
                   {activeConv.conversation_type === "direct" && otherUser
-                    ? <Avatar name={otherUser.full_name} size={42} url={otherUser.profile?.avatar_url} online={true} />
+                    ? <Avatar name={otherUser.full_name} size={42} url={otherUser.profile?.avatar_url} online={onlineUsers.includes(otherUser.id)} />
                     : <div style={{ width: 42, height: 42, borderRadius: "50%", background: "rgba(203,38,228,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Users size={20} style={{ color: "var(--accent)" }} />
                       </div>
@@ -486,9 +568,9 @@ export default function MessagesPage() {
                     <div style={{ fontWeight: 800, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {getConvName(activeConv, user?.id ?? 0)}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--success)", display: "flex", alignItems: "center", gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e" }} />
-                      Active now
+                    <div style={{ fontSize: 11, color: onlineUsers.length > 0 ? "var(--success)" : "var(--muted)", display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: onlineUsers.length > 0 ? "#22c55e" : "var(--muted)", transition: "background 0.3s" }} />
+                      {onlineUsers.length > 0 ? `${onlineUsers.length} online` : activeConv.conversation_type === "direct" ? "Offline" : "No one online"}
                     </div>
                   </div>
                 </div>
@@ -716,14 +798,31 @@ export default function MessagesPage() {
                             {isOwn && (
                               msg.error ? <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Failed</span>
                               : msg.temp ? <Circle size={10} style={{ color: "var(--muted)", opacity: 0.5 }} />
-                              : <CheckCheck size={12} style={{ color: "var(--accent)" }} />
-                            )}
+                              : readReceipts[msg.id] ? <CheckCheck size={12} style={{ color: "#38bdf8" }} title={`Read by ${readReceipts[msg.id].name}`} />
+                              : deliveredMsgs.has(msg.id) ? <CheckCheck size={12} style={{ color: "var(--muted)" }} title="Delivered" />
+                              : <Check size={12} style={{ color: "var(--muted)", opacity: 0.6 }} title="Sent" />
                           </div>
                         </div>
                       </div>
                     </div>
                   )
                 })}
+                {/* Typing Indicator */}
+                {Object.keys(typingUsers).length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 16px 8px" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--muted)", flexShrink: 0 }}>
+                      {Object.values(typingUsers)[0]?.[0]?.toUpperCase()}
+                    </div>
+                    <div style={{ background: "var(--bg2)", borderRadius: "4px 18px 18px 18px", padding: "10px 14px", display: "flex", gap: 4, alignItems: "center" }}>
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--muted)", display: "inline-block", animation: "bounce 1.2s infinite 0s" }} />
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--muted)", display: "inline-block", animation: "bounce 1.2s infinite 0.2s" }} />
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--muted)", display: "inline-block", animation: "bounce 1.2s infinite 0.4s" }} />
+                    </div>
+                    <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                      {Object.values(typingUsers).join(", ")} {Object.keys(typingUsers).length === 1 ? "is" : "are"} typing...
+                    </span>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -754,7 +853,7 @@ export default function MessagesPage() {
                   onBlurCapture={e => (e.currentTarget.style.borderColor = "var(--border)")}>
                   <input ref={inputRef}
                     value={message}
-                    onChange={e => setMessage(e.target.value)}
+                    onChange={e => handleMessageChange(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                     placeholder={`Message ${getConvName(activeConv, user?.id ?? 0)}...`}
                     disabled={sendMutation.isPending}

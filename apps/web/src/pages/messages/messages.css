@@ -287,3 +287,16 @@
   .mobile-only { display: flex !important; }
   .msg-bubble { max-width: 80%; }
 }
+/* Typing indicator bounce */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Online dot */
+.online-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--card);
+  position: absolute; bottom: 0; right: 0;
+}
