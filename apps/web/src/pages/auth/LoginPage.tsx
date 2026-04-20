@@ -58,8 +58,8 @@ export default function LoginPage() {
     setLoading(true)
     setServerError("")
     try {
-      const { access_token } = await login(values.email, values.password)
-      const me = await getMe(access_token)
+      const { access_token } = await login({ email: values.email, password: values.password })
+      const me = await getMe()
       setSession(access_token, me)
       navigate("/home", { replace: true })
     } catch (err) {

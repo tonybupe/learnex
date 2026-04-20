@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
-import { register as registerApi, getMe } from "@/features/auth/auth.api"
+import { register as registerApi, login, getMe } from "@/features/auth/auth.api"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { Eye, EyeOff, Sparkles, GraduationCap, BookOpen, Shield } from "lucide-react"
 
@@ -61,8 +61,9 @@ export default function RegisterPage() {
     setLoading(true)
     setServerError("")
     try {
-      const { access_token } = await registerApi(values)
-      const me = await getMe(access_token)
+      await registerApi({ full_name: values.full_name, email: values.email, phone_number: values.phone_number, sex: "other", password: values.password, role: values.role })
+      const { access_token } = await login({ email: values.email, password: values.password })
+      const me = await getMe()
       setSession(access_token, me)
       navigate("/home", { replace: true })
     } catch (err) {
