@@ -801,10 +801,10 @@ export default function MessagesPage() {
                               : readReceipts[msg.id] ? <CheckCheck size={12} style={{ color: "#38bdf8" }} title="Read" />
                               : deliveredMsgs.has(msg.id) ? <CheckCheck size={12} style={{ color: "var(--muted)" }} title="Delivered" />
                               : <Check size={12} style={{ color: "var(--muted)", opacity: 0.6 }} title="Sent" />
+                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
                   )
                 })}
                 {/* Typing Indicator */}

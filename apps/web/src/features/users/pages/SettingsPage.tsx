@@ -214,7 +214,7 @@ export default function SettingsPage() {
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: isMobile ? "column" : "column", gap: 4 }}>
             {/* User Card */}
-            <div className="card" style={{ padding: 20, textAlign: "center", marginBottom: 8, overflow: "hidden" }}>
+            {!isMobile && <div className="card" style={{ padding: 20, textAlign: "center", marginBottom: 8, overflow: "hidden" }}>
               <div style={{ height: 64, borderRadius: 10, marginBottom: -32, background: user.profile?.cover_url ? "transparent" : `linear-gradient(135deg, ${roleColor}cc, #8b5cf6cc)`, overflow: "hidden", position: "relative" }}>
                 {user.profile?.cover_url && <img src={resolveUrl(user.profile.cover_url) ?? ""} alt="Cover" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                 <button onClick={() => coverInputRef.current?.click()}
