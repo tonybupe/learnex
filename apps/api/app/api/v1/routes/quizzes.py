@@ -41,7 +41,7 @@ def create_quiz_route(
     try:
         quiz = create_quiz(db, current_user, payload)
         if quiz.status == "published":
-            notify_quiz_published(db, quiz.id, current_user, quiz.class_id, quiz.title)
+            notify_quiz_published(db, quiz, current_user)
         return quiz_query(db).filter(Quiz.id == quiz.id).first()
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -81,6 +81,8 @@ def update_quiz_route(
         raise HTTPException(status_code=403, detail="You can only update your own quizzes")
     try:
         updated = update_quiz(db, quiz, payload)
+        if payload.status == "published" and quiz.status != "published":
+            notify_quiz_published(db, updated, current_user)
         return quiz_query(db).filter(Quiz.id == updated.id).first()
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
