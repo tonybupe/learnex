@@ -6,6 +6,7 @@ import { useAuth } from "@/features/auth/useAuth"
 import { useState, useEffect } from "react"
 import QuizTaker from "./QuizTaker"
 import QuizBuilder from "./QuizBuilder"
+import QuizAnalytics from "./QuizAnalytics"
 import {
   Clock, Users, BookOpen, Plus, Pencil, Trash2, Eye,
   Sparkles, Brain, CheckCircle2, XCircle, AlertCircle,
@@ -285,8 +286,8 @@ function AIGeneratorModal({ onClose, onGenerated }: { onClose: () => void; onGen
 }
 
 // ── Quiz Card ────────────────────────────────────────
-function QuizCard({ quiz, isTeacher, onTake, onEdit, onDelete, isMobile }: {
-  quiz: Quiz; isTeacher: boolean; onTake: () => void; onEdit: () => void; onDelete: () => void; isMobile: boolean
+function QuizCard({ quiz, isTeacher, onTake, onEdit, onDelete, onAnalytics, isMobile }: {
+  quiz: Quiz; isTeacher: boolean; onTake: () => void; onEdit: () => void; onDelete: () => void; onAnalytics: () => void; isMobile: boolean
 }) {
   const qCount = quiz.questions?.length ?? 0
   const totalPts = quiz.questions?.reduce((s, q) => s + q.points, 0) ?? 0
@@ -345,6 +346,10 @@ function QuizCard({ quiz, isTeacher, onTake, onEdit, onDelete, isMobile }: {
                 style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", fontWeight: 700, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, color: "var(--text)", fontFamily: "inherit" }}>
                 <Pencil size={13} /> Edit
               </button>
+              <button onClick={onAnalytics}
+                style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid rgba(56,189,248,0.25)", background: "rgba(56,189,248,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#38bdf8" }}>
+                <BarChart2 size={14} />
+              </button>
               <button onClick={onDelete}
                 style={{ width: 36, height: 36, borderRadius: 10, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--danger)" }}>
                 <Trash2 size={14} />
@@ -370,6 +375,7 @@ export default function QuizzesPage() {
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null)
   const [showBuilder, setShowBuilder] = useState(false)
   const [showAIGen, setShowAIGen] = useState(false)
+  const [analyticsQuiz, setAnalyticsQuiz] = useState<Quiz | null>(null)
   const [search, setSearch] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterType, setFilterType] = useState("all")
@@ -528,12 +534,17 @@ export default function QuizzesPage() {
                 onTake={() => setTakingQuiz(quiz)}
                 onEdit={() => setEditingQuiz(quiz)}
                 onDelete={() => { if (confirm(`Delete "${quiz.title}"?`)) deleteMutation.mutate(quiz.id) }}
+                onAnalytics={() => setAnalyticsQuiz(quiz)}
               />
             ))}
           </div>
         )}
       </div>
 
+      {/* Quiz Analytics */}
+      {analyticsQuiz && (
+        <QuizAnalytics quiz={analyticsQuiz} onClose={() => setAnalyticsQuiz(null)} />
+      )}
       {/* AI Generator Modal */}
       {showAIGen && (
         <AIGeneratorModal

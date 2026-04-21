@@ -444,3 +444,21 @@ def list_quiz_attempts(
     if current_user.role == "teacher" and quiz.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     return db.query(QuizAttempt).filter(QuizAttempt.quiz_id == quiz_id).order_by(QuizAttempt.created_at.desc()).all()
+
+@router.get("/{quiz_id}/attempts/{attempt_id}/answers")
+def get_attempt_answers(
+    quiz_id: int,
+    attempt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("teacher", "admin")),
+):
+    """Get all answers for a specific attempt."""
+    from app.models.quiz_answer import QuizAnswer
+    quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    if current_user.role == "teacher" and quiz.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    answers = db.query(QuizAnswer).filter(QuizAnswer.attempt_id == attempt_id).all()
+    return [{"id": a.id, "question_id": a.question_id, "selected_option_id": a.selected_option_id,
+             "answer_text": a.answer_text, "is_correct": a.is_correct, "points_awarded": a.points_awarded} for a in answers]
