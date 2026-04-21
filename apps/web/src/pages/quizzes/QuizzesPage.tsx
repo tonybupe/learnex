@@ -1,4 +1,4 @@
-﻿import AppShell from "@/components/layout/AppShell"
+import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -367,6 +367,174 @@ function QuizCard({ quiz, isTeacher, onTake, onEdit, onDelete, onAnalytics, isMo
   )
 }
 
+
+// ── Create Quiz Modal ────────────────────────────────
+function CreateQuizModal({ onClose, onCreate }: { onClose: () => void; onCreate: (quiz: Quiz) => void }) {
+  const [title, setTitle] = useState("")
+  const [classId, setClassId] = useState("")
+  const [subjectId, setSubjectId] = useState("")
+  const [lessonId, setLessonId] = useState("")
+  const [type, setType] = useState("quiz")
+  const [timeLimit, setTimeLimit] = useState("")
+  const [attempts, setAttempts] = useState("1")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ["my-classes-create"],
+    queryFn: async () => {
+      const res = await api.get("/classes?mine=true").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    }
+  })
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["subjects-create"],
+    queryFn: async () => {
+      const res = await api.get("/subjects").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    }
+  })
+  const { data: lessons = [] } = useQuery({
+    queryKey: ["my-lessons-create"],
+    queryFn: async () => {
+      const res = await api.get("/lessons?mine=true&limit=50").catch(() => ({ data: [] }))
+      return Array.isArray(res.data) ? res.data : []
+    }
+  })
+
+  const inp: React.CSSProperties = {
+    width: "100%", padding: "11px 13px", borderRadius: 10,
+    border: "1.5px solid var(--border)", background: "var(--bg2)",
+    color: "var(--text)", fontSize: 14, fontFamily: "inherit",
+    outline: "none", boxSizing: "border-box",
+  }
+
+  const handleCreate = async () => {
+    if (!title.trim()) { setError("Title is required"); return }
+    if (!classId) { setError("Please select a class"); return }
+    if (!subjectId) { setError("Please select a subject"); return }
+    setLoading(true); setError("")
+    try {
+      const res = await api.post("/quizzes", {
+        title: title.trim(),
+        class_id: parseInt(classId),
+        subject_id: parseInt(subjectId),
+        lesson_id: lessonId ? parseInt(lessonId) : null,
+        assessment_type: type,
+        status: "draft",
+        time_limit_minutes: timeLimit ? parseInt(timeLimit) : null,
+        attempts_allowed: parseInt(attempts) || 1,
+        is_auto_marked: true,
+      })
+      onCreate(res.data as Quiz)
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || "Failed to create quiz")
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ background: "var(--card)", borderRadius: 20, width: "100%", maxWidth: 500, border: "1px solid var(--border)", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
+        {/* Header */}
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: 18 }}>Create New Quiz</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>Set up your quiz details</div>
+          </div>
+          <button onClick={onClose} style={{ background: "var(--bg2)", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+          {error && (
+            <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 13, fontWeight: 600 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Title */}
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Quiz Title *</label>
+            <input style={inp} value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Chapter 5 Test" />
+          </div>
+
+          {/* Type */}
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Assessment Type</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6 }}>
+              {[
+                { value: "quiz", label: "📝 Quiz" },
+                { value: "test", label: "📋 Test" },
+                { value: "exam", label: "🎓 Exam" },
+                { value: "assignment", label: "📚 Assignment" },
+              ].map(t => (
+                <button key={t.value} onClick={() => setType(t.value)}
+                  style={{ padding: "9px 6px", borderRadius: 10, border: `1.5px solid ${type === t.value ? "var(--accent)" : "var(--border)"}`, background: type === t.value ? "rgba(203,38,228,0.1)" : "var(--bg2)", color: type === t.value ? "var(--accent)" : "var(--muted)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Class + Subject */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Class *</label>
+              <select style={inp} value={classId} onChange={e => setClassId(e.target.value)}>
+                <option value="">Select class...</option>
+                {classes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Subject *</label>
+              <select style={inp} value={subjectId} onChange={e => setSubjectId(e.target.value)}>
+                <option value="">Select subject...</option>
+                {subjects.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Lesson (optional) */}
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Link to Lesson <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional)</span></label>
+            <select style={inp} value={lessonId} onChange={e => setLessonId(e.target.value)}>
+              <option value="">No specific lesson</option>
+              {lessons.map((l: any) => <option key={l.id} value={l.id}>{l.title}</option>)}
+            </select>
+          </div>
+
+          {/* Time + Attempts */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Time Limit (min)</label>
+              <input style={inp} type="number" value={timeLimit} onChange={e => setTimeLimit(e.target.value)} placeholder="e.g. 30 (optional)" min="1" />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 7, color: "var(--text)" }}>Attempts Allowed</label>
+              <select style={inp} value={attempts} onChange={e => setAttempts(e.target.value)}>
+                {[1,2,3,5,10].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
+            <button onClick={onClose}
+              style={{ flex: 1, padding: "12px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit", color: "var(--text)" }}>
+              Cancel
+            </button>
+            <button onClick={handleCreate} disabled={loading}
+              style={{ flex: 2, padding: "12px", borderRadius: 10, border: "none", background: loading ? "var(--bg2)" : "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: loading ? "var(--muted)" : "white", cursor: loading ? "not-allowed" : "pointer", fontWeight: 800, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: loading ? "none" : "0 4px 14px rgba(203,38,228,0.35)" }}>
+              <Plus size={16} /> {loading ? "Creating..." : "Create & Add Questions"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 // ── Main Page ────────────────────────────────────────
 export default function QuizzesPage() {
   const { isTeacher, isAdmin, isLearner } = useAuth()
@@ -374,6 +542,7 @@ export default function QuizzesPage() {
   const [takingQuiz, setTakingQuiz] = useState<Quiz | null>(null)
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null)
   const [showBuilder, setShowBuilder] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [showAIGen, setShowAIGen] = useState(false)
   const [analyticsQuiz, setAnalyticsQuiz] = useState<Quiz | null>(null)
   const [search, setSearch] = useState("")
@@ -443,7 +612,7 @@ export default function QuizzesPage() {
                 style={{ padding: isMobile ? "9px 14px" : "10px 18px", borderRadius: 10, border: "1px solid rgba(203,38,228,0.3)", background: "rgba(203,38,228,0.08)", color: "var(--accent)", cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 12 : 13, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}>
                 <Sparkles size={14} /> AI Generate
               </button>
-              <button onClick={() => setShowBuilder(true)}
+              <button onClick={() => setShowCreateModal(true)}
                 style={{ padding: isMobile ? "9px 14px" : "10px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 12 : 13, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 12px rgba(203,38,228,0.35)" }}>
                 <Plus size={14} /> New Quiz
               </button>
@@ -518,7 +687,7 @@ export default function QuizzesPage() {
                   style={{ padding: "11px 20px", borderRadius: 10, border: "1px solid rgba(203,38,228,0.3)", background: "rgba(203,38,228,0.08)", color: "var(--accent)", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
                   <Sparkles size={15} /> Generate with AI
                 </button>
-                <button onClick={() => setShowBuilder(true)}
+                <button onClick={() => setShowCreateModal(true)}
                   style={{ padding: "11px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
                   <Plus size={15} /> Create Manually
                 </button>
@@ -541,6 +710,17 @@ export default function QuizzesPage() {
         )}
       </div>
 
+      {/* Create Quiz Modal */}
+      {showCreateModal && (
+        <CreateQuizModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={(quiz) => {
+            setShowCreateModal(false)
+            setEditingQuiz(quiz)
+            queryClient.invalidateQueries({ queryKey: ["quizzes"] })
+          }}
+        />
+      )}
       {/* Quiz Analytics */}
       {analyticsQuiz && (
         <QuizAnalytics quiz={analyticsQuiz} onClose={() => setAnalyticsQuiz(null)} />
