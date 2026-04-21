@@ -45,6 +45,8 @@ app.add_middleware(
         "https://learnex-app.vercel.app",
         "https://learnex.co.zm",
         "https://www.learnex.co.zm",
+        "https://learn-ex.online",
+        "https://www.learn-ex.online",
         "https://*.vercel.app",
     ],
     allow_credentials=True,
