@@ -1,4 +1,10 @@
 import AppShell from "@/components/layout/AppShell"
+import {
+  Clock, Users, BookOpen, Plus, Pencil, Trash2, Eye,
+  Sparkles, Brain, CheckCircle2, XCircle, AlertCircle,
+  Search, Zap, Star, GraduationCap, FileText, Target,
+  Award, BarChart2, X
+} from "lucide-react"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
