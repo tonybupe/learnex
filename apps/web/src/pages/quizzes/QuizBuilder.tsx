@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
@@ -40,9 +40,10 @@ const defaultQuestion = (index: number): DraftQuestion => ({
   ],
 })
 
-type Props = { quiz: Quiz; onExit: () => void }
+type Props = { quiz?: Quiz; onClose: () => void }
 
-export default function QuizBuilder({ quiz, onExit }: Props) {
+export default function QuizBuilder({ quiz, onClose }: Props) {
+  if (!quiz) return null
   const queryClient = useQueryClient()
 
   // Initialize with existing questions
@@ -64,6 +65,13 @@ export default function QuizBuilder({ quiz, onExit }: Props) {
   const [activeIdx, setActiveIdx] = useState(0)
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState("")
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768)
+  const [mobileView, setMobileView] = useState<"editor"|"list">("editor")
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener("resize", h)
+    return () => window.removeEventListener("resize", h)
+  }, [])
 
   const updateQuestion = useCallback((idx: number, updates: Partial<DraftQuestion>) => {
     setQuestions(prev => prev.map((q, i) => i === idx ? { ...q, ...updates, saved: false } : q))
@@ -152,7 +160,7 @@ export default function QuizBuilder({ quiz, onExit }: Props) {
     try {
       await api.patch(endpoints.quizzes.update(quiz.id), { status: "published" })
       queryClient.invalidateQueries({ queryKey: ["quizzes"] })
-      onExit()
+      onClose()
     } catch (err: any) {
       setPublishError(err?.response?.data?.detail || "Failed to publish")
       setPublishing(false)
@@ -165,12 +173,12 @@ export default function QuizBuilder({ quiz, onExit }: Props) {
 
   return (
     <AppShell>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "20px 16px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: isMobile ? "12px 12px 80px" : "20px 16px" }}>
 
         {/* Top Bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 14 : 20, flexWrap: "wrap", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button className="btn" onClick={onExit}><ChevronLeft size={16} /> Back</button>
+            <button className="btn" onClick={onClose}><ChevronLeft size={16} /> Back</button>
             <div>
               <div style={{ fontWeight: 800, fontSize: 17 }}>{quiz.title}</div>
               <div style={{ fontSize: 12, color: "var(--muted)" }}>
@@ -187,10 +195,23 @@ export default function QuizBuilder({ quiz, onExit }: Props) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, alignItems: "start" }}>
+        <div style={{ display: isMobile ? "flex" : "grid", flexDirection: isMobile ? "column" : undefined, gridTemplateColumns: isMobile ? undefined : "280px 1fr", gap: 16, alignItems: "start" }}>
 
+          {/* Mobile view toggle */}
+          {isMobile && (
+            <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              <button onClick={() => setMobileView("editor")}
+                style={{ flex: 1, padding: "9px", borderRadius: 10, border: `1.5px solid ${mobileView === "editor" ? "var(--accent)" : "var(--border)"}`, background: mobileView === "editor" ? "var(--accent)" : "var(--bg2)", color: mobileView === "editor" ? "white" : "var(--muted)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                ✏️ Editor
+              </button>
+              <button onClick={() => setMobileView("list")}
+                style={{ flex: 1, padding: "9px", borderRadius: 10, border: `1.5px solid ${mobileView === "list" ? "var(--accent)" : "var(--border)"}`, background: mobileView === "list" ? "var(--accent)" : "var(--bg2)", color: mobileView === "list" ? "white" : "var(--muted)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                📋 Questions ({questions.length})
+              </button>
+            </div>
+          )}
           {/* Left Panel - Question List */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: isMobile && mobileView !== "list" ? "none" : "flex", flexDirection: "column", gap: 8 }}>
             {questions.map((q, idx) => (
               <div key={idx}
                 onClick={() => setActiveIdx(idx)}

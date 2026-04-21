@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { api } from "@/api/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quiz } from "./QuizzesPage"
@@ -82,6 +82,26 @@ export default function QuizAnalytics({ quiz, onClose }: { quiz: Quiz; onClose: 
     },
     staleTime: 30000,
   })
+
+  // Fetch learners who attempted
+  const learnerIds = [...new Set(attempts.map(a => a.learner_id))]
+  const { data: learnersMap = {} } = useQuery({
+    queryKey: ["attempt-learners", quiz.id, learnerIds.join(",")],
+    queryFn: async () => {
+      if (learnerIds.length === 0) return {}
+      const map: Record<number, string> = {}
+      await Promise.all(learnerIds.map(async (id) => {
+        try {
+          const res = await api.get(`/users/${id}`)
+          map[id] = res.data.full_name ?? `Learner #${id}`
+        } catch { map[id] = `Learner #${id}` }
+      }))
+      return map
+    },
+    enabled: learnerIds.length > 0,
+    staleTime: 300000,
+  })
+  const getLearnerName = (id: number) => (learnersMap as Record<number, string>)[id] ?? `Learner #${id}`
 
   // Fetch answers for selected attempt
   const { data: attemptAnswers = [] } = useQuery({
@@ -332,7 +352,7 @@ export default function QuizAnalytics({ quiz, onClose }: { quiz: Quiz; onClose: 
                         ) : (
                           <>
                             <div>
-                              <div style={{ fontWeight: 700, fontSize: 13 }}>Learner #{attempt.learner_id}</div>
+                              <div style={{ fontWeight: 700, fontSize: 13 }}>{getLearnerName(attempt.learner_id)}</div>
                               <div style={{ fontSize: 11, color: "var(--muted)" }}>Attempt #{attempt.attempt_number}</div>
                             </div>
                             <div style={{ textAlign: "center", fontWeight: 800, fontSize: 14, color }}>
@@ -440,7 +460,7 @@ export default function QuizAnalytics({ quiz, onClose }: { quiz: Quiz; onClose: 
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"}>
                       <ScoreRing pct={attempt.percentage ?? 0} size={56} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: 14 }}>Attempt #{attempt.attempt_number} — Learner #{attempt.learner_id}</div>
+                        <div style={{ fontWeight: 800, fontSize: 14 }}>Attempt #{attempt.attempt_number} — {getLearnerName(attempt.learner_id)}</div>
                         <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
                           {attempt.submitted_at ? `Submitted ${new Date(attempt.submitted_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}` : "In progress"}
                         </div>
@@ -468,7 +488,7 @@ export default function QuizAnalytics({ quiz, onClose }: { quiz: Quiz; onClose: 
                     <ScoreRing pct={selectedAttempt.percentage ?? 0} size={80} />
                     <div>
                       <div style={{ fontWeight: 900, fontSize: 18 }}>Attempt #{selectedAttempt.attempt_number}</div>
-                      <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 8 }}>Learner #{selectedAttempt.learner_id}</div>
+                      <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 8 }}>{getLearnerName(selectedAttempt.learner_id)}</div>
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 13, fontWeight: 700 }}>{selectedAttempt.score ?? 0}/{selectedAttempt.max_score ?? 0} pts</span>
                         <span style={{ fontSize: 13, color: "var(--muted)" }}>·</span>
