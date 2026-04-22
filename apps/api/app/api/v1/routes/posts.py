@@ -244,7 +244,7 @@ async def upload_media(
     max_size_mb = 50 if file.content_type and file.content_type.startswith("video/") else 10
     validate_file(file, max_size_mb)
     content = await file.read()
-    content = await file.read()
+    ct = file.content_type or "application/octet-stream"
     file_size = len(content)
     folder = "posts/videos" if ct.startswith("video/") else "posts/images"
     file_extension = file.filename.split(".")[-1] if file.filename and "." in file.filename else ""
