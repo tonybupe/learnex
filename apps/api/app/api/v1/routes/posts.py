@@ -241,36 +241,36 @@ async def upload_media(
     current_user: User = Depends(get_current_user),
 ):
     """Upload a media file and return its URL."""
-    max_size_mb = 50 if file.content_type.startswith("video/") else 10
+    max_size_mb = 50 if file.content_type and file.content_type.startswith("video/") else 10
     validate_file(file, max_size_mb)
-    
-    # Generate unique filename
-    unique_id = uuid.uuid4()
-    file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
-    filename = f"{unique_id}_{file.filename}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
+    content = await file.read()
+    content = await file.read()
+    file_size = len(content)
+    folder = "posts/videos" if ct.startswith("video/") else "posts/images"
+    file_extension = file.filename.split(".")[-1] if file.filename and "." in file.filename else ""
+    try:
+        from app.services.storage_service import upload_file as supabase_upload
+        public_url = supabase_upload(content, ct, folder=folder)
+        relative_path = public_url
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}") from e
+    file_size_val = file_size
+    filename = file.filename or "upload"
 
-    # Save file
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Get file size
-    file_size = os.path.getsize(file_path)
-    
     # Determine media type
-    media_type = determine_media_type(file.content_type)
-    
+    media_type = determine_media_type(ct)
+
     # Create media record
     media = MediaFile(
         owner_id=current_user.id,
-        storage_provider="local",
-        object_key=filename,
-        original_name=file.filename,
+        storage_provider="supabase",
+        object_key=public_url,
+        original_name=file.filename or "upload",
         file_name=filename,
         file_extension=file_extension,
-        mime_type=file.content_type,
+        mime_type=ct,
         media_type=media_type,
-        file_size_bytes=file_size,
+        file_size_bytes=file_size_val,
         public_url=public_url,
         relative_path=relative_path,
         visibility="public",
