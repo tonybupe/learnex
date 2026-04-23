@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 
 function getBaseUrl() {
-  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:8000"
+  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") ?? ""
 }
 function resolveAvatar(url?: string | null) {
   if (!url) return null
