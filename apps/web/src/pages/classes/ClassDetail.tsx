@@ -1,4 +1,5 @@
 ﻿import { useState, useRef, useEffect, useCallback } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
 import { endpoints } from "@/api/endpoints"
@@ -511,7 +512,7 @@ export default function ClassDetail({ cls, onBack }: Props) {
   return (
     <AppShell>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px 60px" }}>
-        <button className="btn" onClick={onBack} style={{ marginBottom: 20, fontSize: 13 }}>
+        <button className="btn" onClick={goBack} style={{ marginBottom: 20, fontSize: 13 }}>
           <ChevronLeft size={15} /> Back
         </button>
 
