@@ -231,7 +231,7 @@ export default function DiscoverPage() {
               <div style={{ fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
                 <GraduationCap size={16} style={{ color: "#38bdf8" }} /> Public Classes
               </div>
-              <button onClick={() => navigate("/classes/discover")}
+              <button onClick={() => navigate("/classes")}
                 style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>
                 Browse all <ChevronRight size={13} />
               </button>
@@ -362,7 +362,7 @@ export default function DiscoverPage() {
                 Teachers on Learnex use AI to generate lessons, quizzes and assignments — giving you richer learning content.
               </div>
             </div>
-            <button onClick={() => navigate("/register")}
+            <button onClick={() => navigate("/auth/register")}
               style={{ padding: "10px 20px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(203,38,228,0.35)", flexShrink: 0 }}>
               <Sparkles size={13} style={{ marginRight: 6, verticalAlign: "middle" }} />
               Get Started Free
