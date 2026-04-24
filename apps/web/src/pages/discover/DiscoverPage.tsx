@@ -237,7 +237,7 @@ export default function DiscoverPage() {
                   const color = COLORS[i % COLORS.length]
                   const isPublic = cls.visibility === "public" || cls.is_public
                   return (
-                    <div key={cls.id}
+                    <div 
                       onClick={() => navigate(`/classes`)}
                       style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", cursor: "pointer", overflow: "hidden", transition: "all 0.15s" }}
                       onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)" }}
@@ -311,7 +311,7 @@ export default function DiscoverPage() {
                   const color = COLORS[i % COLORS.length]
                   const typeIcon = lesson.lesson_type === "video" ? "🎬" : lesson.lesson_type === "quiz" ? "📝" : lesson.lesson_type === "assignment" ? "📋" : "📖"
                   return (
-                    <div key={lesson.id}
+                    <div 
                       onClick={() => navigate(`/lessons`)}
                       style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, cursor: "pointer", transition: "all 0.15s" }}
                       onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)" }}
