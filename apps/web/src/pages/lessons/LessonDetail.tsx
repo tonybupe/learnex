@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+﻿import { useState, useRef, useEffect } from "react"
 import RichEditor from "@/components/editor/RichEditor"
 import AppShell from "@/components/layout/AppShell"
 import { api } from "@/api/client"
@@ -13,7 +13,7 @@ import {
   Globe, Lock, MoreVertical
 } from "lucide-react"
 
-// ── Types ──────────────────────────────────────────────────────────
+// ÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface LessonResource {
   id: number; resource_type: string; url: string
   title?: string; mime_type?: string
@@ -31,12 +31,12 @@ interface Comment {
 }
 type Props = { lesson: Lesson; onBack: () => void }
 
-// ── Constants ──────────────────────────────────────────────────────
+// ÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  note:       { label: "Note",       color: "#cb26e4", icon: "📝" },
-  video:      { label: "Video",      color: "#38bdf8", icon: "🎥" },
-  live:       { label: "Live",       color: "#ef4444", icon: "🔴" },
-  assignment: { label: "Assignment", color: "#22c55e", icon: "📋" },
+  note:       { label: "Note",       color: "#cb26e4", icon: "­ƒôØ" },
+  video:      { label: "Video",      color: "#38bdf8", icon: "­ƒÄÑ" },
+  live:       { label: "Live",       color: "#ef4444", icon: "­ƒö┤" },
+  assignment: { label: "Assignment", color: "#22c55e", icon: "­ƒôï" },
 }
 const RESOURCE_ICON: Record<string, React.ReactNode> = {
   file:  <FileText size={14} />,
@@ -45,7 +45,7 @@ const RESOURCE_ICON: Record<string, React.ReactNode> = {
   link:  <Link2 size={14} />,
 }
 
-// ── Helpers ────────────────────────────────────────────────────────
+// ÔöÇÔöÇ Helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Avatar({ user, size = 32 }: { user: any; size?: number }) {
   const colors = ["#cb26e4","#38bdf8","#22c55e","#f59e0b","#ef4444","#8b5cf6"]
   const color = colors[(user?.full_name?.charCodeAt(0) ?? 0) % colors.length]
@@ -84,7 +84,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// ── Live Presentation ──────────────────────────────────────────────
+// ÔöÇÔöÇ Live Presentation ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null)
@@ -117,7 +117,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
       .slice(start + 1, end < 0 ? undefined : end)
       .filter(l => l.trim())
       .map(l => l
-        .replace(/^[-*•]\s+/, "")        // remove bullet markers
+        .replace(/^[-*ÔÇó]\s+/, "")        // remove bullet markers
         .replace(/^\d+\.\s+/, "")         // remove numbered list markers
         .replace(/^#+\s+/, "")            // remove heading markers
         .replace(/\*\*(.*?)\*\*/g, "$1")  // remove bold markers
@@ -132,7 +132,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
       <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", boxShadow: "0 0 8px #ef4444" }} />
-          <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>LIVE · {lesson.title}</span>
+          <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>LIVE ┬À {lesson.title}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.2)", cursor: "pointer" }}
@@ -164,7 +164,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
               <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", maxWidth: 600, margin: "0 auto" }}>
                 {getSlideContent(slides[slide]).slice(0, 7).map((line, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "rgba(255,255,255,0.82)", fontSize: 18, lineHeight: 1.6, padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span style={{ color: "#cb26e4", fontSize: 22, lineHeight: 1.3, flexShrink: 0 }}>◆</span>
+                    <span style={{ color: "#cb26e4", fontSize: 22, lineHeight: 1.3, flexShrink: 0 }}>Ôùå</span>
                     <span>{line}</span>
                   </div>
                 ))}
@@ -173,17 +173,17 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
               <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 44 }}>
                 <button disabled={slide === 0} onClick={() => setSlide(s => s - 1)}
                   style={{ padding: "10px 28px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)", cursor: slide === 0 ? "not-allowed" : "pointer", opacity: slide === 0 ? 0.35 : 1, fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
-                  ← Prev
+                  ÔåÉ Prev
                 </button>
                 <button disabled={slide === slides.length - 1} onClick={() => setSlide(s => s + 1)}
                   style={{ padding: "10px 28px", borderRadius: 10, border: "1px solid rgba(203,38,228,0.4)", background: "rgba(203,38,228,0.12)", color: "#d946ef", cursor: slide === slides.length - 1 ? "not-allowed" : "pointer", opacity: slide === slides.length - 1 ? 0.35 : 1, fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
-                  Next →
+                  Next ÔåÆ
                 </button>
               </div>
             </div>
           ) : (
             <div style={{ textAlign: "center", color: "rgba(255,255,255,0.4)" }}>
-              <div style={{ fontSize: 56, marginBottom: 16 }}>📚</div>
+              <div style={{ fontSize: 56, marginBottom: 16 }}>­ƒôÜ</div>
               <h2 style={{ color: "white", marginBottom: 8 }}>{lesson.title}</h2>
               <p style={{ fontSize: 14 }}>Add ## headings in your content to create slides.</p>
               <p style={{ fontSize: 13, marginTop: 8 }}>Or share your screen to present external content.</p>
@@ -255,7 +255,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
   )
 }
 
-// ── Main Component ─────────────────────────────────────────────────
+// ÔöÇÔöÇ Main Component ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export default function LessonDetail({ lesson, onBack }: Props) {
   const { isTeacher, isAdmin, isLearner } = useAuth()
   const currentUser = useAuthStore(s => s.user)
@@ -325,12 +325,12 @@ export default function LessonDetail({ lesson, onBack }: Props) {
     try {
       const joinUrl = `${window.location.origin}/classes/discover`
       const content = [
-        `📚 **${fresh.title}**`,
+        `­ƒôÜ **${fresh.title}**`,
         fresh.description || fresh.content.slice(0, 200) + "...",
-        `🎓 Join the class to access the full lesson!`,
-        `🔗 ${joinUrl}`,
+        `­ƒÄô Join the class to access the full lesson!`,
+        `­ƒöù ${joinUrl}`,
       ].join("\n\n")
-      await api.post("/posts", { content, post_type: "note", visibility: "public", title: `📚 ${fresh.title}` })
+      await api.post("/posts", { content, post_type: "note", visibility: "public", title: `­ƒôÜ ${fresh.title}` })
       setShareDone(true)
       setTimeout(() => setShareDone(false), 3000)
     } catch {}
@@ -339,7 +339,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
 
   // Derived
   const l = fresh ?? lesson
-  const tc = TYPE_CONFIG[l.lesson_type] ?? { label: l.lesson_type, color: "var(--accent)", icon: "📄" }
+  const tc = TYPE_CONFIG[l.lesson_type] ?? { label: l.lesson_type, color: "var(--accent)", icon: "­ƒôä" }
   const wordCount = l.content.split(/\s+/).filter(Boolean).length
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const slides = l.content.split("\n").filter(line => line.startsWith("## ")).map(l => l.slice(3))
@@ -368,17 +368,17 @@ export default function LessonDetail({ lesson, onBack }: Props) {
       <AppShell>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "16px 16px 48px" }}>
 
-          {/* ── Back + Breadcrumb ── */}
+          {/* ÔöÇÔöÇ Back + Breadcrumb ÔöÇÔöÇ */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
             <button className="btn" onClick={onBack} style={{ fontSize: 13, padding: "7px 14px" }}>
               <ChevronLeft size={15} /> Back
             </button>
             <span style={{ color: "var(--muted)", fontSize: 13 }}>Lessons</span>
-            <span style={{ color: "var(--muted)", fontSize: 13 }}>›</span>
+            <span style={{ color: "var(--muted)", fontSize: 13 }}>ÔÇ║</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 300 }}>{l.title}</span>
           </div>
 
-          {/* ── EDITING MODE ── */}
+          {/* ÔöÇÔöÇ EDITING MODE ÔöÇÔöÇ */}
           {editing ? (
             <div className="card" style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
               {/* Edit header */}
@@ -425,10 +425,10 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                     <label className="form-label">Type</label>
                     <select className="audit-control select" value={editForm.lesson_type}
                       onChange={e => setEditForm(p => ({ ...p, lesson_type: e.target.value }))}>
-                      <option value="note">📝 Note</option>
-                      <option value="video">🎥 Video</option>
-                      <option value="live">🔴 Live</option>
-                      <option value="assignment">📋 Assignment</option>
+                      <option value="note">­ƒôØ Note</option>
+                      <option value="video">­ƒÄÑ Video</option>
+                      <option value="live">­ƒö┤ Live</option>
+                      <option value="assignment">­ƒôï Assignment</option>
                     </select>
                   </div>
                   <div className="form-field">
@@ -444,8 +444,8 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                     <label className="form-label">Visibility</label>
                     <select className="audit-control select" value={editForm.visibility}
                       onChange={e => setEditForm(p => ({ ...p, visibility: e.target.value }))}>
-                      <option value="class">🔒 Class only</option>
-                      <option value="public">🌐 Public</option>
+                      <option value="class">­ƒöÆ Class only</option>
+                      <option value="public">­ƒîÉ Public</option>
                     </select>
                   </div>
                 </div>
@@ -454,7 +454,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 <div className="form-field">
                   <label className="form-label" style={{ marginBottom: 8 }}>
                     Content
-                    {slides.length > 0 && <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400, marginLeft: 10 }}>· {slides.length} slide sections detected (## headings)</span>}
+                    {slides.length > 0 && <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400, marginLeft: 10 }}>┬À {slides.length} slide sections detected (## headings)</span>}
                   </label>
                   <RichEditor
                     value={editForm.content}
@@ -466,7 +466,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
               </div>
             </div>
           ) : (
-            /* ── VIEW HEADER ── */
+            /* ÔöÇÔöÇ VIEW HEADER ÔöÇÔöÇ */
             <div className="card" style={{ padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
                 {/* Left: type icon */}
@@ -489,7 +489,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                       {l.visibility}
                     </span>
                     {slides.length > 0 && (
-                      <span className="chip" style={{ fontSize: 11 }}>📊 {slides.length} slides</span>
+                      <span className="chip" style={{ fontSize: 11 }}>­ƒôè {slides.length} slides</span>
                     )}
                   </div>
 
@@ -509,7 +509,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                   {canEdit && (
                     <button className="btn" style={{ fontSize: 12, padding: "7px 14px", background: "rgba(239,68,68,0.08)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.2)" }}
                       onClick={() => setLiveMode(true)}>
-                      🔴 Go Live
+                      ­ƒö┤ Go Live
                     </button>
                   )}
                   <button className="btn" style={{ fontSize: 12, padding: "7px 14px" }}
@@ -527,32 +527,32 @@ export default function LessonDetail({ lesson, onBack }: Props) {
             </div>
           )}
 
-          {/* ── TABS ── */}
+          {/* ÔöÇÔöÇ TABS ÔöÇÔöÇ */}
           {!editing && (
             <>
               <div className="tabs-bar" style={{ marginBottom: 16 }}>
                 <button className={`tab-btn ${tab === "content" ? "active" : ""}`} onClick={() => setTab("content")}>
-                  📖 Content
+                  ­ƒôû Content
                 </button>
                 <button className={`tab-btn ${tab === "discussion" ? "active" : ""}`} onClick={() => setTab("discussion")}>
-                  💬 Discussion {comments.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--accent)", color: "white" }}>{comments.length}</span>}
+                  ­ƒÆ¼ Discussion {comments.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--accent)", color: "white" }}>{comments.length}</span>}
                 </button>
                 <button className={`tab-btn ${tab === "resources" ? "active" : ""}`} onClick={() => setTab("resources")}>
-                  🔗 Resources {l.resources.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--bg2)", color: "var(--muted)" }}>{l.resources.length}</span>}
+                  ­ƒöù Resources {l.resources.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--bg2)", color: "var(--muted)" }}>{l.resources.length}</span>}
                 </button>
               </div>
 
-              {/* ── CONTENT TAB ── */}
+              {/* ÔöÇÔöÇ CONTENT TAB ÔöÇÔöÇ */}
               {tab === "content" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {/* Slide overview */}
                   {slides.length > 0 && (
                     <div className="card" style={{ padding: 18 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                        <span style={{ fontWeight: 800, fontSize: 14 }}>📊 Slide Sections</span>
+                        <span style={{ fontWeight: 800, fontSize: 14 }}>­ƒôè Slide Sections</span>
                         {canEdit && (
                           <button className="btn" style={{ fontSize: 11, padding: "4px 12px", background: "rgba(239,68,68,0.08)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.2)" }} onClick={() => setLiveMode(true)}>
-                            🔴 Present
+                            ­ƒö┤ Present
                           </button>
                         )}
                       </div>
@@ -578,7 +578,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                   <div className="card" style={{ padding: 18, borderLeft: `3px solid ${tc.color}` }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>📢 Share this lesson</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>­ƒôó Share this lesson</div>
                         <div style={{ fontSize: 13, color: "var(--muted)" }}>Share a preview to the class feed so others can discover and join.</div>
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
@@ -595,7 +595,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 </div>
               )}
 
-              {/* ── DISCUSSION TAB — WhatsApp Style ── */}
+              {/* ÔöÇÔöÇ DISCUSSION TAB ÔÇö WhatsApp Style ÔöÇÔöÇ */}
               {tab === "discussion" && (
                 (() => {
                   const isClassOnly = l.visibility === "class"
@@ -633,7 +633,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                         <div>
                           <div style={{ fontWeight: 800, fontSize: 14 }}>Lesson Discussion</div>
                           <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                            {l.visibility === "public" ? "🌐 Public lesson · Anyone can discuss" : "🔒 Class members only"}
+                            {l.visibility === "public" ? "­ƒîÉ Public lesson ┬À Anyone can discuss" : "­ƒöÆ Class members only"}
                           </div>
                         </div>
                         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5 }}>
@@ -648,7 +648,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
                             <MessageCircle size={32} style={{ opacity: 0.25, marginBottom: 10 }} />
                             <div style={{ fontSize: 14, fontWeight: 600 }}>No messages yet</div>
-                            <div style={{ fontSize: 13, marginTop: 4 }}>Start the discussion! 💬</div>
+                            <div style={{ fontSize: 13, marginTop: 4 }}>Start the discussion! ­ƒÆ¼</div>
                           </div>
                         ) : comments.map((c, i) => {
                           const isMe = c.user_id === currentUser?.id || c.author?.id === currentUser?.id
@@ -715,10 +715,10 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 })()
               )}
 
-              {/* ── RESOURCES TAB ── */}
+              {/* ÔöÇÔöÇ RESOURCES TAB ÔöÇÔöÇ */}
               {tab === "resources" && (
                 <div className="card" style={{ padding: 20 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 16 }}>🔗 Lesson Resources</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 16 }}>­ƒöù Lesson Resources</div>
                   {l.resources.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "36px 0", color: "var(--muted)" }}>
                       <Link2 size={36} style={{ marginBottom: 10, opacity: 0.3 }} />

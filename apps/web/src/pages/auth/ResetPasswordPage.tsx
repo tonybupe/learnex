@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -87,9 +87,9 @@ export default function ResetPasswordPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
-              { icon: "✅", text: "At least 6 characters" },
-              { icon: "🔡", text: "Mix of uppercase & lowercase" },
-              { icon: "🔢", text: "Include numbers for strength" },
+              { icon: "Ô£à", text: "At least 6 characters" },
+              { icon: "­ƒöí", text: "Mix of uppercase & lowercase" },
+              { icon: "­ƒöó", text: "Include numbers for strength" },
             ].map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: "rgba(255,255,255,0.55)" }}>
                 <span>{item.icon}</span> {item.text}
@@ -121,7 +121,7 @@ export default function ResetPasswordPage() {
               <AlertCircle size={48} style={{ color: "var(--danger)", marginBottom: 16 }} />
               <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>No reset token</h2>
               <p style={{ color: "var(--muted)", marginBottom: 24 }}>Please use the link from your email.</p>
-              <Link to="/auth/forgot-password" style={{ color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>Request a new link →</Link>
+              <Link to="/auth/forgot-password" style={{ color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>Request a new link ÔåÆ</Link>
             </div>
           )}
 
@@ -233,7 +233,7 @@ export default function ResetPasswordPage() {
               </p>
               <Link to="/auth/login"
                 style={{ display: "inline-block", padding: "12px 24px", borderRadius: 11, background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                Sign in now →
+                Sign in now ÔåÆ
               </Link>
             </div>
           )}

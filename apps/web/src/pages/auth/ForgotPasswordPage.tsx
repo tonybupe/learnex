@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 import { Link } from "react-router-dom"
 import { api } from "@/api/client"
 import {
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg)", fontFamily: "inherit" }}>
 
-      {/* ── LEFT PANEL ── */}
+      {/* ÔöÇÔöÇ LEFT PANEL ÔöÇÔöÇ */}
       <div style={{ flex: "0 0 440px", display: "flex", flexDirection: "column", background: "linear-gradient(160deg,#1a0030 0%,#0d0d1a 60%,#001a2e 100%)", padding: "48px 40px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "rgba(203,38,228,0.08)", pointerEvents: "none" }} />
 
@@ -133,11 +133,11 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      {/* ── RIGHT PANEL ── */}
+      {/* ÔöÇÔöÇ RIGHT PANEL ÔöÇÔöÇ */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 440 }}>
 
-          {/* ── STEP 1: LOOKUP ── */}
+          {/* ÔöÇÔöÇ STEP 1: LOOKUP ÔöÇÔöÇ */}
           {step === "lookup" && (
             <>
               <div style={{ marginBottom: 32 }}>
@@ -191,13 +191,13 @@ export default function ForgotPasswordPage() {
 
                 <div style={{ textAlign: "center" }}>
                   <span style={{ fontSize: 14, color: "var(--muted)" }}>Remember your password? </span>
-                  <Link to="/auth/login" style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>Sign in →</Link>
+                  <Link to="/auth/login" style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>Sign in ÔåÆ</Link>
                 </div>
               </div>
             </>
           )}
 
-          {/* ── STEP 2: CHOOSE METHOD ── */}
+          {/* ÔöÇÔöÇ STEP 2: CHOOSE METHOD ÔöÇÔöÇ */}
           {step === "choose" && account && (
             <>
               <div style={{ marginBottom: 28 }}>
@@ -298,7 +298,7 @@ export default function ForgotPasswordPage() {
             </>
           )}
 
-          {/* ── STEP 3: SENT ── */}
+          {/* ÔöÇÔöÇ STEP 3: SENT ÔöÇÔöÇ */}
           {step === "sent" && (
             <div style={{ textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "2px solid rgba(34,197,94,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
@@ -318,14 +318,14 @@ export default function ForgotPasswordPage() {
               {devToken && (
                 <div style={{ padding: "16px", borderRadius: 12, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", marginBottom: 20, textAlign: "left" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "#f59e0b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    🛠 Dev Mode — Reset Token
+                    ­ƒøá Dev Mode ÔÇö Reset Token
                   </div>
                   <div style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text)", wordBreak: "break-all", marginBottom: 10, lineHeight: 1.5 }}>
                     {devToken}
                   </div>
                   <a href={`/auth/reset-password?token=${devToken}`}
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#f59e0b", textDecoration: "none", padding: "6px 12px", borderRadius: 8, background: "rgba(245,158,11,0.12)" }}>
-                    Click to reset password →
+                    Click to reset password ÔåÆ
                   </a>
                 </div>
               )}

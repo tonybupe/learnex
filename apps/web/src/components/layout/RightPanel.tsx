@@ -1,4 +1,4 @@
-import { useNotifications } from "@/features/notifications/hooks/useNotifications"
+﻿import { useNotifications } from "@/features/notifications/hooks/useNotifications"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/api/client"
 import { useNavigate } from "react-router-dom"
@@ -129,10 +129,10 @@ export default function RightPanel() {
             ))}
           </div>
         )}
-        {/* No "view all" link — /notifications doesn't exist */}
+        {/* No "view all" link ÔÇö /notifications doesn't exist */}
         {notifications.length > 5 && (
           <div style={{ padding: "8px 12px", fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
-            +{notifications.length - 5} more — open bell icon to view
+            +{notifications.length - 5} more ÔÇö open bell icon to view
           </div>
         )}
       </div>
@@ -161,7 +161,7 @@ export default function RightPanel() {
             ))}
           </div>
         )}
-        <button className="rp-link" onClick={() => navigate("/live-sessions")}>View schedule →</button>
+        <button className="rp-link" onClick={() => navigate("/live-sessions")}>View schedule ÔåÆ</button>
       </div>
 
       {/* Teachers */}
@@ -187,11 +187,11 @@ export default function RightPanel() {
             ))}
           </div>
         )}
-        <button className="rp-link" onClick={() => navigate("/discover")}>Discover more →</button>
+        <button className="rp-link" onClick={() => navigate("/discover")}>Discover more ÔåÆ</button>
       </div>
 
       <div style={{ padding: "8px 4px", fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
-        Learnex © {new Date().getFullYear()}
+        Learnex ┬® {new Date().getFullYear()}
       </div>
     </div>
   )

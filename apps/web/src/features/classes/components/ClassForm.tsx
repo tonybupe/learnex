@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 
 import type { Class } from "../types/class.types"
 import { useSubjects } from "@/features/subjects/hooks/useSubjects"

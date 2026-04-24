@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 
 import type { Subject, SubjectCreate } from "../types/subject.types"
 
@@ -29,7 +29,7 @@ export default function SubjectForm({ initialData, onSubmit }: Props) {
 
     } else {
 
-      // Reset form if switching from edit → create
+      // Reset form if switching from edit ÔåÆ create
       setName("")
       setCode("")
       setDescription("")
