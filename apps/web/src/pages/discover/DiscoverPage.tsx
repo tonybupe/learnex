@@ -284,7 +284,7 @@ export default function DiscoverPage() {
                             </div>
                           )}
                         </div>
-                        <button onClick={e => { e.stopPropagation(); navigate(`/classes/${cls.id}`) }}
+                        <button onClick={e => { e.stopPropagation(); navigate(`/classes`) }}
                           style={{ marginTop: 12, width: "100%", padding: "8px", borderRadius: 10, border: `1px solid ${color}30`, background: `${color}08`, color, fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
                           View Class →
                         </button>
