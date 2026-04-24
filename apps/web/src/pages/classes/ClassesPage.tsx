@@ -382,7 +382,7 @@ export default function ClassesPage() {
               <ClassCard key={cls.id} cls={cls} currentUserId={currentUser?.id}
                 isTeacher={isTeacher} isAdmin={isAdmin} isLearner={isLearner}
                 isMobile={isMobile}
-                onOpen={() => navigate(`/classes/${cls.id}`)}
+                onOpen={() => navigate(`/classes`)}
                 onJoin={() => joinMutation.mutate(cls.id)}
                 onLeave={() => { if (window.confirm(`Leave "${cls.title}"?`)) leaveMutation.mutate(cls.id) }}
                 onDelete={() => { if (window.confirm(`Delete "${cls.title}"?`)) deleteMutation.mutate(cls.id) }}
