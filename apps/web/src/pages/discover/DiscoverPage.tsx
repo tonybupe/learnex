@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 
 function getBaseUrl() {
-  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:8000"
+  return import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") ?? ""
 }
 function resolveAvatar(url?: string | null) {
   if (!url) return null
@@ -259,19 +259,19 @@ export default function DiscoverPage() {
                       <div style={{ padding: 16 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 800, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{cls.name}</div>
+                            <div style={{ fontWeight: 800, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>{cls.title ?? cls.name}</div>
                             {cls.description && (
                               <div style={{ fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>{cls.description}</div>
                             )}
                           </div>
-                          <div style={{ padding: "3px 10px", borderRadius: 20, background: cls.is_public ? "rgba(34,197,94,0.1)" : "rgba(148,163,184,0.1)", border: `1px solid ${cls.is_public ? "rgba(34,197,94,0.25)" : "rgba(148,163,184,0.25)"}`, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                            {cls.is_public ? <Globe size={10} style={{ color: "#22c55e" }} /> : <Lock size={10} style={{ color: "var(--muted)" }} />}
-                            <span style={{ fontSize: 10, fontWeight: 700, color: cls.is_public ? "#22c55e" : "var(--muted)" }}>{cls.is_public ? "Public" : "Private"}</span>
+                          <div style={{ padding: "3px 10px", borderRadius: 20, background: (cls.visibility === "public" || cls.is_public) ? "rgba(34,197,94,0.1)" : "rgba(148,163,184,0.1)", border: `1px solid ${(cls.visibility === "public" || cls.is_public) ? "rgba(34,197,94,0.25)" : "rgba(148,163,184,0.25)"}`, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                            {(cls.visibility === "public" || cls.is_public) ? <Globe size={10} style={{ color: "#22c55e" }} /> : <Lock size={10} style={{ color: "var(--muted)" }} />}
+                            <span style={{ fontSize: 10, fontWeight: 700, color: (cls.visibility === "public" || cls.is_public) ? "#22c55e" : "var(--muted)" }}>{(cls.visibility === "public" || cls.is_public) ? "Public" : "Private"}</span>
                           </div>
                         </div>
                         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--muted)", fontWeight: 600 }}>
-                            <Users size={11} /> {cls.enrolled_count ?? cls.members_count ?? 0} learners
+                            <Users size={11} /> {cls.enrolled_count ?? cls.members_count ?? cls.student_count ?? 0} learners
                           </div>
                           {cls.lesson_count !== undefined && (
                             <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--muted)", fontWeight: 600 }}>
