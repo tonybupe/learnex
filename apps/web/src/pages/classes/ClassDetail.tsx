@@ -118,7 +118,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ["class-chat", cls.id],
+    queryKey: ["class-chat", cls?.id],
     queryFn: async () => {
       const res = await api.get(`/posts?class_id=${cls.id}&limit=100&sort_by=created_at&sort_order=asc`).catch(() => ({ data: { data: [] } }))
       const raw = Array.isArray(res.data) ? res.data : res.data?.data ?? []
@@ -139,7 +139,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
       return res.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["class-chat", cls.id] })
+      queryClient.invalidateQueries({ queryKey: ["class-chat", cls?.id] })
       setText("")
       setPendingMedia([])
     },
@@ -147,14 +147,14 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => api.delete(`/posts/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["class-chat", cls.id] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["class-chat", cls?.id] }),
   })
 
   const reactMutation = useMutation({
     mutationFn: async ({ postId, reactionType }: { postId: number; reactionType: string }) =>
       api.post(`/posts/${postId}/reactions`, { reaction_type: reactionType }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["class-chat", cls.id] })
+      queryClient.invalidateQueries({ queryKey: ["class-chat", cls?.id] })
       setShowReactions(null)
     },
   })
@@ -494,10 +494,10 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
     },
     staleTime: 30000,
   })
-  const isEnrolled = enrolledClasses.some((c: any) => c.id === cls.id)
+  const isEnrolled = !!cls && enrolledClasses.some((c: any) => c.id === cls.id)
 
   const { data: lessons = [] } = useQuery({
-    queryKey: ["class-lessons", cls.id],
+    queryKey: ["class-lessons", cls?.id],
     queryFn: async () => {
       const res = await api.get(`/lessons?class_id=${cls.id}`).catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data as Lesson[] : []
@@ -505,7 +505,7 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
   })
 
   const { data: members = [] } = useQuery({
-    queryKey: ["class-members", cls.id],
+    queryKey: ["class-members", cls?.id],
     queryFn: async () => {
       const res = await api.get(endpoints.classes.members(cls.id)).catch(() => ({ data: [] }))
       return Array.isArray(res.data) ? res.data as ClassMemberData[] : []
@@ -513,19 +513,19 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
   })
 
   const joinMutation = useMutation({
-    mutationFn: async () => api.post(endpoints.classes.join(cls.id), {}),
+    mutationFn: async () => api.post(endpoints.classes.join(cls!.id), {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["classes"] })
-      queryClient.invalidateQueries({ queryKey: ["class-members", cls.id] })
+      queryClient.invalidateQueries({ queryKey: ["class-members", cls?.id] })
       queryClient.invalidateQueries({ queryKey: ["classes-enrolled"] })
     },
   })
 
   const leaveMutation = useMutation({
-    mutationFn: async () => api.post(endpoints.classes.leave(cls.id), {}),
+    mutationFn: async () => api.post(endpoints.classes.leave(cls!.id), {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["classes"] })
-      queryClient.invalidateQueries({ queryKey: ["class-members", cls.id] })
+      queryClient.invalidateQueries({ queryKey: ["class-members", cls?.id] })
     },
   })
 
