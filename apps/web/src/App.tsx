@@ -30,6 +30,8 @@ import ClassesPage from "@/pages/classes/ClassesPage"
 import DiscoverClassesPage from "@/pages/classes/DiscoverClassesPage"
 import SubjectsPage from "@/pages/subjects/SubjectsPage"
 import LessonsPage from "@/pages/lessons/LessonsPage"
+import LessonDetail from "@/pages/lessons/LessonDetail"
+import ClassDetail from "@/pages/classes/ClassDetail"
 import QuizzesPage from "@/pages/quizzes/QuizzesPage"
 import LiveSessionsPage from "@/pages/live-sessions/LiveSessionsPage"
 import DiscoverPage from "@/pages/discover/DiscoverPage"
@@ -67,9 +69,11 @@ export default function App() {
 
         <Route path="/feed" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><FeedPage /></AuthGuard>} />
         <Route path="/classes" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ClassesPage /></AuthGuard>} />
+        <Route path="/classes/:id" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><ClassDetail /></AuthGuard>} />
         <Route path="/classes/discover" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><DiscoverClassesPage /></AuthGuard>} />
         <Route path="/subjects" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><SubjectsPage /></AuthGuard>} />
         <Route path="/lessons" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><LessonsPage /></AuthGuard>} />
+        <Route path="/lessons/:id" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><LessonDetail /></AuthGuard>} />
         <Route path="/quizzes" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><QuizzesPage /></AuthGuard>} />
         <Route path="/live-sessions" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><LiveSessionsPage /></AuthGuard>} />
         <Route path="/messages" element={<AuthGuard allowedRoles={[...ALL_ROLES]}><MessagesPage /></AuthGuard>} />
