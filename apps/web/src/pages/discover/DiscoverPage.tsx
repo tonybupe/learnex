@@ -250,7 +250,7 @@ export default function DiscoverPage() {
                 {(activeSection === "all" ? filteredClasses.slice(0, 4) : filteredClasses).map((cls: any, i: number) => {
                   const color = roleColors[i % roleColors.length]
                   return (
-                    <div key={cls.id} onClick={() => navigate(`/classes/${cls.id}`)}
+                    <div key={cls.id} onClick={() => navigate(`/classes`)}
                       style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", cursor: "pointer", overflow: "hidden", transition: "all 0.15s" }}
                       onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)" }}
                       onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "none" }}>
