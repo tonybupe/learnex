@@ -442,14 +442,48 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
 }
 
 // ÔöÇÔöÇ Main ClassDetail ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-type Props = { cls: Class; onBack: () => void }
+type Props = { cls?: Class; onBack?: () => void }
 
-export default function ClassDetail({ cls, onBack }: Props) {
+export default function ClassDetail({ cls: clsProp, onBack }: Props) {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const goBack = onBack ?? (() => navigate("/classes"))
   const [tab, setTab] = useState<"overview"|"lessons"|"members"|"discussion">("overview")
   const { isLearner, isTeacher, isAdmin } = useAuth()
+
   const currentUser = useAuthStore(s => s.user)
   const queryClient = useQueryClient()
-  const isOwner = (cls.teacher_id ?? cls.teacher?.id) === currentUser?.id
+
+  const { data: fetchedCls, isLoading: loadingCls } = useQuery({
+    queryKey: ["class-detail", id],
+    queryFn: async () => {
+      const res = await api.get(`/classes/${id}`)
+      return res.data as Class
+    },
+    enabled: !clsProp && !!id,
+    staleTime: 30000,
+  })
+
+  const cls = clsProp ?? fetchedCls
+  const isOwner = !!cls && ((cls.teacher_id ?? cls.teacher?.id) === currentUser?.id)
+
+  if (!clsProp && loadingCls) return (
+    <AppShell>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+        <div style={{ width: 36, height: 36, borderRadius: "50%", border: "4px solid var(--border)", borderTopColor: "var(--accent)", animation: "spin 0.8s linear infinite" }} />
+      </div>
+    </AppShell>
+  )
+
+  if (!cls) return (
+    <AppShell>
+      <div style={{ textAlign: "center", padding: 60 }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🎓</div>
+        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 8 }}>Class not found</div>
+        <button onClick={goBack} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "var(--accent)", color: "white", cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }}>Go Back</button>
+      </div>
+    </AppShell>
+  )
 
   // Check enrollment via /classes/enrolled (works for all roles, no chicken-and-egg)
   const { data: enrolledClasses = [] } = useQuery({
