@@ -103,19 +103,24 @@ function MediaPreview({ att }: { att: Attachment }) {
   )
 }
 
-// ── Rich Class Chat ────────────────────────────────────────────
+// ── Rich Class Chat ─────────────────────────────────────────────
 function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   const queryClient = useQueryClient()
   const [text, setText] = useState("")
   const [showEmoji, setShowEmoji] = useState(false)
   const [showReactions, setShowReactions] = useState<number | null>(null)
-  const [dragOver, setDragOver] = useState(false)
-  const [uploadingFiles, setUploadingFiles] = useState<string[]>([])
   const [pendingMedia, setPendingMedia] = useState<{ file: File; preview: string; url?: string }[]>([])
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener("resize", h)
+    return () => window.removeEventListener("resize", h)
+  }, [])
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["class-chat", cls?.id],
@@ -124,11 +129,11 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
       const raw = Array.isArray(res.data) ? res.data : res.data?.data ?? []
       return raw as ChatMessage[]
     },
-    refetchInterval: 4000,
+    refetchInterval: 5000,
   })
 
   const sendMutation = useMutation({
-    mutationFn: async ({ content, mediaUrls }: { content: string; mediaUrls?: string[] }) => {
+    mutationFn: async ({ content }: { content: string }) => {
       const res = await api.post("/posts", {
         content: content || " ",
         class_id: cls.id,
@@ -142,6 +147,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
       queryClient.invalidateQueries({ queryKey: ["class-chat", cls?.id] })
       setText("")
       setPendingMedia([])
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
     },
   })
 
@@ -159,37 +165,23 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
     },
   })
 
-  // Upload file to server
   const uploadFile = useCallback(async (file: File): Promise<string | null> => {
     const form = new FormData()
     form.append("file", file)
     try {
       const res = await api.post("/posts/upload", form, { headers: { "Content-Type": "multipart/form-data" } })
       return res.data?.public_url ?? res.data?.url ?? null
-    } catch {
-      return null
-    }
+    } catch { return null }
   }, [])
 
   const addFiles = useCallback(async (files: FileList | File[]) => {
-    const arr = Array.from(files)
-    for (const file of arr) {
+    for (const file of Array.from(files)) {
       const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : ""
       setPendingMedia(p => [...p, { file, preview }])
-      setUploadingFiles(u => [...u, file.name])
       const url = await uploadFile(file)
-      setUploadingFiles(u => u.filter(n => n !== file.name))
-      if (url) {
-        setPendingMedia(p => p.map(m => m.file === file ? { ...m, url } : m))
-      }
+      if (url) setPendingMedia(p => p.map(m => m.file === file ? { ...m, url } : m))
     }
   }, [uploadFile])
-
-  // Drag and drop
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false)
-    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
-  }, [addFiles])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -198,34 +190,22 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   const handleSend = () => {
     const content = text.trim()
     if (!content && pendingMedia.length === 0) return
-    sendMutation.mutate({ content, mediaUrls: pendingMedia.map(m => m.url).filter(Boolean) as string[] })
+    sendMutation.mutate({ content })
   }
 
-  // Group by date
+  // Group messages by date
   const grouped: { date: string; msgs: ChatMessage[] }[] = []
   messages.forEach(m => {
-    const date = new Date(m.created_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+    const date = new Date(m.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
     const last = grouped[grouped.length - 1]
     if (last?.date === date) last.msgs.push(m)
     else grouped.push({ date, msgs: [m] })
   })
 
-  return (
-    <div
-      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={onDrop}
-      style={{ display: "flex", flexDirection: "column", height: "68vh", minHeight: 420, background: dragOver ? "rgba(203,38,228,0.04)" : "var(--bg2)", borderRadius: 16, overflow: "hidden", border: dragOver ? "2px dashed #cb26e4" : "1px solid var(--border)", position: "relative", transition: "all 0.15s" }}>
+  const chatHeight = isMobile ? "calc(100vh - 280px)" : "65vh"
 
-      {/* Drag overlay */}
-      {dragOver && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(203,38,228,0.08)", backdropFilter: "blur(2px)" }}>
-          <div style={{ textAlign: "center", color: "#cb26e4" }}>
-            <Paperclip size={40} style={{ marginBottom: 10 }} />
-            <div style={{ fontWeight: 800, fontSize: 16 }}>Drop files to share</div>
-          </div>
-        </div>
-      )}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: chatHeight, minHeight: isMobile ? 300 : 420, background: "var(--bg2)", borderRadius: isMobile ? 12 : 16, overflow: "hidden", border: "1px solid var(--border)" }}>
 
       {/* Hidden inputs */}
       <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.txt"
@@ -234,37 +214,39 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
         style={{ display: "none" }} onChange={e => e.target.files && addFiles(e.target.files)} />
 
       {/* Header */}
-      <div style={{ padding: "12px 16px", background: "var(--card)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-        <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <GraduationCap size={18} style={{ color: "white" }} />
+      <div style={{ padding: isMobile ? "10px 12px" : "12px 16px", background: "var(--card)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <GraduationCap size={16} style={{ color: "white" }} />
         </div>
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 14 }}>{cls.title}</div>
-          <div style={{ fontSize: 11, color: "var(--muted)" }}>Class discussion · members only · drag & drop files</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 800, fontSize: isMobile ? 13 : 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.title}</div>
+          <div style={{ fontSize: 10, color: "var(--muted)" }}>Class discussion · members only</div>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
-          <span style={{ fontSize: 11, color: "#22c55e", fontWeight: 700 }}>Live</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 5px #22c55e" }} />
+          <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 700 }}>Live</span>
         </div>
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px", display: "flex", flexDirection: "column", gap: 1 }}>
-        {isLoading && <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, padding: 20 }}>Loading messages...</div>}
+      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "10px 8px" : "14px 12px", display: "flex", flexDirection: "column", gap: 2, scrollbarWidth: "none" as const }}>
+        {isLoading && (
+          <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, padding: 24 }}>Loading messages...</div>
+        )}
         {!isLoading && messages.length === 0 && (
-          <div style={{ textAlign: "center", color: "var(--muted)", padding: "40px 20px" }}>
-            <MessageCircle size={36} style={{ opacity: 0.25, marginBottom: 10 }} />
-            <div style={{ fontSize: 14, fontWeight: 600 }}>No messages yet</div>
-            <div style={{ fontSize: 13, marginTop: 4 }}>Say something or share a file!</div>
+          <div style={{ textAlign: "center", color: "var(--muted)", padding: "32px 16px" }}>
+            <MessageCircle size={32} style={{ opacity: 0.2, marginBottom: 10 }} />
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>No messages yet</div>
+            <div style={{ fontSize: 12 }}>Start the class discussion!</div>
           </div>
         )}
 
         {grouped.map(group => (
           <div key={group.date}>
             {/* Date divider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "14px 0 8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "12px 0 6px" }}>
               <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-              <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700, padding: "2px 10px", borderRadius: 999, background: "var(--card)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{group.date}</span>
+              <span style={{ fontSize: 10, color: "var(--muted)", fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "var(--card)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>{group.date}</span>
               <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
             </div>
 
@@ -276,76 +258,65 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
 
               return (
                 <div key={msg.id}
-                  style={{ display: "flex", flexDirection: isMe ? "row-reverse" : "row", alignItems: "flex-end", gap: 6, marginBottom: 3, position: "relative" }}
-                  onMouseEnter={e => { const el = e.currentTarget.querySelector(".msg-actions") as HTMLElement; if (el) el.style.opacity = "1" }}
-                  onMouseLeave={e => { const el = e.currentTarget.querySelector(".msg-actions") as HTMLElement; if (el) el.style.opacity = "0" }}>
+                  style={{ display: "flex", flexDirection: isMe ? "row-reverse" : "row", alignItems: "flex-end", gap: 5, marginBottom: 2 }}>
 
                   {/* Avatar */}
                   {!isMe && (
-                    <div style={{ width: 28, flexShrink: 0, alignSelf: "flex-end", marginBottom: 14 }}>
-                      {showMeta && <Avatar name={msg.author?.full_name ?? "?"} role={msg.author?.role} size={28} />}
+                    <div style={{ width: isMobile ? 24 : 28, flexShrink: 0, alignSelf: "flex-end", marginBottom: 16 }}>
+                      {showMeta && <Avatar name={msg.author?.full_name ?? "?"} role={msg.author?.role} size={isMobile ? 24 : 28} />}
                     </div>
                   )}
 
-                  <div style={{ maxWidth: "68%", display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
+                  <div style={{ maxWidth: isMobile ? "78%" : "68%", display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
                     {showMeta && (
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#cb26e4", marginBottom: 2, paddingLeft: 4 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#cb26e4", marginBottom: 2, paddingLeft: 4 }}>
                         {msg.author?.full_name}
                         {msg.author?.role && msg.author.role !== "learner" && (
-                          <span style={{ marginLeft: 5, fontSize: 10, padding: "1px 6px", borderRadius: 999, background: "rgba(203,38,228,0.12)", color: "#cb26e4" }}>{msg.author.role}</span>
+                          <span style={{ marginLeft: 4, fontSize: 9, padding: "1px 5px", borderRadius: 999, background: "rgba(203,38,228,0.1)", color: "#cb26e4" }}>{msg.author.role}</span>
                         )}
                       </div>
                     )}
 
                     {/* Bubble */}
-                    <div style={{ padding: "9px 13px", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: isMe ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--card)", color: isMe ? "white" : "var(--text)", border: isMe ? "none" : "1px solid var(--border)", fontSize: 14, lineHeight: 1.5, wordBreak: "break-word" }}>
+                    <div style={{ padding: isMobile ? "8px 11px" : "9px 13px", borderRadius: isMe ? "16px 16px 3px 16px" : "16px 16px 16px 3px", background: isMe ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--card)", color: isMe ? "white" : "var(--text)", border: isMe ? "none" : "1px solid var(--border)", fontSize: isMobile ? 13 : 14, lineHeight: 1.5, wordBreak: "break-word" }}>
                       {msg.content?.trim() && msg.content.trim() !== " " && msg.content}
                       {msg.attachments?.map(att => <MediaPreview key={att.id} att={att} />)}
                     </div>
 
-                    {/* Meta row */}
-                    <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 3, display: "flex", alignItems: "center", gap: 5, paddingLeft: isMe ? 0 : 4, paddingRight: isMe ? 4 : 0, flexDirection: isMe ? "row-reverse" : "row" }}>
+                    {/* Meta */}
+                    <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 4, paddingLeft: isMe ? 0 : 4, paddingRight: isMe ? 4 : 0, flexDirection: isMe ? "row-reverse" : "row" }}>
                       <span>{timeAgo(msg.created_at)}</span>
-                      {isMe && <CheckCircle2 size={10} style={{ color: "#22c55e" }} />}
+                      {isMe && <CheckCircle2 size={9} style={{ color: "#22c55e" }} />}
                       {(msg.reactions_count ?? 0) > 0 && (
-                        <span style={{ padding: "1px 5px", borderRadius: 999, background: "var(--card)", border: "1px solid var(--border)", fontSize: 11 }}>
+                        <span style={{ padding: "1px 5px", borderRadius: 999, background: "var(--card)", border: "1px solid var(--border)", fontSize: 10 }}>
                           👍 {msg.reactions_count}
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Hover actions */}
-                  <div className="msg-actions" style={{ opacity: 0, transition: "opacity 0.15s", display: "flex", alignItems: "center", gap: 3, alignSelf: "center", flexShrink: 0 }}>
-                    {/* React button */}
-                    <div style={{ position: "relative" }}>
+                    {/* Long press / tap actions on mobile */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2, flexDirection: isMe ? "row-reverse" : "row" }}>
                       <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)}
-                        style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>
+                        style={{ fontSize: isMobile ? 14 : 13, background: "none", border: "none", cursor: "pointer", padding: "2px 4px", borderRadius: 6, opacity: 0.6 }}>
                         😊
                       </button>
                       {showReactions === msg.id && (
-                        <div style={{ position: "absolute", bottom: 32, left: isMe ? "auto" : 0, right: isMe ? 0 : "auto", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 10px", display: "flex", gap: 6, zIndex: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap" }}>
+                        <div style={{ position: "absolute", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "6px 8px", display: "flex", gap: 4, zIndex: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
                           {REACTIONS.map(r => (
                             <button key={r.type} onClick={() => reactMutation.mutate({ postId: msg.id, reactionType: r.type })}
-                              style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer", padding: "2px 4px", borderRadius: 6, transition: "transform 0.1s" }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = "scale(1.3)"}
-                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = "scale(1)"}>
+                              style={{ fontSize: 18, background: "none", border: "none", cursor: "pointer", padding: "2px", borderRadius: 6 }}>
                               {r.emoji}
                             </button>
                           ))}
                         </div>
                       )}
+                      {(isMe || currentUser?.role === "admin" || currentUser?.role === "teacher") && (
+                        <button onClick={() => { if (window.confirm("Delete this message?")) deleteMutation.mutate(msg.id) }}
+                          style={{ background: "none", border: "none", cursor: "pointer", opacity: 0.4, padding: "2px" }}>
+                          <Trash2 size={11} style={{ color: "var(--danger)" }} />
+                        </button>
+                      )}
                     </div>
-
-                    {/* Delete */}
-                    {(isMe || currentUser?.role === "admin" || currentUser?.role === "teacher") && (
-                      <button onClick={() => deleteMutation.mutate(msg.id)}
-                        style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--danger)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--danger)" }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--muted)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--border)" }}>
-                        <Trash2 size={12} />
-                      </button>
-                    )}
                   </div>
                 </div>
               )
@@ -355,23 +326,18 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Pending media previews */}
+      {/* Pending media */}
       {pendingMedia.length > 0 && (
-        <div style={{ padding: "8px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ padding: "6px 10px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 6, flexWrap: "wrap" }}>
           {pendingMedia.map((m, i) => (
-            <div key={i} style={{ position: "relative", width: 64, height: 64 }}>
+            <div key={i} style={{ position: "relative", width: 52, height: 52 }}>
               {m.preview
-                ? <img src={m.preview} style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
-                : <div style={{ width: 64, height: 64, borderRadius: 8, background: "var(--bg2)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileIcon size={20} style={{ color: "var(--muted)" }} /></div>
-              }
-              {!m.url && (
-                <div style={{ position: "absolute", inset: 0, borderRadius: 8, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid white", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
-                </div>
-              )}
+                ? <img src={m.preview} style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover" }} />
+                : <div style={{ width: 52, height: 52, borderRadius: 8, background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileIcon size={18} style={{ color: "var(--muted)" }} /></div>}
+              {!m.url && <div style={{ position: "absolute", inset: 0, borderRadius: 8, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid white", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} /></div>}
               <button onClick={() => setPendingMedia(p => p.filter((_, j) => j !== i))}
-                style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", background: "var(--danger)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
-                <X size={10} />
+                style={{ position: "absolute", top: -5, right: -5, width: 16, height: 16, borderRadius: "50%", background: "var(--danger)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
+                <X size={9} />
               </button>
             </div>
           ))}
@@ -380,12 +346,10 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
 
       {/* Emoji picker */}
       {showEmoji && (
-        <div style={{ padding: "10px 14px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ padding: "8px 10px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: 4 }}>
           {EMOJIS.map(e => (
-            <button key={e} onClick={() => { setText(t => t + e); inputRef.current?.focus() }}
-              style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer", padding: 3, borderRadius: 6, transition: "transform 0.1s" }}
-              onMouseEnter={el => (el.currentTarget as HTMLElement).style.transform = "scale(1.2)"}
-              onMouseLeave={el => (el.currentTarget as HTMLElement).style.transform = "scale(1)"}>
+            <button key={e} onClick={() => { setText(t => t + e); setShowEmoji(false); inputRef.current?.focus() }}
+              style={{ fontSize: isMobile ? 22 : 20, background: "none", border: "none", cursor: "pointer", padding: 3, borderRadius: 6 }}>
               {e}
             </button>
           ))}
@@ -393,54 +357,41 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
       )}
 
       {/* Input area */}
-      <div style={{ padding: "10px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 8, alignItems: "flex-end", flexShrink: 0 }}>
-        <Avatar name={currentUser?.full_name ?? "?"} role={currentUser?.role} size={34} />
-
+      <div style={{ padding: isMobile ? "8px 10px" : "10px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
         {/* Attachment buttons */}
-        <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={() => fileInputRef.current?.click()}
-            title="Attach file or image"
-            style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#cb26e4"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
-            <Paperclip size={15} />
-          </button>
-          <button onClick={() => cameraInputRef.current?.click()}
-            title="Take a photo"
-            style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#38bdf8"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--muted)"}>
-            <Camera size={15} />
-          </button>
-          <button onClick={() => setShowEmoji(v => !v)}
-            title="Emoji"
-            style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--border)", background: showEmoji ? "rgba(203,38,228,0.1)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-            😊
-          </button>
-        </div>
+        <button onClick={() => fileInputRef.current?.click()} title="Attach file"
+          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
+          <Paperclip size={14} />
+        </button>
+        <button onClick={() => cameraInputRef.current?.click()} title="Camera"
+          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
+          <Camera size={14} />
+        </button>
+        <button onClick={() => setShowEmoji(v => !v)} title="Emoji"
+          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: showEmoji ? "rgba(203,38,228,0.1)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
+          😊
+        </button>
 
-        {/* Text input */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)", transition: "border-color 0.15s" }}
-          onFocusCapture={e => e.currentTarget.style.borderColor = "var(--accent)"}
-          onBlurCapture={e => e.currentTarget.style.borderColor = "var(--border)"}>
+        {/* Input */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", padding: isMobile ? "8px 12px" : "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)" }}>
           <input ref={inputRef} value={text} onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-            placeholder="Type a message... or drag & drop files"
-            style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            placeholder={isMobile ? "Message..." : "Type a message..."}
+            style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: isMobile ? 15 : 14, fontFamily: "inherit", outline: "none" }} />
         </div>
 
         {/* Send */}
-        <button onClick={handleSend} disabled={sendMutation.isPending || (!text.trim() && pendingMedia.length === 0)}
-          style={{ width: 38, height: 38, borderRadius: "50%", border: "none", background: (text.trim() || pendingMedia.length > 0) ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--bg2)", color: (text.trim() || pendingMedia.length > 0) ? "white" : "var(--muted)", cursor: (text.trim() || pendingMedia.length > 0) ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", boxShadow: (text.trim() || pendingMedia.length > 0) ? "0 2px 12px rgba(203,38,228,0.35)" : "none" }}>
+        <button onClick={handleSend}
+          disabled={sendMutation.isPending || (!text.trim() && pendingMedia.length === 0)}
+          style={{ width: isMobile ? 38 : 36, height: isMobile ? 38 : 36, borderRadius: "50%", border: "none", background: (text.trim() || pendingMedia.length > 0) ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--bg2)", color: (text.trim() || pendingMedia.length > 0) ? "white" : "var(--muted)", cursor: (text.trim() || pendingMedia.length > 0) ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", boxShadow: (text.trim() || pendingMedia.length > 0) ? "0 2px 10px rgba(203,38,228,0.35)" : "none" }}>
           {sendMutation.isPending
-            ? <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} />
-            : <Send size={15} />}
+            ? <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} />
+            : <Send size={14} />}
         </button>
       </div>
     </div>
   )
 }
-
 // ── Main ClassDetail ───────────────────────────────────────────
 type Props = { cls?: Class; onBack?: () => void }
 
