@@ -14,7 +14,7 @@ import {
   Paperclip, Smile, X, Play, File as FileIcon, Camera
 } from "lucide-react"
 
-// ÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Types ──────────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface Lesson { id: number; title: string; content: string; lesson_type: string; status: string; visibility: string; created_at: string }
 interface ClassMemberData { id: number; learner_id: number; learner: { id: number; full_name: string; email: string; role: string }; status: string }
 interface Attachment { id: number; file_url: string; file_name: string; mime_type: string; attachment_type: string }
@@ -26,7 +26,7 @@ interface ChatMessage {
   is_liked?: boolean
 }
 
-// ÔöÇÔöÇ Helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Helpers ─────────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function Avatar({ name, role, size = 34 }: { name: string; role?: string; size?: number }) {
   const colors: Record<string, string> = { teacher: "#cb26e4", admin: "#ef4444", learner: "#38bdf8" }
   const color = colors[role ?? "learner"] ?? "#38bdf8"
@@ -47,15 +47,15 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-const EMOJIS = ["­ƒæì","ÔØñ´©Å","­ƒÿé","­ƒÿ«","­ƒÿó","­ƒöÑ","­ƒÄë","­ƒÆí","­ƒæÅ","­ƒÖÅ","Ô£à","­ƒÆ»"]
+const EMOJIS = ["👍","❤️","😊","😎","😂","🔥","🎉","💡","👏","🙏","✅","💻"]
 const REACTIONS = [
-  { type: "like", emoji: "­ƒæì" },
-  { type: "love", emoji: "ÔØñ´©Å" },
-  { type: "insightful", emoji: "­ƒÆí" },
-  { type: "celebrate", emoji: "­ƒÄë" },
+  { type: "like", emoji: "👍" },
+  { type: "love", emoji: "❤️" },
+  { type: "insightful", emoji: "💡" },
+  { type: "celebrate", emoji: "🎉" },
 ]
 
-// ÔöÇÔöÇ Join Wall ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Join Wall ───────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function JoinWall({ cls, onJoin, joining }: { cls: Class; onJoin: () => void; joining: boolean }) {
   return (
     <div style={{ textAlign: "center", padding: "48px 24px", maxWidth: 420, margin: "0 auto" }}>
@@ -71,7 +71,7 @@ function JoinWall({ cls, onJoin, joining }: { cls: Class; onJoin: () => void; jo
         <UserPlus size={16} /> {joining ? "Joining..." : "Join Class"}
       </button>
       <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 20 }}>
-        {[{ icon: "­ƒôÜ", text: "All lessons" }, { icon: "­ƒÆ¼", text: "Discussion" }, { icon: "­ƒôØ", text: "Quizzes" }].map((f, i) => (
+        {[{ icon: "📜", text: "All lessons" }, { icon: "💬", text: "Discussion" }, { icon: "📋", text: "Quizzes" }].map((f, i) => (
           <div key={i} style={{ fontSize: 12, color: "var(--muted)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
             <span style={{ fontSize: 20 }}>{f.icon}</span>{f.text}
           </div>
@@ -81,7 +81,7 @@ function JoinWall({ cls, onJoin, joining }: { cls: Class; onJoin: () => void; jo
   )
 }
 
-// ÔöÇÔöÇ Media Preview ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Media Preview ───────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function MediaPreview({ att }: { att: Attachment }) {
   const isImage = att.mime_type?.startsWith("image/")
   const isVideo = att.mime_type?.startsWith("video/")
@@ -103,7 +103,7 @@ function MediaPreview({ att }: { att: Attachment }) {
   )
 }
 
-// ÔöÇÔöÇ Rich Class Chat ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Rich Class Chat ─────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   const queryClient = useQueryClient()
   const [text, setText] = useState("")
@@ -240,7 +240,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 14 }}>{cls.title}</div>
-          <div style={{ fontSize: 11, color: "var(--muted)" }}>Class discussion ┬À members only ┬À drag & drop files</div>
+          <div style={{ fontSize: 11, color: "var(--muted)" }}>Class discussion · members only · drag & drop files</div>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
@@ -255,7 +255,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
           <div style={{ textAlign: "center", color: "var(--muted)", padding: "40px 20px" }}>
             <MessageCircle size={36} style={{ opacity: 0.25, marginBottom: 10 }} />
             <div style={{ fontSize: 14, fontWeight: 600 }}>No messages yet</div>
-            <div style={{ fontSize: 13, marginTop: 4 }}>Say something or share a file! ­ƒæï</div>
+            <div style={{ fontSize: 13, marginTop: 4 }}>Say something or share a file!</div>
           </div>
         )}
 
@@ -309,7 +309,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
                       {isMe && <CheckCircle2 size={10} style={{ color: "#22c55e" }} />}
                       {(msg.reactions_count ?? 0) > 0 && (
                         <span style={{ padding: "1px 5px", borderRadius: 999, background: "var(--card)", border: "1px solid var(--border)", fontSize: 11 }}>
-                          ­ƒæì {msg.reactions_count}
+                          👍 {msg.reactions_count}
                         </span>
                       )}
                     </div>
@@ -321,7 +321,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
                     <div style={{ position: "relative" }}>
                       <button onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)}
                         style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--card)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>
-                        ­ƒÿè
+                        😊
                       </button>
                       {showReactions === msg.id && (
                         <div style={{ position: "absolute", bottom: 32, left: isMe ? "auto" : 0, right: isMe ? 0 : "auto", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 10px", display: "flex", gap: 6, zIndex: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.15)", whiteSpace: "nowrap" }}>
@@ -415,7 +415,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
           <button onClick={() => setShowEmoji(v => !v)}
             title="Emoji"
             style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--border)", background: showEmoji ? "rgba(203,38,228,0.1)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-            ­ƒÿè
+            😊
           </button>
         </div>
 
@@ -441,7 +441,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   )
 }
 
-// ÔöÇÔöÇ Main ClassDetail ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Main ClassDetail ────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 type Props = { cls?: Class; onBack?: () => void }
 
 export default function ClassDetail({ cls: clsProp, onBack }: Props) {
@@ -588,8 +588,8 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
                 )}
               </div>
               <h1 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 6px" }}>{cls.title}</h1>
-              {cls.subject && <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 2 }}>­ƒôÜ {cls.subject.name}</div>}
-              {cls.teacher && <div style={{ color: "var(--muted)", fontSize: 13 }}>­ƒæñ {cls.teacher.full_name}</div>}
+              {cls.subject && <div style={{ color: "var(--muted)", fontSize: 13, marginBottom: 2 }}>📚 {cls.subject.name}</div>}
+              {cls.teacher && <div style={{ color: "var(--muted)", fontSize: 13 }}>👤 {cls.teacher.full_name}</div>}
               {cls.description && <p style={{ color: "var(--muted)", fontSize: 13, margin: "10px 0 0", lineHeight: 1.6 }}>{cls.description}</p>}
             </div>
             {isLearner && !isOwner && (
@@ -679,7 +679,7 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{l.title}</div>
-                  <div style={{ fontSize: 12, color: "var(--muted)" }}>{l.lesson_type} ┬À {new Date(l.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>{l.lesson_type} · {new Date(l.created_at).toLocaleDateString()}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {l.visibility === "public" ? <Globe size={12} style={{ color: "#38bdf8" }} /> : <Lock size={12} style={{ color: "var(--muted)" }} />}
