@@ -49,7 +49,7 @@ type Props = {
 
 type InsertTab = "media" | "table" | "template" | "code"
 
-// ÔöÇÔöÇ Image Toolbar (shows when image selected) ÔöÇÔöÇ
+// ── Image Toolbar (shows when image selected) ──
 function ImageToolbar({ editor }: { editor: any }) {
   const [visible, setVisible] = useState(false)
   const [style, setStyle] = useState<React.CSSProperties>({})
@@ -283,7 +283,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
   return (
     <div className="tiptap-wrapper">
-      {/* ÔöÇÔöÇ TOOLBAR ÔöÇÔöÇ */}
+      {/* ── TOOLBAR ── */}
       <div className="tiptap-toolbar">
         {/* History */}
         <div className="tiptap-tool-group">
@@ -354,7 +354,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
         </button>
       </div>
 
-      {/* ÔöÇÔöÇ INSERT PANEL ÔöÇÔöÇ */}
+      {/* ── INSERT PANEL ── */}
       {showInsert && (
         <div className="tiptap-insert-panel">
           <div className="tiptap-insert-tabs">
@@ -497,13 +497,13 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
         </div>
       )}
 
-      {/* ÔöÇÔöÇ EDITOR ÔöÇÔöÇ */}
+      {/* ── EDITOR ── */}
       <div className="tiptap-editor-wrap" style={{ position: "relative" }}>
         <EditorContent editor={editor} style={{ minHeight }} />
         <ImageToolbar editor={editor} />
       </div>
 
-      {/* ÔöÇÔöÇ FOOTER ÔöÇÔöÇ */}
+      {/* ── FOOTER ── */}
       <div className="tiptap-footer">
         <span>Ctrl+Z undo ┬À Ctrl+B bold ┬À Ctrl+I italic ┬À Select text for quick format</span>
         <span>{wordCount} words ┬À ~{Math.max(1, Math.ceil(wordCount / 200))} min read</span>

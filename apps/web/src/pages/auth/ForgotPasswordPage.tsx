@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg)", fontFamily: "inherit" }}>
 
-      {/* ÔöÇÔöÇ LEFT PANEL ÔöÇÔöÇ */}
+      {/* ── LEFT PANEL ── */}
       <div style={{ flex: "0 0 440px", display: "flex", flexDirection: "column", background: "linear-gradient(160deg,#1a0030 0%,#0d0d1a 60%,#001a2e 100%)", padding: "48px 40px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "rgba(203,38,228,0.08)", pointerEvents: "none" }} />
 
@@ -133,11 +133,11 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      {/* ÔöÇÔöÇ RIGHT PANEL ÔöÇÔöÇ */}
+      {/* ── RIGHT PANEL ── */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 440 }}>
 
-          {/* ÔöÇÔöÇ STEP 1: LOOKUP ÔöÇÔöÇ */}
+          {/* ── STEP 1: LOOKUP ── */}
           {step === "lookup" && (
             <>
               <div style={{ marginBottom: 32 }}>
@@ -197,7 +197,7 @@ export default function ForgotPasswordPage() {
             </>
           )}
 
-          {/* ÔöÇÔöÇ STEP 2: CHOOSE METHOD ÔöÇÔöÇ */}
+          {/* ── STEP 2: CHOOSE METHOD ── */}
           {step === "choose" && account && (
             <>
               <div style={{ marginBottom: 28 }}>
@@ -298,7 +298,7 @@ export default function ForgotPasswordPage() {
             </>
           )}
 
-          {/* ÔöÇÔöÇ STEP 3: SENT ÔöÇÔöÇ */}
+          {/* ── STEP 3: SENT ── */}
           {step === "sent" && (
             <div style={{ textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "2px solid rgba(34,197,94,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>

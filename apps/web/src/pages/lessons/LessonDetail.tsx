@@ -13,7 +13,7 @@ import {
   Globe, Lock, MoreVertical
 } from "lucide-react"
 
-// ÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Types ──────────────────────────────────────────────────────────
 interface LessonResource {
   id: number; resource_type: string; url: string
   title?: string; mime_type?: string
@@ -31,7 +31,7 @@ interface Comment {
 }
 type Props = { lesson: Lesson; onBack: () => void }
 
-// ÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Constants ──────────────────────────────────────────────────────
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
   note:       { label: "Note",       color: "#cb26e4", icon: "­ƒôØ" },
   video:      { label: "Video",      color: "#38bdf8", icon: "­ƒÄÑ" },
@@ -45,7 +45,7 @@ const RESOURCE_ICON: Record<string, React.ReactNode> = {
   link:  <Link2 size={14} />,
 }
 
-// ÔöÇÔöÇ Helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Helpers ────────────────────────────────────────────────────────
 function Avatar({ user, size = 32 }: { user: any; size?: number }) {
   const colors = ["#cb26e4","#38bdf8","#22c55e","#f59e0b","#ef4444","#8b5cf6"]
   const color = colors[(user?.full_name?.charCodeAt(0) ?? 0) % colors.length]
@@ -84,7 +84,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
-// ÔöÇÔöÇ Live Presentation ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Live Presentation ──────────────────────────────────────────────
 function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null)
@@ -255,7 +255,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
   )
 }
 
-// ÔöÇÔöÇ Main Component ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Main Component ─────────────────────────────────────────────────
 export default function LessonDetail({ lesson, onBack }: Props) {
   const { isTeacher, isAdmin, isLearner } = useAuth()
   const currentUser = useAuthStore(s => s.user)
@@ -368,7 +368,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
       <AppShell>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "16px 16px 48px" }}>
 
-          {/* ÔöÇÔöÇ Back + Breadcrumb ÔöÇÔöÇ */}
+          {/* ── Back + Breadcrumb ── */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
             <button className="btn" onClick={onBack} style={{ fontSize: 13, padding: "7px 14px" }}>
               <ChevronLeft size={15} /> Back
@@ -378,7 +378,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 300 }}>{l.title}</span>
           </div>
 
-          {/* ÔöÇÔöÇ EDITING MODE ÔöÇÔöÇ */}
+          {/* ── EDITING MODE ── */}
           {editing ? (
             <div className="card" style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
               {/* Edit header */}
@@ -466,7 +466,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
               </div>
             </div>
           ) : (
-            /* ÔöÇÔöÇ VIEW HEADER ÔöÇÔöÇ */
+            /* ── VIEW HEADER ── */
             <div className="card" style={{ padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
                 {/* Left: type icon */}
@@ -527,7 +527,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
             </div>
           )}
 
-          {/* ÔöÇÔöÇ TABS ÔöÇÔöÇ */}
+          {/* ── TABS ── */}
           {!editing && (
             <>
               <div className="tabs-bar" style={{ marginBottom: 16 }}>
@@ -542,7 +542,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 </button>
               </div>
 
-              {/* ÔöÇÔöÇ CONTENT TAB ÔöÇÔöÇ */}
+              {/* ── CONTENT TAB ── */}
               {tab === "content" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {/* Slide overview */}
@@ -595,7 +595,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 </div>
               )}
 
-              {/* ÔöÇÔöÇ DISCUSSION TAB ÔÇö WhatsApp Style ÔöÇÔöÇ */}
+              {/* ── DISCUSSION TAB ÔÇö WhatsApp Style ── */}
               {tab === "discussion" && (
                 (() => {
                   const isClassOnly = l.visibility === "class"
@@ -715,7 +715,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 })()
               )}
 
-              {/* ÔöÇÔöÇ RESOURCES TAB ÔöÇÔöÇ */}
+              {/* ── RESOURCES TAB ── */}
               {tab === "resources" && (
                 <div className="card" style={{ padding: 20 }}>
                   <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 16 }}>­ƒöù Lesson Resources</div>

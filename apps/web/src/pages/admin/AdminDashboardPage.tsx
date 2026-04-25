@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* ÔöÇÔöÇ OVERVIEW TAB ÔöÇÔöÇ */}
+        {/* ── OVERVIEW TAB ── */}
         {tab === "overview" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Stats Grid */}
@@ -246,7 +246,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ USERS TAB ÔöÇÔöÇ */}
+        {/* ── USERS TAB ── */}
         {tab === "users" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* User Stats */}
@@ -344,7 +344,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ CONTENT TAB ÔöÇÔöÇ */}
+        {/* ── CONTENT TAB ── */}
         {tab === "content" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
@@ -409,7 +409,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ REPORTS TAB ÔöÇÔöÇ */}
+        {/* ── REPORTS TAB ── */}
         {tab === "reports" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
@@ -459,7 +459,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ SYSTEM TAB ÔöÇÔöÇ */}
+        {/* ── SYSTEM TAB ── */}
         {tab === "system" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div className="card" style={{ padding: 24 }}>
