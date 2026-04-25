@@ -14,7 +14,7 @@ import {
   Paperclip, Smile, X, Play, File as FileIcon, Camera
 } from "lucide-react"
 
-// ── Types ──────────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Types ──────────────────────────────────────────────────────
 interface Lesson { id: number; title: string; content: string; lesson_type: string; status: string; visibility: string; created_at: string }
 interface ClassMemberData { id: number; learner_id: number; learner: { id: number; full_name: string; email: string; role: string }; status: string }
 interface Attachment { id: number; file_url: string; file_name: string; mime_type: string; attachment_type: string }
@@ -26,7 +26,7 @@ interface ChatMessage {
   is_liked?: boolean
 }
 
-// ── Helpers ─────────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Helpers ────────────────────────────────────────────────────
 function Avatar({ name, role, size = 34 }: { name: string; role?: string; size?: number }) {
   const colors: Record<string, string> = { teacher: "#cb26e4", admin: "#ef4444", learner: "#38bdf8" }
   const color = colors[role ?? "learner"] ?? "#38bdf8"
@@ -55,7 +55,7 @@ const REACTIONS = [
   { type: "celebrate", emoji: "🎉" },
 ]
 
-// ── Join Wall ───────────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Join Wall ──────────────────────────────────────────────────
 function JoinWall({ cls, onJoin, joining }: { cls: Class; onJoin: () => void; joining: boolean }) {
   return (
     <div style={{ textAlign: "center", padding: "48px 24px", maxWidth: 420, margin: "0 auto" }}>
@@ -81,7 +81,7 @@ function JoinWall({ cls, onJoin, joining }: { cls: Class; onJoin: () => void; jo
   )
 }
 
-// ── Media Preview ───────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Media Preview ──────────────────────────────────────────────
 function MediaPreview({ att }: { att: Attachment }) {
   const isImage = att.mime_type?.startsWith("image/")
   const isVideo = att.mime_type?.startsWith("video/")
@@ -103,7 +103,7 @@ function MediaPreview({ att }: { att: Attachment }) {
   )
 }
 
-// ── Rich Class Chat ─────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Rich Class Chat ────────────────────────────────────────────
 function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   const queryClient = useQueryClient()
   const [text, setText] = useState("")
@@ -441,7 +441,7 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
   )
 }
 
-// ── Main ClassDetail ────────────────────────────────────ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ── Main ClassDetail ───────────────────────────────────────────
 type Props = { cls?: Class; onBack?: () => void }
 
 export default function ClassDetail({ cls: clsProp, onBack }: Props) {
@@ -646,10 +646,10 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
           ))}
         </div>
 
-        {/* ÔöÇÔöÇ OVERVIEW ÔöÇÔöÇ */}
+{/* ── OVERVIEW ── */}
         {tab === "overview" && (
           <div className="card">
-            <div className="card-head"><span className="card-title">­ƒôû Recent Lessons</span>
+          <div className="card-head"><span className="card-title">📖 Recent Lessons</span>
               <button className="btn" style={{ fontSize: 12, padding: "4px 10px" }} onClick={() => setTab("lessons")}>View all</button>
             </div>
             {lessons.length === 0 ? <p className="card-sub">No lessons yet.</p>
@@ -668,7 +668,7 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ LESSONS ÔöÇÔöÇ */}
+          {/* ── LESSONS ── */}
         {tab === "lessons" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {visibleLessons.map((l: Lesson) => (
@@ -714,11 +714,11 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ MEMBERS ÔöÇÔöÇ */}
+          {/* ── MEMBERS ── */}
         {tab === "members" && (
           <div className="card">
             <div className="card-head">
-              <span className="card-title">­ƒæÑ Members</span>
+            <span className="card-title">👥 Members</span>
               <span className="chip">{members.length + (cls.teacher ? 1 : 0)}</span>
             </div>
             {cls.teacher && (
@@ -728,7 +728,7 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{cls.teacher.full_name}</div>
                   <div style={{ fontSize: 12, color: "var(--muted)" }}>{(cls.teacher as any).email}</div>
                 </div>
-                <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, background: "rgba(203,38,228,0.1)", color: "#cb26e4", fontWeight: 700 }}>­ƒæ®ÔÇì­ƒÅ½ Teacher</span>
+            <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, background: "rgba(203,38,228,0.1)", color: "#cb26e4", fontWeight: 700 }}>👨‍🏫 Teacher</span>
               </div>
             )}
             {canAccess ? (
@@ -753,7 +753,7 @@ export default function ClassDetail({ cls: clsProp, onBack }: Props) {
           </div>
         )}
 
-        {/* ÔöÇÔöÇ DISCUSSION ÔöÇÔöÇ */}
+          {/* ── DISCUSSION ── */}
         {tab === "discussion" && (
           canAccess
             ? <ClassChat cls={cls} currentUser={currentUser} />
