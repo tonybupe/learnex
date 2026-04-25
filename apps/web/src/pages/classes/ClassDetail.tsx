@@ -357,33 +357,49 @@ function ClassChat({ cls, currentUser }: { cls: Class; currentUser: any }) {
       )}
 
       {/* Input area */}
-      <div style={{ padding: isMobile ? "8px 10px" : "10px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
-        {/* Attachment buttons */}
-        <button onClick={() => fileInputRef.current?.click()} title="Attach file"
-          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
-          <Paperclip size={14} />
-        </button>
-        <button onClick={() => cameraInputRef.current?.click()} title="Camera"
-          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
-          <Camera size={14} />
-        </button>
-        <button onClick={() => setShowEmoji(v => !v)} title="Emoji"
-          style={{ width: isMobile ? 34 : 32, height: isMobile ? 34 : 32, borderRadius: "50%", border: "1px solid var(--border)", background: showEmoji ? "rgba(203,38,228,0.1)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
-          😊
-        </button>
+      <div style={{ padding: isMobile ? "6px 8px" : "10px 12px", background: "var(--card)", borderTop: "1px solid var(--border)", display: "flex", gap: isMobile ? 5 : 6, alignItems: "center", flexShrink: 0 }}>
+
+        {/* On mobile: single attach button. On desktop: all 3 */}
+        {isMobile ? (
+          <button onClick={() => fileInputRef.current?.click()} title="Attach"
+            style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
+            <Paperclip size={14} />
+          </button>
+        ) : (
+          <>
+            <button onClick={() => fileInputRef.current?.click()} title="Attach file"
+              style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
+              <Paperclip size={14} />
+            </button>
+            <button onClick={() => cameraInputRef.current?.click()} title="Camera"
+              style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--border)", background: "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)", flexShrink: 0 }}>
+              <Camera size={14} />
+            </button>
+            <button onClick={() => setShowEmoji(v => !v)} title="Emoji"
+              style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--border)", background: showEmoji ? "rgba(203,38,228,0.1)" : "var(--bg2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+              😊
+            </button>
+          </>
+        )}
 
         {/* Input */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", padding: isMobile ? "8px 12px" : "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)" }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", padding: isMobile ? "7px 11px" : "8px 14px", borderRadius: 24, border: "1px solid var(--border)", background: "var(--bg2)" }}>
           <input ref={inputRef} value={text} onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
             placeholder={isMobile ? "Message..." : "Type a message..."}
-            style={{ flex: 1, border: "none", background: "transparent", color: "var(--text)", fontSize: isMobile ? 15 : 14, fontFamily: "inherit", outline: "none" }} />
+            style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", color: "var(--text)", fontSize: 15, fontFamily: "inherit", outline: "none" }} />
+          {isMobile && (
+            <button onClick={() => setShowEmoji(v => !v)}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, padding: "0 2px", flexShrink: 0 }}>
+              😊
+            </button>
+          )}
         </div>
 
         {/* Send */}
         <button onClick={handleSend}
           disabled={sendMutation.isPending || (!text.trim() && pendingMedia.length === 0)}
-          style={{ width: isMobile ? 38 : 36, height: isMobile ? 38 : 36, borderRadius: "50%", border: "none", background: (text.trim() || pendingMedia.length > 0) ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--bg2)", color: (text.trim() || pendingMedia.length > 0) ? "white" : "var(--muted)", cursor: (text.trim() || pendingMedia.length > 0) ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", boxShadow: (text.trim() || pendingMedia.length > 0) ? "0 2px 10px rgba(203,38,228,0.35)" : "none" }}>
+          style={{ width: isMobile ? 36 : 36, height: isMobile ? 36 : 36, borderRadius: "50%", border: "none", background: (text.trim() || pendingMedia.length > 0) ? "linear-gradient(135deg,#cb26e4,#8b5cf6)" : "var(--bg2)", color: (text.trim() || pendingMedia.length > 0) ? "white" : "var(--muted)", cursor: (text.trim() || pendingMedia.length > 0) ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", boxShadow: (text.trim() || pendingMedia.length > 0) ? "0 2px 10px rgba(203,38,228,0.35)" : "none" }}>
           {sendMutation.isPending
             ? <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} />
             : <Send size={14} />}
