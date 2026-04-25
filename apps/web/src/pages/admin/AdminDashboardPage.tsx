@@ -88,9 +88,9 @@ export default function AdminDashboardPage() {
 
   // Stats cards config
   const statCards = stats ? [
-    { label: "Total Users",    value: stats.total_users,      icon: <Users size={20} />,        color: "#cb26e4", sub: `${stats.total_teachers} teachers ┬À ${stats.total_learners} learners` },
+    { label: "Total Users",    value: stats.total_users,      icon: <Users size={20} />,        color: "#cb26e4", sub: `${stats.total_teachers} teachers · ${stats.total_learners} learners` },
     { label: "Classes",        value: stats.total_classes,    icon: <BookOpen size={20} />,      color: "#38bdf8", sub: `${stats.total_subjects} subjects` },
-    { label: "Content",        value: stats.total_lessons + stats.total_quizzes, icon: <FileText size={20} />, color: "#22c55e", sub: `${stats.total_lessons} lessons ┬À ${stats.total_quizzes} quizzes` },
+    { label: "Content",        value: stats.total_lessons + stats.total_quizzes, icon: <FileText size={20} />, color: "#22c55e", sub: `${stats.total_lessons} lessons · ${stats.total_quizzes} quizzes` },
     { label: "Posts",          value: stats.total_posts,      icon: <MessageCircle size={20} />, color: "#f59e0b", sub: `Platform discussions` },
     { label: "Live Sessions",  value: stats.total_live_sessions, icon: <Video size={20} />,     color: "#8b5cf6", sub: `Scheduled & completed` },
     { label: "Messages",       value: stats.total_messages,   icon: <MessageCircle size={20} />, color: "#06b6d4", sub: `Direct & group chats` },
@@ -134,7 +134,7 @@ export default function AdminDashboardPage() {
               <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Admin Dashboard</h1>
             </div>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>
-              Platform overview ┬À {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              Platform overview · {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </p>
           </div>
           <button className="btn" onClick={() => refetchStats()} style={{ fontSize: 13 }}>
@@ -186,7 +186,7 @@ export default function AdminDashboardPage() {
               {/* User Distribution Pie */}
               <div className="card" style={{ padding: 20 }}>
                 <div className="card-head" style={{ marginBottom: 16 }}>
-                  <span className="card-title">­ƒæÑ User Distribution</span>
+                  <span className="card-title">👤 User Distribution</span>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
@@ -201,7 +201,7 @@ export default function AdminDashboardPage() {
               {/* Content Bar Chart */}
               <div className="card" style={{ padding: 20 }}>
                 <div className="card-head" style={{ marginBottom: 16 }}>
-                  <span className="card-title">­ƒôè Platform Content</span>
+                  <span className="card-title">📊 Platform Content</span>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={contentData}>
@@ -224,13 +224,13 @@ export default function AdminDashboardPage() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                 {[
-                  { label: "Manage Users",    icon: "­ƒæÑ", action: () => setTab("users"),    color: "#cb26e4" },
+                  { label: "Manage Users",    icon: "👤", action: () => setTab("users"),    color: "#cb26e4" },
                   { label: "View Reports",    icon: "ÔÜá´©Å", action: () => setTab("reports"),  color: "#ef4444" },
-                  { label: "Create Class",    icon: "­ƒÄô", action: () => navigate("/classes"), color: "#38bdf8" },
-                  { label: "View Analytics",  icon: "­ƒôè", action: () => navigate("/analytics"), color: "#22c55e" },
-                  { label: "Manage Content",  icon: "­ƒôÜ", action: () => setTab("content"),  color: "#f59e0b" },
-                  { label: "Subjects",        icon: "­ƒôû", action: () => navigate("/subjects"), color: "#8b5cf6" },
-                  { label: "Live Sessions",   icon: "­ƒÄÑ", action: () => navigate("/live-sessions"), color: "#06b6d4" },
+                  { label: "Create Class",    icon: "🏫", action: () => navigate("/classes"), color: "#38bdf8" },
+                  { label: "View Analytics",  icon: "📊", action: () => navigate("/analytics"), color: "#22c55e" },
+                  { label: "Manage Content",  icon: "📜", action: () => setTab("content"),  color: "#f59e0b" },
+                  { label: "Subjects",        icon: "📖", action: () => navigate("/subjects"), color: "#8b5cf6" },
+                  { label: "Live Sessions",   icon: "🎥", action: () => navigate("/live-sessions"), color: "#06b6d4" },
                   { label: "System Info",     icon: "ÔÜÖ´©Å", action: () => setTab("system"),   color: "#84cc16" },
                 ].map(a => (
                   <button key={a.label} onClick={a.action}
@@ -252,9 +252,9 @@ export default function AdminDashboardPage() {
             {/* User Stats */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
               {[
-                { label: "Total Users",  value: stats?.total_users ?? "ÔÇö",    color: "#cb26e4" },
-                { label: "Teachers",     value: stats?.total_teachers ?? "ÔÇö",  color: "#38bdf8" },
-                { label: "Learners",     value: stats?.total_learners ?? "ÔÇö",  color: "#22c55e" },
+                { label: "Total Users",  value: stats?.total_users ?? "—",    color: "#cb26e4" },
+                { label: "Teachers",     value: stats?.total_teachers ?? "—",  color: "#38bdf8" },
+                { label: "Learners",     value: stats?.total_learners ?? "—",  color: "#22c55e" },
               ].map(s => (
                 <div key={s.label} className="card" style={{ padding: 16, textAlign: "center", borderTop: `3px solid ${s.color}` }}>
                   <div style={{ fontSize: 28, fontWeight: 900, color: s.color }}>{s.value}</div>
@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
             {/* Search */}
             <div className="card" style={{ padding: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-                <span className="card-title">­ƒæÑ All Users</span>
+                <span className="card-title">👤 All Users</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ position: "relative" }}>
                     <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
@@ -321,7 +321,7 @@ export default function AdminDashboardPage() {
                             </span>
                           </td>
                           <td style={{ padding: "12px", color: "var(--muted)", fontSize: 12 }}>
-                            {(() => { try { const d = new Date(u.created_at); return isNaN(d.getTime()) ? "ÔÇö" : d.toLocaleDateString() } catch { return "ÔÇö" } })()}
+                            {(() => { try { const d = new Date(u.created_at); return isNaN(d.getTime()) ? "—" : d.toLocaleDateString() } catch { return "—" } })()}
                           </td>
                           <td style={{ padding: "12px" }}>
                             <div style={{ display: "flex", gap: 6 }}>
@@ -358,7 +358,7 @@ export default function AdminDashboardPage() {
                   onClick={() => s.path && navigate(s.path)}>
                   <div style={{ fontSize: 26, fontWeight: 900, color: s.color }}>{s.value}</div>
                   <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 4 }}>{s.label}</div>
-                  {s.path && <div style={{ fontSize: 11, color: s.color, marginTop: 6, fontWeight: 600 }}>View all ÔåÆ</div>}
+                  {s.path && <div style={{ fontSize: 11, color: s.color, marginTop: 6, fontWeight: 600 }}>View all →</div>}
                 </div>
               ))}
             </div>
@@ -366,7 +366,7 @@ export default function AdminDashboardPage() {
             {/* Classes table */}
             <div className="card" style={{ padding: 20 }}>
               <div className="card-head" style={{ marginBottom: 16 }}>
-                <span className="card-title">­ƒÄô All Classes</span>
+                <span className="card-title">🏫 All Classes</span>
                 <button className="btn btn-primary" style={{ fontSize: 12, padding: "6px 14px" }} onClick={() => navigate("/classes")}>
                   Manage Classes
                 </button>
@@ -386,17 +386,17 @@ export default function AdminDashboardPage() {
                         onMouseEnter={e => (e.currentTarget.style.background = "var(--bg2)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                         <td style={{ padding: "12px", fontWeight: 700 }}>{cls.title}</td>
-                        <td style={{ padding: "12px", color: "var(--muted)" }}>{cls.subject?.name ?? "ÔÇö"}</td>
-                        <td style={{ padding: "12px", color: "var(--muted)" }}>{cls.teacher?.full_name ?? "ÔÇö"}</td>
+                        <td style={{ padding: "12px", color: "var(--muted)" }}>{cls.subject?.name ?? "—"}</td>
+                        <td style={{ padding: "12px", color: "var(--muted)" }}>{cls.teacher?.full_name ?? "—"}</td>
                         <td style={{ padding: "12px" }}><span className="chip" style={{ fontSize: 11 }}>{cls.class_code}</span></td>
                         <td style={{ padding: "12px" }}>
                           <span style={{ color: cls.visibility === "public" ? "var(--success)" : "var(--muted)", fontSize: 12, fontWeight: 600 }}>
-                            {cls.visibility === "public" ? "­ƒîÉ Public" : "­ƒöÆ Private"}
+                            {cls.visibility === "public" ? "🌐 Public" : "🔒 Private"}
                           </span>
                         </td>
                         <td style={{ padding: "12px" }}>
                           <span style={{ color: cls.status === "active" ? "var(--success)" : "var(--muted)", fontSize: 12, fontWeight: 600 }}>
-                            {cls.status === "active" ? "Ô£à Active" : "­ƒôª Archived"}
+                            {cls.status === "active" ? "✅ Active" : "📦 Archived"}
                           </span>
                         </td>
                       </tr>
@@ -435,7 +435,7 @@ export default function AdminDashboardPage() {
                 <div style={{ textAlign: "center", padding: 48 }}>
                   <div style={{ fontSize: 48, marginBottom: 12 }}>Ô£à</div>
                   <h3 style={{ margin: "0 0 8px" }}>No reports</h3>
-                  <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>The platform is clean ÔÇö no pending reports.</p>
+                  <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>The platform is clean — no pending reports.</p>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -443,7 +443,7 @@ export default function AdminDashboardPage() {
                     <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--bg2)" }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 14 }}>{r.reason ?? "No reason provided"}</div>
-                        <div style={{ fontSize: 12, color: "var(--muted)" }}>Reporter: {r.reporter_id} ┬À Content: {r.content_type}</div>
+                        <div style={{ fontSize: 12, color: "var(--muted)" }}>Reporter: {r.reporter_id} · Content: {r.content_type}</div>
                       </div>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: r.status === "open" ? "color-mix(in srgb, var(--danger) 15%, transparent)" : "color-mix(in srgb, var(--success) 15%, transparent)", color: r.status === "open" ? "var(--danger)" : "var(--success)" }}>
@@ -492,14 +492,14 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div className="card" style={{ padding: 20 }}>
                 <div className="card-head" style={{ marginBottom: 16 }}>
-                  <span className="card-title">­ƒöº Admin Tools</span>
+                  <span className="card-title">⚙️ Admin Tools</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {[
-                    { label: "Platform Analytics", icon: "­ƒôè", action: () => navigate("/analytics") },
-                    { label: "Manage Subjects",    icon: "­ƒôû", action: () => navigate("/subjects") },
-                    { label: "Manage Classes",     icon: "­ƒÄô", action: () => navigate("/classes") },
-                    { label: "API Documentation",  icon: "­ƒôï", action: () => window.open("http://localhost:8000/api/v1/docs", "_blank") },
+                    { label: "Platform Analytics", icon: "📊", action: () => navigate("/analytics") },
+                    { label: "Manage Subjects",    icon: "📖", action: () => navigate("/subjects") },
+                    { label: "Manage Classes",     icon: "🏫", action: () => navigate("/classes") },
+                    { label: "API Documentation",  icon: "📏", action: () => window.open("http://localhost:8000/api/v1/docs", "_blank") },
                   ].map(a => (
                     <button key={a.label} className="btn" style={{ fontSize: 13, justifyContent: "flex-start", gap: 10 }}
                       onClick={a.action}>
@@ -511,7 +511,7 @@ export default function AdminDashboardPage() {
 
               <div className="card" style={{ padding: 20 }}>
                 <div className="card-head" style={{ marginBottom: 16 }}>
-                  <span className="card-title">­ƒôê Platform Health</span>
+                  <span className="card-title">📈 Platform Health</span>
                 </div>
                 {[
                   { label: "API Status",      value: "Ô£à Online",   color: "var(--success)" },

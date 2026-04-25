@@ -29,7 +29,7 @@ export default function SubjectForm({ initialData, onSubmit }: Props) {
 
     } else {
 
-      // Reset form if switching from edit ÔåÆ create
+      // Reset form if switching from edit → create
       setName("")
       setCode("")
       setDescription("")

@@ -191,7 +191,7 @@ export default function ForgotPasswordPage() {
 
                 <div style={{ textAlign: "center" }}>
                   <span style={{ fontSize: 14, color: "var(--muted)" }}>Remember your password? </span>
-                  <Link to="/auth/login" style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>Sign in ÔåÆ</Link>
+                  <Link to="/auth/login" style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", textDecoration: "none" }}>Sign in →</Link>
                 </div>
               </div>
             </>
@@ -318,14 +318,14 @@ export default function ForgotPasswordPage() {
               {devToken && (
                 <div style={{ padding: "16px", borderRadius: 12, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", marginBottom: 20, textAlign: "left" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "#f59e0b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    ­ƒøá Dev Mode ÔÇö Reset Token
+                    🧪 Dev Mode — Reset Token
                   </div>
                   <div style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text)", wordBreak: "break-all", marginBottom: 10, lineHeight: 1.5 }}>
                     {devToken}
                   </div>
                   <a href={`/auth/reset-password?token=${devToken}`}
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#f59e0b", textDecoration: "none", padding: "6px 12px", borderRadius: 8, background: "rgba(245,158,11,0.12)" }}>
-                    Click to reset password ÔåÆ
+                    Click to reset password →
                   </a>
                 </div>
               )}

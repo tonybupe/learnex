@@ -33,10 +33,10 @@ type Props = { lesson: Lesson; onBack: () => void }
 
 // ── Constants ──────────────────────────────────────────────────────
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  note:       { label: "Note",       color: "#cb26e4", icon: "­ƒôØ" },
-  video:      { label: "Video",      color: "#38bdf8", icon: "­ƒÄÑ" },
-  live:       { label: "Live",       color: "#ef4444", icon: "­ƒö┤" },
-  assignment: { label: "Assignment", color: "#22c55e", icon: "­ƒôï" },
+  note:       { label: "Note",       color: "#cb26e4", icon: "📋" },
+  video:      { label: "Video",      color: "#38bdf8", icon: "🎥" },
+  live:       { label: "Live",       color: "#ef4444", icon: "🔴" },
+  assignment: { label: "Assignment", color: "#22c55e", icon: "📏" },
 }
 const RESOURCE_ICON: Record<string, React.ReactNode> = {
   file:  <FileText size={14} />,
@@ -132,7 +132,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
       <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", boxShadow: "0 0 8px #ef4444" }} />
-          <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>LIVE ┬À {lesson.title}</span>
+          <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>LIVE · {lesson.title}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.2)", cursor: "pointer" }}
@@ -177,13 +177,13 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
                 </button>
                 <button disabled={slide === slides.length - 1} onClick={() => setSlide(s => s + 1)}
                   style={{ padding: "10px 28px", borderRadius: 10, border: "1px solid rgba(203,38,228,0.4)", background: "rgba(203,38,228,0.12)", color: "#d946ef", cursor: slide === slides.length - 1 ? "not-allowed" : "pointer", opacity: slide === slides.length - 1 ? 0.35 : 1, fontWeight: 700, fontSize: 14, fontFamily: "inherit" }}>
-                  Next ÔåÆ
+                  Next →
                 </button>
               </div>
             </div>
           ) : (
             <div style={{ textAlign: "center", color: "rgba(255,255,255,0.4)" }}>
-              <div style={{ fontSize: 56, marginBottom: 16 }}>­ƒôÜ</div>
+              <div style={{ fontSize: 56, marginBottom: 16 }}>📜</div>
               <h2 style={{ color: "white", marginBottom: 8 }}>{lesson.title}</h2>
               <p style={{ fontSize: 14 }}>Add ## headings in your content to create slides.</p>
               <p style={{ fontSize: 13, marginTop: 8 }}>Or share your screen to present external content.</p>
@@ -325,12 +325,12 @@ export default function LessonDetail({ lesson, onBack }: Props) {
     try {
       const joinUrl = `${window.location.origin}/classes/discover`
       const content = [
-        `­ƒôÜ **${fresh.title}**`,
+        `📜 **${fresh.title}**`,
         fresh.description || fresh.content.slice(0, 200) + "...",
-        `­ƒÄô Join the class to access the full lesson!`,
-        `­ƒöù ${joinUrl}`,
+        `🏫 Join the class to access the full lesson!`,
+        `🔗 ${joinUrl}`,
       ].join("\n\n")
-      await api.post("/posts", { content, post_type: "note", visibility: "public", title: `­ƒôÜ ${fresh.title}` })
+      await api.post("/posts", { content, post_type: "note", visibility: "public", title: `📜 ${fresh.title}` })
       setShareDone(true)
       setTimeout(() => setShareDone(false), 3000)
     } catch {}
@@ -339,7 +339,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
 
   // Derived
   const l = fresh ?? lesson
-  const tc = TYPE_CONFIG[l.lesson_type] ?? { label: l.lesson_type, color: "var(--accent)", icon: "­ƒôä" }
+  const tc = TYPE_CONFIG[l.lesson_type] ?? { label: l.lesson_type, color: "var(--accent)", icon: "📄" }
   const wordCount = l.content.split(/\s+/).filter(Boolean).length
   const readTime = Math.max(1, Math.ceil(wordCount / 200))
   const slides = l.content.split("\n").filter(line => line.startsWith("## ")).map(l => l.slice(3))
@@ -425,10 +425,10 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                     <label className="form-label">Type</label>
                     <select className="audit-control select" value={editForm.lesson_type}
                       onChange={e => setEditForm(p => ({ ...p, lesson_type: e.target.value }))}>
-                      <option value="note">­ƒôØ Note</option>
-                      <option value="video">­ƒÄÑ Video</option>
-                      <option value="live">­ƒö┤ Live</option>
-                      <option value="assignment">­ƒôï Assignment</option>
+                      <option value="note">📋 Note</option>
+                      <option value="video">🎥 Video</option>
+                      <option value="live">🔴 Live</option>
+                      <option value="assignment">📏 Assignment</option>
                     </select>
                   </div>
                   <div className="form-field">
@@ -444,8 +444,8 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                     <label className="form-label">Visibility</label>
                     <select className="audit-control select" value={editForm.visibility}
                       onChange={e => setEditForm(p => ({ ...p, visibility: e.target.value }))}>
-                      <option value="class">­ƒöÆ Class only</option>
-                      <option value="public">­ƒîÉ Public</option>
+                      <option value="class">🔒 Class only</option>
+                      <option value="public">🌐 Public</option>
                     </select>
                   </div>
                 </div>
@@ -454,7 +454,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 <div className="form-field">
                   <label className="form-label" style={{ marginBottom: 8 }}>
                     Content
-                    {slides.length > 0 && <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400, marginLeft: 10 }}>┬À {slides.length} slide sections detected (## headings)</span>}
+                    {slides.length > 0 && <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 400, marginLeft: 10 }}>· {slides.length} slide sections detected (## headings)</span>}
                   </label>
                   <RichEditor
                     value={editForm.content}
@@ -489,7 +489,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                       {l.visibility}
                     </span>
                     {slides.length > 0 && (
-                      <span className="chip" style={{ fontSize: 11 }}>­ƒôè {slides.length} slides</span>
+                      <span className="chip" style={{ fontSize: 11 }}>📊 {slides.length} slides</span>
                     )}
                   </div>
 
@@ -509,7 +509,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                   {canEdit && (
                     <button className="btn" style={{ fontSize: 12, padding: "7px 14px", background: "rgba(239,68,68,0.08)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.2)" }}
                       onClick={() => setLiveMode(true)}>
-                      ­ƒö┤ Go Live
+                      🔴 Go Live
                     </button>
                   )}
                   <button className="btn" style={{ fontSize: 12, padding: "7px 14px" }}
@@ -532,13 +532,13 @@ export default function LessonDetail({ lesson, onBack }: Props) {
             <>
               <div className="tabs-bar" style={{ marginBottom: 16 }}>
                 <button className={`tab-btn ${tab === "content" ? "active" : ""}`} onClick={() => setTab("content")}>
-                  ­ƒôû Content
+                  📖 Content
                 </button>
                 <button className={`tab-btn ${tab === "discussion" ? "active" : ""}`} onClick={() => setTab("discussion")}>
-                  ­ƒÆ¼ Discussion {comments.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--accent)", color: "white" }}>{comments.length}</span>}
+                  💬 Discussion {comments.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--accent)", color: "white" }}>{comments.length}</span>}
                 </button>
                 <button className={`tab-btn ${tab === "resources" ? "active" : ""}`} onClick={() => setTab("resources")}>
-                  ­ƒöù Resources {l.resources.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--bg2)", color: "var(--muted)" }}>{l.resources.length}</span>}
+                  🔗 Resources {l.resources.length > 0 && <span style={{ marginLeft: 4, padding: "1px 7px", borderRadius: 999, fontSize: 10, background: "var(--bg2)", color: "var(--muted)" }}>{l.resources.length}</span>}
                 </button>
               </div>
 
@@ -549,10 +549,10 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                   {slides.length > 0 && (
                     <div className="card" style={{ padding: 18 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                        <span style={{ fontWeight: 800, fontSize: 14 }}>­ƒôè Slide Sections</span>
+                        <span style={{ fontWeight: 800, fontSize: 14 }}>📊 Slide Sections</span>
                         {canEdit && (
                           <button className="btn" style={{ fontSize: 11, padding: "4px 12px", background: "rgba(239,68,68,0.08)", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.2)" }} onClick={() => setLiveMode(true)}>
-                            ­ƒö┤ Present
+                            🔴 Present
                           </button>
                         )}
                       </div>
@@ -578,7 +578,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                   <div className="card" style={{ padding: 18, borderLeft: `3px solid ${tc.color}` }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>­ƒôó Share this lesson</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>📣 Share this lesson</div>
                         <div style={{ fontSize: 13, color: "var(--muted)" }}>Share a preview to the class feed so others can discover and join.</div>
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
@@ -595,7 +595,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                 </div>
               )}
 
-              {/* ── DISCUSSION TAB ÔÇö WhatsApp Style ── */}
+              {/* ── DISCUSSION TAB — WhatsApp Style ── */}
               {tab === "discussion" && (
                 (() => {
                   const isClassOnly = l.visibility === "class"
@@ -633,7 +633,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                         <div>
                           <div style={{ fontWeight: 800, fontSize: 14 }}>Lesson Discussion</div>
                           <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                            {l.visibility === "public" ? "­ƒîÉ Public lesson ┬À Anyone can discuss" : "­ƒöÆ Class members only"}
+                            {l.visibility === "public" ? "🌐 Public lesson · Anyone can discuss" : "🔒 Class members only"}
                           </div>
                         </div>
                         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5 }}>
@@ -648,7 +648,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
                           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)" }}>
                             <MessageCircle size={32} style={{ opacity: 0.25, marginBottom: 10 }} />
                             <div style={{ fontSize: 14, fontWeight: 600 }}>No messages yet</div>
-                            <div style={{ fontSize: 13, marginTop: 4 }}>Start the discussion! ­ƒÆ¼</div>
+                            <div style={{ fontSize: 13, marginTop: 4 }}>Start the discussion! 💬</div>
                           </div>
                         ) : comments.map((c, i) => {
                           const isMe = c.user_id === currentUser?.id || c.author?.id === currentUser?.id
@@ -718,7 +718,7 @@ export default function LessonDetail({ lesson, onBack }: Props) {
               {/* ── RESOURCES TAB ── */}
               {tab === "resources" && (
                 <div className="card" style={{ padding: 20 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 16 }}>­ƒöù Lesson Resources</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 16 }}>🔗 Lesson Resources</div>
                   {l.resources.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "36px 0", color: "var(--muted)" }}>
                       <Link2 size={36} style={{ marginBottom: 10, opacity: 0.3 }} />

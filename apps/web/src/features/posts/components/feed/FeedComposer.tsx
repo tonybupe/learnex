@@ -125,7 +125,7 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
         }
       }
       const post = await createPost({
-        content: text.length > 0 ? text : (media.length > 0 ? "­ƒôÀ" : " "),
+        content: text.length > 0 ? text : (media.length > 0 ? "📸" : " "),
         post_type: media.length > 0 ? (media[0].type === "video" ? "video" : "image") : "text",
         visibility: "public",
         title: text.slice(0, 60) || "Post",
@@ -164,7 +164,7 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
           <div className="camera-overlay" onClick={closeCamera} />
           <div className="camera-container">
             <div className="camera-header">
-              <span style={{ fontWeight: 700 }}>­ƒôÀ Take Photo</span>
+              <span style={{ fontWeight: 700 }}>📸 Take Photo</span>
               <button className="camera-close" onClick={closeCamera}><X size={20} /></button>
             </div>
             <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
@@ -243,7 +243,7 @@ export default function FeedComposer({ onCreated, placeholder = "What's on your 
             </div>
           )}
 
-          {/* Toolbar ÔÇö always visible */}
+          {/* Toolbar — always visible */}
           <div className="composer-toolbar">
             <div className="composer-tools">
               <button className="composer-tool" title="Add image" onClick={() => fileInputRef.current?.click()}>

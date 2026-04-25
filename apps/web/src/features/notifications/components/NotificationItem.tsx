@@ -2,24 +2,24 @@
 import type { Notification } from "../types/notification.types"
 
 const ICONS: Record<string, string> = {
-  follow_created:     "­ƒæñ",
-  lesson_published:   "­ƒôû",
-  class_post_created: "­ƒôú",
-  class_join:         "­ƒÄô",
-  class_invite:       "­ƒÄô",
-  quiz_grade:         "­ƒôØ",
-  live_session:       "­ƒÄÑ",
-  comment:            "­ƒÆ¼",
-  like:               "ÔØñ´©Å",
-  reaction:           "ÔØñ´©Å",
-  message:            "­ƒÆî",
+  follow_created:     "👤",
+  lesson_published:   "📖",
+  class_post_created: "📢",
+  class_join:         "🏫",
+  class_invite:       "🏫",
+  quiz_grade:         "📋",
+  live_session:       "🎥",
+  comment:            "💬",
+  like:               "❤️",
+  reaction:           "❤️",
+  message:            "💌",
   reminder:           "ÔÅ░",
-  announcement:       "­ƒôó",
-  default:            "­ƒöö",
+  announcement:       "📣",
+  default:            "🔔",
 }
 
 // Map API action_url or entity_type to valid FRONTEND routes
-// API sends: /lessons/34, /users/2, /posts/31 ÔÇö none of these exist as frontend routes
+// API sends: /lessons/34, /users/2, /posts/31 — none of these exist as frontend routes
 function resolveRoute(n: Notification): string {
   const { entity_type, notification_type } = n
 
@@ -120,7 +120,7 @@ export default function NotificationItem({ notification: n, onRead, onClose }: P
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
           <div className="notification-time">{timeAgo(n.created_at)}</div>
           <span style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700 }}>
-            View ÔåÆ
+            View →
           </span>
         </div>
       </div>

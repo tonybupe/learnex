@@ -251,7 +251,7 @@ export default function ProfilePage() {
               <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: rc.bg, color: rc.color, border: `1px solid ${rc.color}30` }}>
                 {rc.icon} {rc.label}
               </span>
-              {isOwn && <span style={{ fontSize: 12, color: "var(--muted)", padding: "3px 10px", borderRadius: 999, background: "var(--bg2)" }}>┬À You</span>}
+              {isOwn && <span style={{ fontSize: 12, color: "var(--muted)", padding: "3px 10px", borderRadius: 999, background: "var(--bg2)" }}>· You</span>}
             </div>
 
             {p.bio && <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 12px", lineHeight: 1.7, maxWidth: 560 }}>{p.bio}</p>}
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                     { label: "Email",        value: user.email,       color: "var(--text)" },
                     { label: "Phone",        value: user.phone_number || "Not provided", color: user.phone_number ? "var(--text)" : "var(--muted)" },
                     { label: "Gender",       value: user.sex || "Not specified", color: user.sex ? "var(--text)" : "var(--muted)" },
-                    { label: "Member Since", value: safeDate(user.created_at) || "ÔÇö", color: "var(--text)" },
+                    { label: "Member Since", value: safeDate(user.created_at) || "—", color: "var(--text)" },
                   ].map((row, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid var(--border)", fontSize: 14 }}>
                       <span style={{ color: "var(--muted)", fontWeight: 600, fontSize: 13 }}>{row.label}</span>
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                 <p style={{ fontSize: 13, color: "var(--muted)", margin: 0, lineHeight: 1.8 }}>
                   {user.role === "teacher" && "Can create and manage classes, publish lessons and quizzes, schedule live sessions, and monitor learner progress."}
                   {user.role === "learner" && "Can join classes, take quizzes, view lessons, attend live sessions and track personal learning progress."}
-                  {user.role === "admin" && "Full platform access ÔÇö manage users, moderate content, view platform-wide analytics and system settings."}
+                  {user.role === "admin" && "Full platform access — manage users, moderate content, view platform-wide analytics and system settings."}
                 </p>
               </div>
             </div>

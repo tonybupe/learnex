@@ -83,7 +83,7 @@ function PostHeaderComponent({ post, onDelete, isDeleting = false }: Props) {
           </div>
           <div className="post-meta">
             {formatPostDate(post.created_at)}
-            {post.classroom && <span> ┬À {post.classroom.title}</span>}
+            {post.classroom && <span> · {post.classroom.title}</span>}
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ function PostHeaderComponent({ post, onDelete, isDeleting = false }: Props) {
         {canDel && onDelete && (
           <button className="post-delete" onClick={onDelete} disabled={isDeleting}
             title="Delete post" aria-label="Delete post">
-            {isDeleting ? <span className="spinner-small" style={{ borderTopColor: "var(--danger)" }} /> : "­ƒùæ´©Å"}
+            {isDeleting ? <span className="spinner-small" style={{ borderTopColor: "var(--danger)" }} /> : "🗑️"}
           </button>
         )}
       </div>

@@ -70,13 +70,13 @@ function PostCard({ post, onUnsave }: { post: Post; onUnsave: (id: number) => vo
                   {post.author?.role}
                 </span>
               )}
-              <span style={{ fontSize: 11, color: "var(--muted)" }}>┬À {timeAgo(post.created_at)}</span>
+              <span style={{ fontSize: 11, color: "var(--muted)" }}>· {timeAgo(post.created_at)}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color, fontWeight: 600 }}>
                 {TYPE_ICONS[post.post_type] ?? <FileText size={11} />} {post.post_type}
               </span>
-              <span style={{ fontSize: 11, color: "var(--muted)" }}>┬À</span>
+              <span style={{ fontSize: 11, color: "var(--muted)" }}>·</span>
               <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "var(--muted)" }}>
                 {post.visibility === "public" ? <Globe size={10} /> : <Lock size={10} />} {post.visibility}
               </span>
@@ -104,7 +104,7 @@ function PostCard({ post, onUnsave }: { post: Post; onUnsave: (id: number) => vo
             {isLong && (
               <button onClick={() => setExpanded(e => !e)}
                 style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", padding: "0 0 8px", fontFamily: "inherit" }}>
-                {expanded ? "Show less Ôåæ" : "Read more Ôåô"}
+                {expanded ? "Show less →" : "Read more ↓"}
               </button>
             )}
           </>
@@ -247,7 +247,7 @@ export default function SavedPage() {
             <h3 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 8px" }}>Nothing saved yet</h3>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 24px", lineHeight: 1.7 }}>
               Bookmark posts from your feed to read them later.<br />
-              Click the ­ƒöû icon on any post to save it here.
+              Click the ● icon on any post to save it here.
             </p>
             <button onClick={() => window.location.href = "/feed"}
               style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#cb26e4,#8b5cf6)", color: "white", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 16px rgba(203,38,228,0.3)" }}>

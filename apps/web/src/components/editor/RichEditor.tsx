@@ -98,7 +98,7 @@ function ImageToolbar({ editor }: { editor: any }) {
       {/* Align */}
       <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:left" })} title="Left">ÔåÉ</button>
       <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px auto" })} title="Center">Ôåö</button>
-      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:right" })} title="Right">ÔåÆ</button>
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:right" })} title="Right">→</button>
       <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
       {/* Alt */}
       <button type="button" title="Edit caption/alt" onClick={() => {
@@ -109,7 +109,7 @@ function ImageToolbar({ editor }: { editor: any }) {
       {/* Delete */}
       <button type="button" title="Remove image"
         onClick={() => editor.chain().focus().deleteSelection().run()}
-        style={{ color: "var(--danger)" }}>­ƒùæ</button>
+        style={{ color: "var(--danger)" }}>🗑️</button>
     </div>
   )
 }
@@ -251,23 +251,23 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
   )
 
   const TEMPLATES = [
-    { icon: "­ƒÄ»", label: "Learning Objectives", content: `<h2>Learning Objectives</h2><p>By the end of this lesson, students will be able to:</p><ul><li>Objective 1</li><li>Objective 2</li><li>Objective 3</li></ul>` },
+    { icon: "🎯", label: "Learning Objectives", content: `<h2>Learning Objectives</h2><p>By the end of this lesson, students will be able to:</p><ul><li>Objective 1</li><li>Objective 2</li><li>Objective 3</li></ul>` },
     { icon: "ÔØô", label: "Review Questions", content: `<h2>Review Questions</h2><ol><li>Question one?</li><li>Question two?</li><li>Question three?</li></ol>` },
-    { icon: "­ƒôî", label: "Summary", content: `<h2>Summary</h2><p>In this lesson we covered:</p><ul><li>Key point 1</li><li>Key point 2</li><li>Key point 3</li></ul>` },
-    { icon: "­ƒÆí", label: "Tip Box", content: `<blockquote><p>­ƒÆí <strong>Note:</strong> Add your important note here.</p></blockquote>` },
+    { icon: "📝", label: "Summary", content: `<h2>Summary</h2><p>In this lesson we covered:</p><ul><li>Key point 1</li><li>Key point 2</li><li>Key point 3</li></ul>` },
+    { icon: "💡", label: "Tip Box", content: `<blockquote><p>💡 <strong>Note:</strong> Add your important note here.</p></blockquote>` },
     { icon: "ÔÜá´©Å", label: "Warning Box", content: `<blockquote><p>ÔÜá´©Å <strong>Important:</strong> Add your warning here.</p></blockquote>` },
-    { icon: "­ƒº¬", label: "Example Block", content: `<h3>Example</h3><p><strong>Problem:</strong> State the problem.</p><p><strong>Solution:</strong> Show working out.</p><p><strong>Answer:</strong> Final answer.</p>` },
-    { icon: "­ƒö¼", label: "Lab Report", content: `<h2>Aim</h2><p>State aim.</p><h2>Materials</h2><ul><li>Material 1</li></ul><h2>Method</h2><ol><li>Step 1</li></ol><h2>Results</h2><p>Results here.</p><h2>Conclusion</h2><p>Conclusion here.</p>` },
-    { icon: "­ƒôû", label: "Full Lesson", content: `<h2>Introduction</h2><p>Brief introduction.</p><h2>Learning Objectives</h2><ul><li>Objective 1</li><li>Objective 2</li></ul><h2>Key Concepts</h2><h3>Concept 1</h3><p>Explanation here.</p><h2>Examples</h2><p><strong>Example:</strong> Description.</p><h2>Summary</h2><p>Key takeaways.</p><h2>Review Questions</h2><ol><li>Question 1?</li><li>Question 2?</li></ol>` },
-    { icon: "­ƒôÉ", label: "Math Problem Set", content: `<h2>Problem Set</h2><p><strong>Question 1:</strong></p><p>Problem...</p><p><strong>Solution:</strong></p><p>Working...</p><p><strong>Answer:</strong></p>` },
-    { icon: "­ƒîì", label: "Case Study", content: `<h2>Case Study</h2><h3>Background</h3><p>Background info.</p><h3>Problem</h3><p>The problem.</p><h3>Analysis</h3><p>Analysis.</p><h3>Conclusion</h3><p>Lessons learned.</p>` },
+    { icon: "✏️", label: "Example Block", content: `<h3>Example</h3><p><strong>Problem:</strong> State the problem.</p><p><strong>Solution:</strong> Show working out.</p><p><strong>Answer:</strong> Final answer.</p>` },
+    { icon: "🔬", label: "Lab Report", content: `<h2>Aim</h2><p>State aim.</p><h2>Materials</h2><ul><li>Material 1</li></ul><h2>Method</h2><ol><li>Step 1</li></ol><h2>Results</h2><p>Results here.</p><h2>Conclusion</h2><p>Conclusion here.</p>` },
+    { icon: "📖", label: "Full Lesson", content: `<h2>Introduction</h2><p>Brief introduction.</p><h2>Learning Objectives</h2><ul><li>Objective 1</li><li>Objective 2</li></ul><h2>Key Concepts</h2><h3>Concept 1</h3><p>Explanation here.</p><h2>Examples</h2><p><strong>Example:</strong> Description.</p><h2>Summary</h2><p>Key takeaways.</p><h2>Review Questions</h2><ol><li>Question 1?</li><li>Question 2?</li></ol>` },
+    { icon: "📊", label: "Math Problem Set", content: `<h2>Problem Set</h2><p><strong>Question 1:</strong></p><p>Problem...</p><p><strong>Solution:</strong></p><p>Working...</p><p><strong>Answer:</strong></p>` },
+    { icon: "📑", label: "Case Study", content: `<h2>Case Study</h2><h3>Background</h3><p>Background info.</p><h3>Problem</h3><p>The problem.</p><h3>Analysis</h3><p>Analysis.</p><h3>Conclusion</h3><p>Lessons learned.</p>` },
   ]
 
   const QUICK_TABLES = [
-    { label: "Key Terms", icon: "­ƒôû", rows: 4, cols: 2 },
+    { label: "Key Terms", icon: "📖", rows: 4, cols: 2 },
     { label: "Comparison", icon: "ÔÜû´©Å", rows: 4, cols: 3 },
-    { label: "Schedule", icon: "­ƒôà", rows: 5, cols: 3 },
-    { label: "Data Table", icon: "­ƒôê", rows: 5, cols: 4 },
+    { label: "Schedule", icon: "📸", rows: 5, cols: 3 },
+    { label: "Data Table", icon: "📈", rows: 5, cols: 4 },
   ]
 
   const CODE_LANGS = [
@@ -322,10 +322,10 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
         {/* Lists */}
         <div className="tiptap-tool-group">
-          <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={isActive("bulletList")} title="Bullet list">ÔÇó ÔÇö</Btn>
+          <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={isActive("bulletList")} title="Bullet list">• —</Btn>
           <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={isActive("orderedList")} title="Numbered list">1.</Btn>
           <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={isActive("blockquote")} title="Quote">ÔØØ</Btn>
-          <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider">ÔÇö</Btn>
+          <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider">—</Btn>
         </div>
 
         {/* Table controls */}
@@ -334,10 +334,10 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
             <div className="tiptap-divider" />
             <div className="tiptap-tool-group">
               <Btn onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add col before">+ÔåÉ</Btn>
-              <Btn onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add col after">+ÔåÆ</Btn>
+              <Btn onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add col after">+→</Btn>
               <Btn onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete col" danger>├ùC</Btn>
-              <Btn onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before">+Ôåæ</Btn>
-              <Btn onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after">+Ôåô</Btn>
+              <Btn onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before">+→</Btn>
+              <Btn onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after">+↓</Btn>
               <Btn onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" danger>├ùR</Btn>
               <Btn onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" danger>├ùTbl</Btn>
               <Btn onClick={() => editor.chain().focus().mergeCells().run()} title="Merge">Ôè×</Btn>
@@ -362,7 +362,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
               <button key={t} type="button"
                 className={`tiptap-insert-tab${insertTab === t ? " active" : ""}`}
                 onClick={() => setInsertTab(t)}>
-                {t === "media" ? "­ƒû╝´©Å Media" : t === "table" ? "­ƒôè Table" : t === "template" ? "­ƒôØ Templates" : "­ƒÆ╗ Code"}
+                {t === "media" ? "🎬 Media" : t === "table" ? "📊 Table" : t === "template" ? "📋 Templates" : "💻 Code"}
               </button>
             ))}
             <button type="button" className="tiptap-insert-close" onClick={() => setShowInsert(false)}>Ô£ò</button>
@@ -373,7 +373,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
             {insertTab === "media" && (
               <div className="tiptap-insert-grid">
                 <div className="tiptap-insert-card">
-                  <div className="tiptap-insert-card-icon">­ƒû╝´©Å</div>
+                  <div className="tiptap-insert-card-icon">🎬</div>
                   <div className="tiptap-insert-card-label">Image from URL</div>
                   <input className="audit-control" value={imageUrl}
                     onChange={e => setImageUrl(e.target.value)}
@@ -385,7 +385,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                 </div>
 
                 <div className="tiptap-insert-card" style={{ cursor: "pointer" }} onClick={() => fileInputRef.current?.click()}>
-                  <div className="tiptap-insert-card-icon">­ƒôñ</div>
+                  <div className="tiptap-insert-card-icon">📷</div>
                   <div className="tiptap-insert-card-label">Upload Image</div>
                   <div style={{ fontSize: 12, color: "var(--muted)", textAlign: "center" }}>Click to browse files</div>
                   <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
@@ -394,7 +394,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                 </div>
 
                 <div className="tiptap-insert-card">
-                  <div className="tiptap-insert-card-icon">­ƒÄÑ</div>
+                  <div className="tiptap-insert-card-icon">🎥</div>
                   <div className="tiptap-insert-card-label">YouTube Link</div>
                   <input className="audit-control" placeholder="https://youtube.com/watch?v=..."
                     style={{ fontSize: 12, height: 36 }}
@@ -409,7 +409,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                 </div>
 
                 <div className="tiptap-insert-card">
-                  <div className="tiptap-insert-card-icon">­ƒöù</div>
+                  <div className="tiptap-insert-card-icon">🔗</div>
                   <div className="tiptap-insert-card-label">Hyperlink</div>
                   <input className="audit-control" value={linkText} onChange={e => setLinkText(e.target.value)}
                     placeholder="Link text" style={{ fontSize: 12, height: 36, marginBottom: 6 }} />
@@ -425,7 +425,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
             {insertTab === "table" && (
               <div className="tiptap-insert-grid">
                 <div className="tiptap-insert-card" style={{ gridColumn: "span 2" }}>
-                  <div className="tiptap-insert-card-icon">­ƒôè</div>
+                  <div className="tiptap-insert-card-icon">📊</div>
                   <div className="tiptap-insert-card-label">Custom Table Size</div>
                   <div style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "center", margin: "8px 0" }}>
                     <div style={{ textAlign: "center" }}>
@@ -505,8 +505,8 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
       {/* ── FOOTER ── */}
       <div className="tiptap-footer">
-        <span>Ctrl+Z undo ┬À Ctrl+B bold ┬À Ctrl+I italic ┬À Select text for quick format</span>
-        <span>{wordCount} words ┬À ~{Math.max(1, Math.ceil(wordCount / 200))} min read</span>
+        <span>Ctrl+Z undo · Ctrl+B bold · Ctrl+I italic · Select text for quick format</span>
+        <span>{wordCount} words · ~{Math.max(1, Math.ceil(wordCount / 200))} min read</span>
       </div>
     </div>
   )
