@@ -65,101 +65,69 @@ Learnex is a full-stack, mobile-first social learning management system (LMS) bu
 
 ### For Teachers
 
-- **AI Lesson Generator** - Generate complete lesson content from any topic using Claude AI with structured sections, objectives, examples, and review questions
-- **AI Quiz Generator** - Automatically create Multiple Choice, True/False, Short Answer, and Essay questions directly from lesson content
-- **AI Grading** - Auto-grade short answer and essay questions with feedback
-- **Rich Content Editor** - TipTap-powered editor with formatting, tables, images, code blocks, templates, and slide detection
+- **AI Lesson Generator** - Generate complete lesson content from any topic using Claude AI
+- **AI Quiz Generator** - Create MCQ, True/False, Short Answer, and Essay questions from lesson content
+- **AI Grading** - Auto-grade short answer and essay questions with constructive feedback
+- **Rich Content Editor** - TipTap editor with formatting, tables, images, code blocks, and templates
 - **Class Management** - Create public/private classes, manage enrollments, set grade levels
-- **Live Presentations** - Present lesson slides in fullscreen live mode with screen sharing
-- **Quiz Analytics** - Grade bands, score distribution charts, per-question difficulty analysis
-- **Teacher Dashboard** - Real-time KPIs, engagement charts, content overview, AI-powered insights
-- **Class Discussion** - WhatsApp-style real-time chat per class with media sharing
+- **Live Presentations** - Present lesson slides in fullscreen with screen sharing
+- **Quiz Analytics** - Grade bands, score distribution, per-question difficulty analysis
+- **Teacher Dashboard** - Real-time KPIs, engagement charts, AI-powered insights
+- **Class Discussion** - WhatsApp-style real-time chat with media sharing
 
 ### For Learners
 
 - **Social Feed** - Latest, trending, popular, following, and class-specific feeds
 - **Quiz Taking** - Timed quizzes with progress tracking, score ring, and question review
-- **Class Enrollment** - Join public or private classes with class codes
-- **Lesson Discovery** - Browse published lessons, filter by subject and type
+- **Class Enrollment** - Join public or private classes
+- **Lesson Discovery** - Browse published lessons filtered by subject and type
 - **Real-time Notifications** - Instant alerts for new content, grades, and mentions
 - **Learner Dashboard** - Enrolled classes, lesson progress, average quiz scores
-- **Discussion Participation** - Join class and lesson discussions
 
 ### Platform-wide
 
-- **Real-time Messaging** - WebSocket-powered direct messages with typing indicators, read receipts, and delivered status
-- **Discovery Page** - Trending teachers with learner/class counts, public classes, published lessons
-- **Notification System** - Smart routing to relevant pages
-- **Dark/Light Mode** - Full theme support
-- **Mobile-First UI** - Responsive across all screen sizes with touch-friendly interactions
+- **Real-time Messaging** - WebSocket DMs with typing indicators, read receipts, delivered status
+- **Discovery Page** - Trending teachers with learner/class counts, public classes, lessons
+- **Dark/Light Mode** - Full theme support with CSS variables
+- **Mobile-First UI** - Fully responsive with touch-friendly interactions
 - **Supabase Storage** - Cloud media storage for posts, avatars, and resources
 - **Admin Dashboard** - Platform analytics, user management, content moderation
 
 ---
 
 ## Architecture
+
+### Repository Structure
 learnex/
-+-apps/
-+-api/           FastAPI backend (Python 3.12)
-+-web/           React 18 + TypeScript frontend
-+-.gitattributes
-+-README.md
-### System Architecture
-learnex/
-+-apps/
-+-api/           FastAPI backend (Python 3.12)
-+-web/           React 18 + TypeScript frontend
-+-.gitattributes
-+-README.md+--------------------------------------------------+
-|           Client (Browser / Mobile)               |
-|         React 18 + TypeScript + Vite              |
-|    www.learn-ex.online  (Vercel + Cloudflare)     |
-+---------------------+----------------------------+
-| HTTPS / WSS
-+---------------------v----------------------------+
-|              FastAPI Backend                       |
-|          api.learn-ex.online  (Render)             |
-|                                                    |
-|  +-------------+  +-----------+  +-------------+  |
-|  |  REST API   |  | WebSocket |  |  Claude AI  |  |
-|  | /api/v1/    |  | Messages  |  | Lessons     |  |
-|  |             |  |           |  | Quizzes     |  |
-|  +------+------+  +-----+-----+  | Grading     |  |
-|         |               |        +-------------+  |
-+---------+---------------+-------------------+-----+
-|               |
-+---------v---------------v-------------------+-----+
-|              Supabase (PostgreSQL)                  |
-|       aws-1-eu-north-1.pooler.supabase.com          |
-|                                                     |
-|  +------------------+   +----------------------+   |
-|  |    Database       |   |   Storage (Media)    |   |
-|  |   (PostgreSQL)    |   |  posts/ avatars/     |   |
-|  +------------------+   +----------------------+   |
-+-----------------------------------------------------+
-### Data Flow
-User Action
-|
-v
-React Component
-|
-v
-TanStack Query (cache + fetch)
-|
-v
-Axios API Client (/api/client.ts)
-|
-v
-FastAPI Route (/api/v1/routes/)
-|
-v
-Service Layer (/services/)
-|
-v
-SQLAlchemy ORM
-|
-v
-PostgreSQL (Supabase)
+├── apps/
+│   ├── api/           FastAPI backend (Python 3.12)
+│   └── web/           React 18 + TypeScript frontend
+├── .gitattributes
+└── README.md
+### System Diagram
+┌─────────────────────────────────────────────────┐
+│          Client  (Browser / Mobile)              │
+│       React 18 + TypeScript + Vite               │
+│   www.learn-ex.online  (Vercel + Cloudflare)     │
+└──────────────────────┬──────────────────────────┘
+│  HTTPS / WSS
+┌──────────────────────v──────────────────────────┐
+│             FastAPI Backend                      │
+│         api.learn-ex.online  (Render)            │
+│                                                  │
+│   REST API /api/v1/   WebSocket    Claude AI     │
+│                                                  │
+└──────────────────────┬──────────────────────────┘
+│
+┌──────────────────────v──────────────────────────┐
+│           Supabase  (PostgreSQL + Storage)        │
+│    aws-1-eu-north-1.pooler.supabase.com          │
+└─────────────────────────────────────────────────┘
+### Request Flow
+User Action  ->  React Component  ->  TanStack Query
+->  Axios Client  ->  FastAPI Route
+->  Service Layer  ->  SQLAlchemy ORM
+->  PostgreSQL (Supabase)
 ---
 
 ## Tech Stack
@@ -193,7 +161,7 @@ PostgreSQL (Supabase)
 | Zustand | Latest | Client state |
 | TipTap | Latest | Rich text editor |
 | Recharts | Latest | Analytics charts |
-| Lucide React | Latest | Icons |
+| Lucide React | Latest | Icon library |
 | Axios | Latest | HTTP client |
 
 ### Infrastructure
@@ -217,7 +185,7 @@ PostgreSQL (Supabase)
 - PostgreSQL 15+ (or Supabase account)
 - Git
 
-### 1. Clone the Repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/tonybupe/learnex.git
@@ -228,56 +196,42 @@ cd learnex
 
 ```bash
 cd apps/api
-
-# Create virtual environment
 python -m venv venv
 
-# Activate (Linux/Mac)
+# Linux/Mac
 source venv/bin/activate
 
-# Activate (Windows)
+# Windows
 venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Create environment file
 cp .env.example .env
-# Edit .env with your credentials
+# Fill in .env values
 
-# Run migrations
 alembic upgrade head
-
-# Start development server
 uvicorn app.main:app --reload --port 8000
 ```
 
-API: `http://localhost:8000`
-Docs: `http://localhost:8000/api/v1/docs`
+- API: `http://localhost:8000`
+- Docs: `http://localhost:8000/api/v1/docs`
 
 ### 3. Frontend Setup
 
 ```bash
 cd apps/web
-
-# Install dependencies
 npm install
-
-# Create environment file
 cp .env.example .env.local
-# Edit .env.local
+# Fill in .env.local values
 
-# Start development server
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
+- Frontend: `http://localhost:5173`
 
-### 4. Verify TypeScript
+### 4. TypeScript Check
 
 ```bash
-cd apps/web
-npx tsc --noEmit
+cd apps/web && npx tsc --noEmit
 ```
 
 Zero errors expected.
@@ -288,95 +242,83 @@ Zero errors expected.
 
 ### Backend
 apps/api/
-+-app/
-+-api/
-+-v1/
-+-routes/
-+-auth.py              JWT auth, login, register
-+-classes.py           Class management + enrollment
-+-discovery.py         Trending teachers, public classes
-+-lessons.py           Lesson CRUD + AI generation
-+-live_sessions.py     Live session management
-+-messaging.py         WebSocket real-time messaging
-+-notifications.py     Notification system
-+-posts.py             Social feed posts + media upload
-+-quizzes.py           Quiz CRUD + AI generation + grading
-+-subjects.py          Subject management
-+-users.py             User profiles + analytics
-+-analytics.py         Dashboard analytics
-+-core/
-+-config.py                App configuration
-+-database.py              Database connection + session
-+-models/                    SQLAlchemy ORM models
-+-schemas/                   Pydantic request/response schemas
-+-services/
-+-quiz_service.py          Quiz business logic
-+-notification_service.py  Notification broadcasting
-+-storage_service.py       Supabase file uploads
-+-deps.py                    Dependency injection (auth guards)
-+-main.py                    App entry + CORS + router registration
-+-alembic/                     Database migrations
-+-requirements.txt
-+-.env.example
+├── app/
+│   ├── api/v1/routes/
+│   │   ├── auth.py               JWT auth, login, register
+│   │   ├── classes.py            Class management + enrollment
+│   │   ├── discovery.py          Trending teachers, public classes
+│   │   ├── lessons.py            Lesson CRUD + AI generation
+│   │   ├── live_sessions.py      Live session management
+│   │   ├── messaging.py          WebSocket real-time messaging
+│   │   ├── notifications.py      Notification system
+│   │   ├── posts.py              Social feed + media upload
+│   │   ├── quizzes.py            Quiz CRUD + AI generation + grading
+│   │   ├── subjects.py           Subject management
+│   │   ├── users.py              User profiles + analytics
+│   │   └── analytics.py          Dashboard analytics
+│   ├── core/
+│   │   ├── config.py             App configuration
+│   │   └── database.py           DB connection + session
+│   ├── models/                   SQLAlchemy ORM models
+│   ├── schemas/                  Pydantic request/response schemas
+│   ├── services/
+│   │   ├── quiz_service.py       Quiz business logic
+│   │   ├── notification_service.py  Notification broadcasting
+│   │   └── storage_service.py    Supabase file uploads
+│   ├── deps.py                   Dependency injection (auth guards)
+│   └── main.py                   App entry + CORS + router setup
+├── alembic/                      Database migrations
+├── requirements.txt
+└── .env.example
 ### Frontend
 apps/web/src/
-+-api/
-+-client.ts                  Axios instance with interceptors
-+-endpoints.ts               All API endpoint constants
-+-components/
-+-layout/
-+-AppShell.tsx             Main layout wrapper
-+-Sidebar.tsx              Navigation sidebar
-+-Topbar.tsx               Top navigation bar
-+-RightPanel.tsx           Right panel (notifications, stats, teachers)
-+-MobileRightPanel.tsx     Mobile slide-up drawer
-+-MobileSidebar.tsx        Mobile navigation drawer
-+-editor/
-+-RichEditor.tsx           TipTap rich text editor with toolbar
-+-subjects/
-+-SubjectSelector.tsx      Subject dropdown component
-+-features/
-+-auth/                      Authentication hooks + guards
-+-notifications/             Notification hooks + components
-+-posts/                     Feed posts, composer, comments
-+-users/                     Profile, settings pages
-+-classes/                   Class types + components
-+-pages/
-+-admin/
-+-AdminDashboardPage.tsx   Admin control panel
-+-auth/
-+-LoginPage.tsx            Login page
-+-RegisterPage.tsx         Registration with role selection
-+-ForgotPasswordPage.tsx   Password reset flow
-+-classes/
-+-ClassesPage.tsx          Classes list + create modal
-+-ClassDetail.tsx          Class detail + chat + members
-+-DiscoverClassesPage.tsx  Public class discovery
-+-discover/
-+-DiscoverPage.tsx         Platform discovery (teachers, classes, lessons)
-+-learner/
-+-LearnerDashboardPage.tsx Learner KPIs + enrolled classes
-+-lessons/
-+-LessonsPage.tsx          Lessons list + create
-+-LessonDetail.tsx         Lesson view/edit + discussion + resources
-+-live-sessions/
-+-LiveSessionsPage.tsx     Live sessions management
-+-messages/
-+-MessagesPage.tsx         Real-time direct messaging
-+-quizzes/
-+-QuizzesPage.tsx          Quiz list + AI generator + create modal
-+-QuizBuilder.tsx          Quiz question builder
-+-QuizTaker.tsx            Quiz taking experience + results
-+-QuizAnalytics.tsx        Teacher analytics dashboard
-+-saved/
-+-SavedPage.tsx            Saved posts
-+-shared/
-+-HomePage.tsx             Dashboard home with feed
-+-FeedSection.tsx          Social feed with tabs
-+-teacher/
-+-TeacherDashboardPage.tsx Teacher KPIs + charts + AI insights
-+-App.tsx                      Route definitions
-+-main.tsx                     App entry point
+├── api/
+│   ├── client.ts                 Axios instance with interceptors
+│   └── endpoints.ts              API endpoint constants
+├── components/
+│   ├── layout/
+│   │   ├── AppShell.tsx          Main layout wrapper
+│   │   ├── Sidebar.tsx           Navigation sidebar
+│   │   ├── Topbar.tsx            Top navigation bar
+│   │   ├── RightPanel.tsx        Notifications, stats, teachers
+│   │   ├── MobileRightPanel.tsx  Mobile slide-up drawer
+│   │   └── MobileSidebar.tsx     Mobile navigation drawer
+│   └── editor/
+│       └── RichEditor.tsx        TipTap rich text editor
+├── features/
+│   ├── auth/                     Authentication hooks + guards
+│   ├── notifications/            Notification hooks + components
+│   ├── posts/                    Feed posts, composer, comments
+│   ├── users/                    Profile, settings pages
+│   └── classes/                  Class types + components
+├── pages/
+│   ├── admin/AdminDashboardPage.tsx
+│   ├── auth/
+│   │   ├── LoginPage.tsx
+│   │   ├── RegisterPage.tsx
+│   │   └── ForgotPasswordPage.tsx
+│   ├── classes/
+│   │   ├── ClassesPage.tsx       Classes list + create modal
+│   │   ├── ClassDetail.tsx       Class detail + chat + members
+│   │   └── DiscoverClassesPage.tsx
+│   ├── discover/DiscoverPage.tsx
+│   ├── learner/LearnerDashboardPage.tsx
+│   ├── lessons/
+│   │   ├── LessonsPage.tsx
+│   │   └── LessonDetail.tsx      View/edit + discussion + resources
+│   ├── messages/MessagesPage.tsx  Real-time direct messaging
+│   ├── quizzes/
+│   │   ├── QuizzesPage.tsx       List + AI generator + create modal
+│   │   ├── QuizBuilder.tsx       Question builder
+│   │   ├── QuizTaker.tsx         Taking experience + results
+│   │   └── QuizAnalytics.tsx     Teacher analytics
+│   ├── saved/SavedPage.tsx
+│   ├── shared/
+│   │   ├── HomePage.tsx          Dashboard home with feed
+│   │   └── FeedSection.tsx       Social feed with tabs
+│   └── teacher/TeacherDashboardPage.tsx
+├── App.tsx                        Route definitions
+└── main.tsx                       Entry point
 ---
 
 ## API Reference
@@ -388,59 +330,40 @@ Interactive:  https://api.learn-ex.online/api/v1/docs
 ### Authentication
 
 All protected endpoints require:
-
-```http
 Authorization: Bearer <access_token>
-```
-
-**Login:**
-```http
+**Login Request:**
 POST /auth/login
 Content-Type: application/json
-
+{ "email": "teacher@example.com", "password": "password123" }
+**Login Response:**
 {
-  "email": "teacher@example.com",
-  "password": "password123"
+"access_token": "eyJ...",
+"token_type": "bearer",
+"user": { "id": 1, "full_name": "Jane Smith", "role": "teacher" }
 }
-```
+### Endpoints
 
-**Response:**
-```json
-{
-  "access_token": "eyJ...",
-  "token_type": "bearer",
-  "user": {
-    "id": 1,
-    "full_name": "Jane Smith",
-    "email": "teacher@example.com",
-    "role": "teacher"
-  }
-}
-```
-
-### Core Endpoints
-
-**Authentication**
+**Auth**
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | /auth/login | User login |
 | POST | /auth/register | User registration |
 | POST | /auth/forgot-password | Request password reset |
-| POST | /auth/reset-password | Reset password with token |
+| POST | /auth/reset-password | Reset with token |
 
 **Classes**
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | /classes | List all classes |
-| POST | /classes | Create new class |
-| GET | /classes/:id | Get class details |
+| GET | /classes | List classes |
+| POST | /classes | Create class |
+| GET | /classes/:id | Get class |
 | PATCH | /classes/:id | Update class |
 | DELETE | /classes/:id | Delete class |
-| POST | /classes/:id/join | Join a class |
-| POST | /classes/:id/leave | Leave a class |
-| GET | /classes/:id/members | List class members |
+| POST | /classes/:id/join | Join class |
+| POST | /classes/:id/leave | Leave class |
+| GET | /classes/:id/members | List members |
 
 **Lessons**
 
@@ -451,7 +374,7 @@ Content-Type: application/json
 | GET | /lessons/:id | Get lesson |
 | PATCH | /lessons/:id | Update lesson |
 | DELETE | /lessons/:id | Delete lesson |
-| POST | /lessons/ai/generate | AI lesson generation |
+| POST | /lessons/ai/generate | AI generation |
 
 **Quizzes**
 
@@ -460,17 +383,17 @@ Content-Type: application/json
 | GET | /quizzes | List quizzes |
 | POST | /quizzes | Create quiz |
 | POST | /quizzes/ai/generate | AI quiz generation |
-| POST | /quizzes/:id/start | Start quiz attempt |
-| POST | /quizzes/:id/attempts/:aid/submit | Submit quiz |
-| POST | /quizzes/:id/attempts/:aid/ai-grade | AI grade attempt |
-| GET | /quizzes/:id/attempts | Teacher: all attempts |
+| POST | /quizzes/:id/start | Start attempt |
+| POST | /quizzes/:id/attempts/:aid/submit | Submit attempt |
+| POST | /quizzes/:id/attempts/:aid/ai-grade | AI grade |
+| GET | /quizzes/:id/attempts | All attempts (teacher) |
 
 **Discovery**
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | /discovery/home | Discovery home feed |
-| GET | /discovery/trending-teachers | Teachers with learner/class counts |
+| GET | /discovery/home | Discovery feed |
+| GET | /discovery/trending-teachers | Teachers with stats |
 | GET | /discovery/public-classes | Public classes with stats |
 
 **Messaging**
@@ -478,7 +401,7 @@ Content-Type: application/json
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | /messages/conversations | List conversations |
-| GET | /messages/:userId | Get message thread |
+| GET | /messages/:userId | Message thread |
 | POST | /messages/:userId | Send message |
 | WS | /ws/messages/:userId | Real-time WebSocket |
 
@@ -495,54 +418,33 @@ Content-Type: application/json
 ## Environment Variables
 
 ### Backend (.env)
-
-```env
-# Database
 DATABASE_URL=postgresql+asyncpg://user:password@host:5432/dbname
-
-# Supabase
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=eyJ...
-
-# Authentication
 SECRET_KEY=your-super-secret-jwt-key-min-32-chars
 ACCESS_TOKEN_EXPIRE_MINUTES=10080
-
-# AI
 ANTHROPIC_API_KEY=sk-ant-api03-...
-
-# Redis (optional)
 REDIS_URL=redis://localhost:6379
-
-# Storage
 UPLOAD_DIR=uploads
 MAX_UPLOAD_SIZE_MB=50
-```
-
 ### Frontend (.env.local)
-
-```env
-VITE_API_BASE_URL=https://api.learn-ex.online/api/v1
-VITE_WS_URL=wss://api.learn-ex.online
-```
-
+### Frontend (.env.local)
 ---
 
 ## Deployment
 
 ### Frontend (Vercel)
 
-1. Connect GitHub repository to [vercel.com](https://vercel.com)
-2. Set root directory: `apps/web`
+1. Connect GitHub repo to [vercel.com](https://vercel.com)
+2. Root directory: `apps/web`
 3. Build command: `npm run build`
 4. Output directory: `dist`
-5. Add environment variables:
-VITE_API_BASE_URL = https://api.learn-ex.online/api/v1
-VITE_WS_URL      = wss://api.learn-ex.online
+5. Add environment variables from `.env.local`
+
 ### Backend (Render)
 
-1. Connect GitHub repository to [render.com](https://render.com)
-2. Set root directory: `apps/api`
+1. Connect GitHub repo to [render.com](https://render.com)
+2. Root directory: `apps/api`
 3. Build command: `pip install -r requirements.txt`
 4. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 5. Add all backend environment variables
@@ -555,13 +457,13 @@ VITE_WS_URL      = wss://api.learn-ex.online
 | CNAME | www | cname.vercel-dns.com | ON |
 | CNAME | api | learnex-api.onrender.com | ON |
 
-### Domains
+### Live Domains
 
-| Domain | Service | Status |
-|---|---|---|
-| www.learn-ex.online | Vercel | Active |
-| learn-ex.online | Vercel | Active |
-| api.learn-ex.online | Render | Active |
+| Domain | Service |
+|---|---|
+| www.learn-ex.online | Vercel |
+| learn-ex.online | Vercel |
+| api.learn-ex.online | Render |
 
 ---
 
@@ -572,7 +474,6 @@ VITE_WS_URL      = wss://api.learn-ex.online
 | Create classes | Yes | Yes | No |
 | Create lessons | Yes | Yes | No |
 | AI lesson generation | Yes | Yes | No |
-| Edit/delete own content | Yes | Yes | No |
 | Create quizzes | Yes | Yes | No |
 | AI quiz generation | Yes | Yes | No |
 | Take quizzes | No | No | Yes |
@@ -594,128 +495,95 @@ VITE_WS_URL      = wss://api.learn-ex.online
 Learnex integrates **Claude AI (Anthropic)** for three intelligent features:
 
 ### 1. Lesson Generation
-
-```http
 POST /lessons/ai/generate
 {
-  "topic": "Photosynthesis",
-  "class_id": 1,
-  "subject_id": 2,
-  "lesson_type": "note",
-  "grade_level": "Form 3"
+"topic": "Photosynthesis",
+"class_id": 1,
+"subject_id": 2,
+"lesson_type": "note",
+"grade_level": "Form 3"
 }
-```
-
-Generates complete lesson with:
-- Introduction
-- Learning objectives
-- Key concepts with explanations
-- Worked examples
-- Summary
-- Review questions
+Generates: introduction, learning objectives, key concepts, worked examples, summary, review questions.
 
 ### 2. Quiz Generation
-
-```http
 POST /quizzes/ai/generate
 {
-  "lesson_id": 5,
-  "class_id": 1,
-  "subject_id": 2,
-  "title": "Chapter 3 Quiz",
-  "multiple_choice": 5,
-  "true_false": 3,
-  "short_answer": 2,
-  "essay": 1,
-  "difficulty": "medium"
+"lesson_id": 5,
+"class_id": 1,
+"subject_id": 2,
+"title": "Chapter 3 Quiz",
+"multiple_choice": 5,
+"true_false": 3,
+"short_answer": 2,
+"essay": 1,
+"difficulty": "medium"
 }
-```
-
-Reads lesson content and generates questions with:
-- Correct answers embedded
-- Difficulty calibration (easy/medium/hard)
-- Type-appropriate point values
-- Subject-specific content
+Reads lesson content and generates questions with correct answers, difficulty calibration, and point values.
 
 ### 3. AI Grading
-
-```http
 POST /quizzes/{id}/attempts/{aid}/ai-grade
-```
+Evaluates text responses against lesson content, awards partial marks, and generates one-sentence feedback per answer.
 
-Evaluates text responses by:
-- Reading lesson context
-- Comparing answer to expected knowledge
-- Awarding partial marks (0 to max_points)
-- Generating one-sentence feedback
-
-### Model
-
-All AI features use **Claude Haiku** for fast, cost-effective generation.
+**Model:** All features use **Claude Haiku** (`claude-haiku-4-5`) for fast, cost-effective generation.
 
 ---
 
 ## Development Guidelines
 
 ### Commit Convention
-feat:     New feature
-fix:      Bug fix
-refactor: Code restructuring without behavior change
-style:    UI/styling changes
-docs:     Documentation updates
-chore:    Build, dependencies, configuration
-perf:     Performance improvements
-test:     Test additions or changes
-Examples:
-```bash
-git commit -m "feat: add AI quiz generator with lesson content integration"
-git commit -m "fix: ClassDetail early returns before hooks causing React error 310"
-git commit -m "style: QuizzesPage mobile-first rewrite with pill tabs"
-```
+
+| Prefix | Description |
+|---|---|
+| feat: | New feature |
+| fix: | Bug fix |
+| refactor: | Code restructuring |
+| style: | UI/styling changes |
+| docs: | Documentation |
+| chore: | Build, deps, config |
+| perf: | Performance improvements |
 
 ### Code Standards
 
 **TypeScript**
-- Use strict mode
+- Strict mode enabled
 - Avoid `any` where possible
 - Define interfaces for all API responses
 - Use TanStack Query for all server state
 
 **Python**
-- Follow PEP 8
-- Use type hints throughout
-- Use Pydantic v2 for all schemas
-- Keep routes thin, business logic in services
+- PEP 8 compliance
+- Type hints throughout
+- Pydantic v2 for all schemas
+- Routes thin, business logic in services
 
-**UI Components**
-- Mobile-first: always test at 375px width
-- Use `isMobile` hook pattern for breakpoints
-- All interactive elements minimum 44px touch target
-- No inline `localhost` references
+**UI**
+- Mobile-first: test at 375px
+- Use `isMobile` hook for breakpoints
+- Minimum 44px touch targets
+- No hardcoded localhost URLs
 
-### File I/O Rule (Critical)
+### Critical: File I/O in PowerShell
 
 Always use byte-safe operations to prevent UTF-8 encoding corruption:
 
 ```powershell
-# CORRECT - byte safe
+# CORRECT
 $bytes = [System.IO.File]::ReadAllBytes($path)
 $content = [System.Text.Encoding]::UTF8.GetString($bytes)
-# ... modify content ...
 [System.IO.File]::WriteAllBytes($path, [System.Text.Encoding]::UTF8.GetBytes($content))
 
 # WRONG - causes garbled characters
 Get-Content $path
-[System.IO.File]::WriteAllText($path, $content)  # no encoding param
+[System.IO.File]::WriteAllText($path, $content)
 Out-File $path
 ```
 
 ### Preventing Garbled Characters
 
-- Never use emojis in source code comments
-- Use plain ASCII for section dividers: `// -- Section --`
-- Use HTML entities for special chars: `&copy;` `&times;` `&middot;`
-- Never pipe Unicode files through PowerShell's default encoding
+- No emojis in source code comments
+- Use plain ASCII section dividers: `// -- Section --`
+- Use HTML entities for symbols: `&copy;` `&times;` `&middot;`
+- Never pipe Unicode files through PowerShell default encoding
 
 ---
 
@@ -732,18 +600,20 @@ Out-File $path
 ## Roadmap
 
 ### In Progress
-- Posts upload to Supabase Storage (fix 500 errors)
+
+- Posts upload to Supabase Storage
 - Redis/Valkey integration for feed caching
 
 ### Planned
+
 - **Flutterwave Payments** - Subscription billing for premium features
-- **Email Notifications** - SendGrid/Resend for password reset and alerts
+- **Email Notifications** - SendGrid for password reset and alerts
 - **PWA Support** - Offline-capable progressive web app
 - **learnex.co.zm** - Zambian domain activation
-- **Bundle Optimization** - Code splitting to reduce JS bundle size
+- **Bundle Optimization** - Code splitting to reduce JS bundle
 - **Mobile App** - React Native companion app
-- **ML Grading Model** - Fine-tuned model that learns from teacher corrections
-- **Video Lessons** - Integrated video player with progress tracking
+- **ML Grading Model** - Fine-tuned model learning from teacher corrections
+- **Video Lessons** - Integrated player with progress tracking
 - **Parent Portal** - Parent access to monitor learner progress
 - **SMS Notifications** - Zamtel/Airtel SMS for critical alerts
 
@@ -759,14 +629,12 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 **Built with passion for Zambian education**
 
-[www.learn-ex.online](https://www.learn-ex.online)
--
-[API Docs](https://api.learn-ex.online/api/v1/docs)
--
+[www.learn-ex.online](https://www.learn-ex.online) &nbsp;|&nbsp;
+[API Docs](https://api.learn-ex.online/api/v1/docs) &nbsp;|&nbsp;
 [GitHub](https://github.com/tonybupe/learnex)
 
 Powered by Claude AI + FastAPI + React + PostgreSQL
 
-Learnex (c) 2026 - All rights reserved
+Learnex &copy; 2026 &mdash; All rights reserved
 
 </div>
