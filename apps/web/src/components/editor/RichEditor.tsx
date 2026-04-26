@@ -96,8 +96,8 @@ function ImageToolbar({ editor }: { editor: any }) {
       <button type="button" onClick={() => updateAttr({ width: "100%" })} title="Full width">Full</button>
       <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
       {/* Align */}
-      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:left" })} title="Left">ÔåÉ</button>
-      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px auto" })} title="Center">Ôåö</button>
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:left" })} title="Left">←</button>
+      <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px auto" })} title="Center">↔</button>
       <button type="button" onClick={() => updateAttr({ style: "display:block;margin:10px 0;float:right" })} title="Right">→</button>
       <div style={{ width: 1, background: "var(--border)", margin: "2px 4px" }} />
       {/* Alt */}
@@ -252,10 +252,10 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
   const TEMPLATES = [
     { icon: "🎯", label: "Learning Objectives", content: `<h2>Learning Objectives</h2><p>By the end of this lesson, students will be able to:</p><ul><li>Objective 1</li><li>Objective 2</li><li>Objective 3</li></ul>` },
-    { icon: "ÔØô", label: "Review Questions", content: `<h2>Review Questions</h2><ol><li>Question one?</li><li>Question two?</li><li>Question three?</li></ol>` },
+    { icon: "❓", label: "Review Questions", content: `<h2>Review Questions</h2><ol><li>Question one?</li><li>Question two?</li><li>Question three?</li></ol>` },
     { icon: "📝", label: "Summary", content: `<h2>Summary</h2><p>In this lesson we covered:</p><ul><li>Key point 1</li><li>Key point 2</li><li>Key point 3</li></ul>` },
     { icon: "💡", label: "Tip Box", content: `<blockquote><p>💡 <strong>Note:</strong> Add your important note here.</p></blockquote>` },
-    { icon: "ÔÜá´©Å", label: "Warning Box", content: `<blockquote><p>ÔÜá´©Å <strong>Important:</strong> Add your warning here.</p></blockquote>` },
+    { icon: "⚠️", label: "Warning Box", content: `<blockquote><p>⚠️ <strong>Important:</strong> Add your warning here.</p></blockquote>` },
     { icon: "✏️", label: "Example Block", content: `<h3>Example</h3><p><strong>Problem:</strong> State the problem.</p><p><strong>Solution:</strong> Show working out.</p><p><strong>Answer:</strong> Final answer.</p>` },
     { icon: "🔬", label: "Lab Report", content: `<h2>Aim</h2><p>State aim.</p><h2>Materials</h2><ul><li>Material 1</li></ul><h2>Method</h2><ol><li>Step 1</li></ol><h2>Results</h2><p>Results here.</p><h2>Conclusion</h2><p>Conclusion here.</p>` },
     { icon: "📖", label: "Full Lesson", content: `<h2>Introduction</h2><p>Brief introduction.</p><h2>Learning Objectives</h2><ul><li>Objective 1</li><li>Objective 2</li></ul><h2>Key Concepts</h2><h3>Concept 1</h3><p>Explanation here.</p><h2>Examples</h2><p><strong>Example:</strong> Description.</p><h2>Summary</h2><p>Key takeaways.</p><h2>Review Questions</h2><ol><li>Question 1?</li><li>Question 2?</li></ol>` },
@@ -265,7 +265,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
 
   const QUICK_TABLES = [
     { label: "Key Terms", icon: "📖", rows: 4, cols: 2 },
-    { label: "Comparison", icon: "ÔÜû´©Å", rows: 4, cols: 3 },
+    { label: "Comparison", icon: "📊", rows: 4, cols: 3 },
     { label: "Schedule", icon: "📸", rows: 5, cols: 3 },
     { label: "Data Table", icon: "📈", rows: 5, cols: 4 },
   ]
@@ -287,8 +287,8 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
       <div className="tiptap-toolbar">
         {/* History */}
         <div className="tiptap-tool-group">
-          <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)">Ôå®</Btn>
-          <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl+Y)">Ôå¬</Btn>
+          <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)">↩</Btn>
+          <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl+Y)">↪</Btn>
         </div>
         <div className="tiptap-divider" />
 
@@ -297,7 +297,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
           <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={isActive("heading", { level: 1 })} title="Heading 1">H1</Btn>
           <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={isActive("heading", { level: 2 })} title="Heading 2">H2</Btn>
           <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={isActive("heading", { level: 3 })} title="Heading 3">H3</Btn>
-          <Btn onClick={() => editor.chain().focus().setParagraph().run()} active={isActive("paragraph")} title="Normal">┬Â</Btn>
+          <Btn onClick={() => editor.chain().focus().setParagraph().run()} active={isActive("paragraph")} title="Normal">P</Btn>
         </div>
         <div className="tiptap-divider" />
 
@@ -307,16 +307,16 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
           <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={isActive("italic")} title="Italic"><em>I</em></Btn>
           <Btn onClick={() => editor.chain().focus().toggleUnderline().run()} active={isActive("underline")} title="Underline"><u>U</u></Btn>
           <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={isActive("strike")} title="Strikethrough"><s>S</s></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleHighlight({ color: "#fef08a" }).run()} active={isActive("highlight")} title="Highlight">Ô£ª</Btn>
+          <Btn onClick={() => editor.chain().focus().toggleHighlight({ color: "#fef08a" }).run()} active={isActive("highlight")} title="Highlight">Ab</Btn>
           <Btn onClick={() => editor.chain().focus().toggleCode().run()} active={isActive("code")} title="Code">`</Btn>
         </div>
         <div className="tiptap-divider" />
 
         {/* Align */}
         <div className="tiptap-tool-group">
-          <Btn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={isActive("left")} title="Left">Ô¼£</Btn>
-          <Btn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={isActive("center")} title="Center">Ô¼ø</Btn>
-          <Btn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={isActive("right")} title="Right">Ô¼£</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={isActive("left")} title="Align Left">≡L</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={isActive("center")} title="Align Center">≡C</Btn>
+          <Btn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={isActive("right")} title="Align Right">≡R</Btn>
         </div>
         <div className="tiptap-divider" />
 
@@ -324,7 +324,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
         <div className="tiptap-tool-group">
           <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={isActive("bulletList")} title="Bullet list">• —</Btn>
           <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={isActive("orderedList")} title="Numbered list">1.</Btn>
-          <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={isActive("blockquote")} title="Quote">ÔØØ</Btn>
+          <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={isActive("blockquote")} title="Quote">"</Btn>
           <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider">—</Btn>
         </div>
 
@@ -333,15 +333,15 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
           <>
             <div className="tiptap-divider" />
             <div className="tiptap-tool-group">
-              <Btn onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add col before">+ÔåÉ</Btn>
+              <Btn onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add col before">+←C</Btn>
               <Btn onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add col after">+→</Btn>
-              <Btn onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete col" danger>├ùC</Btn>
-              <Btn onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before">+→</Btn>
+              <Btn onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete col" danger>-C</Btn>
+              <Btn onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before">+↑R</Btn>
               <Btn onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after">+↓</Btn>
-              <Btn onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" danger>├ùR</Btn>
-              <Btn onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" danger>├ùTbl</Btn>
-              <Btn onClick={() => editor.chain().focus().mergeCells().run()} title="Merge">Ôè×</Btn>
-              <Btn onClick={() => editor.chain().focus().splitCell().run()} title="Split">Ôèƒ</Btn>
+              <Btn onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" danger>-R</Btn>
+              <Btn onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" danger>-Tbl</Btn>
+              <Btn onClick={() => editor.chain().focus().mergeCells().run()} title="Merge cells">⊞</Btn>
+              <Btn onClick={() => editor.chain().focus().splitCell().run()} title="Split cell">⊟</Btn>
             </div>
           </>
         )}
@@ -350,7 +350,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
         <button type="button"
           className={`tiptap-insert-btn${showInsert ? " active" : ""}`}
           onClick={() => setShowInsert(s => !s)}>
-          Ô×ò Insert
+          + Insert
         </button>
       </div>
 
@@ -365,7 +365,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                 {t === "media" ? "🎬 Media" : t === "table" ? "📊 Table" : t === "template" ? "📋 Templates" : "💻 Code"}
               </button>
             ))}
-            <button type="button" className="tiptap-insert-close" onClick={() => setShowInsert(false)}>Ô£ò</button>
+            <button type="button" className="tiptap-insert-close" onClick={() => setShowInsert(false)}>✕</button>
           </div>
 
           <div className="tiptap-insert-content">
@@ -401,7 +401,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                     onKeyDown={e => {
                       if (e.key !== "Enter") return
                       const url = (e.target as HTMLInputElement).value
-                      editor.chain().focus().insertContent(`<p><a href="${url}">ÔûÂ Watch Video: ${url}</a></p>`).run()
+                      editor.chain().focus().insertContent(`<p><a href="${url}">▶ Watch Video: ${url}</a></p>`).run()
                       ;(e.target as HTMLInputElement).value = ""
                       setShowInsert(false)
                     }} />
