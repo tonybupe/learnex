@@ -436,7 +436,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                         <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableCols(c => Math.min(10, c+1))}>+</button>
                       </div>
                     </div>
-                    <span style={{ fontSize: 24, color: "var(--muted)" }}>├ù</span>
+                    <span style={{ fontSize: 24, color: "var(--muted)" }}>×</span>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Rows</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -453,7 +453,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                     ))}
                   </div>
                   <button className="btn btn-primary" style={{ fontSize: 13, width: "100%" }} onClick={insertTable}>
-                    Insert {tableCols}├ù{tableRows} Table
+                    Insert {tableCols}×{tableRows} Table
                   </button>
                 </div>
 
@@ -462,7 +462,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                     onClick={() => { editor.chain().focus().insertTable({ rows: t.rows, cols: t.cols, withHeaderRow: true }).run(); setShowInsert(false) }}>
                     <div className="tiptap-insert-card-icon">{t.icon}</div>
                     <div className="tiptap-insert-card-label">{t.label}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)" }}>{t.cols} cols ├ù {t.rows} rows</div>
+                    <div style={{ fontSize: 11, color: "var(--muted)" }}>{t.cols} cols × {t.rows} rows</div>
                   </div>
                 ))}
               </div>
