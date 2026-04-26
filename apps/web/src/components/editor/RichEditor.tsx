@@ -431,7 +431,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Columns</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableCols(c => Math.max(1, c-1))}>ÔêÆ</button>
+                <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableCols(c => Math.max(1, c-1))}>−</button>
                         <span style={{ fontWeight: 900, fontSize: 22, minWidth: 32, textAlign: "center" }}>{tableCols}</span>
                         <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableCols(c => Math.min(10, c+1))}>+</button>
                       </div>
@@ -440,7 +440,7 @@ export default function RichEditor({ value, onChange, placeholder = "Start writi
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>Rows</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableRows(r => Math.max(1, r-1))}>ÔêÆ</button>
+                <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableRows(r => Math.max(1, r-1))}>−</button>
                         <span style={{ fontWeight: 900, fontSize: 22, minWidth: 32, textAlign: "center" }}>{tableRows}</span>
                         <button type="button" className="btn" style={{ width: 30, height: 30, padding: 0 }} onClick={() => setTableRows(r => Math.min(20, r+1))}>+</button>
                       </div>
