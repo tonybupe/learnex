@@ -117,7 +117,7 @@ function LivePresentation({ lesson, onClose }: { lesson: Lesson; onClose: () => 
       .slice(start + 1, end < 0 ? undefined : end)
       .filter(l => l.trim())
       .map(l => l
-        .replace(/^[-*ÔÇó]\s+/, "")        // remove bullet markers
+        .replace(/^[-*\u2022\u00B7]\s+/, "")        // remove bullet markers
         .replace(/^\d+\.\s+/, "")         // remove numbered list markers
         .replace(/^#+\s+/, "")            // remove heading markers
         .replace(/\*\*(.*?)\*\*/g, "$1")  // remove bold markers
