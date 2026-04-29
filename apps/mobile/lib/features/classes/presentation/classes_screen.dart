@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../models/class_model.dart';
 import '../../../shared/widgets/state_views.dart';
 import '../../../shared/widgets/user_avatar.dart';
+import '../../../shared/widgets/subject_selector.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/classes_provider.dart';
 
@@ -671,9 +672,7 @@ class _CreateClassSheetState extends ConsumerState<_CreateClassSheet> {
   final _gradeCtrl = TextEditingController();
   String _visibility = 'public';
   String _selectedSubjectId = '';
-  List<Map<String, dynamic>> _subjects = [];
   bool _loading = false;
-  bool _loadingSubjects = true;
   String _error = '';
 
   @override
@@ -687,7 +686,6 @@ class _CreateClassSheetState extends ConsumerState<_CreateClassSheet> {
       _visibility = widget.cls!.visibility;
       _selectedSubjectId = widget.cls!.subjectId?.toString() ?? '';
     }
-    _loadSubjects();
   }
 
   @override
@@ -699,22 +697,7 @@ class _CreateClassSheetState extends ConsumerState<_CreateClassSheet> {
     super.dispose();
   }
 
-  Future<void> _loadSubjects() async {
-    try {
-      final dio = ref.read(dioProvider);
-      final res = await dio.get('/subjects');
-      final list = res.data is List ? res.data as List : (res.data['items'] as List? ?? []);
-      if (mounted) setState(() {
-        _subjects = list.cast<Map<String, dynamic>>();
-        _loadingSubjects = false;
-        if (_subjects.isNotEmpty && _selectedSubjectId.isEmpty) {
-          _selectedSubjectId = _subjects.first['id'].toString();
-        }
-      });
-    } catch (_) {
-      if (mounted) setState(() => _loadingSubjects = false);
-    }
-  }
+
 
   Future<void> _submit() async {
     if (_titleCtrl.text.trim().isEmpty) { setState(() => _error = 'Class title is required'); return; }
@@ -813,16 +796,16 @@ class _CreateClassSheetState extends ConsumerState<_CreateClassSheet> {
               Row(children: [
                 Expanded(child: _Field(
                   label: 'Subject *',
-                  child: _loadingSubjects
-                      ? const LinearProgressIndicator()
-                      : DropdownButtonFormField<String>(
-                          value: _selectedSubjectId.isEmpty ? null : _selectedSubjectId,
-                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
-                          hint: const Text('Select...', style: TextStyle(fontSize: 13)),
-                          items: _subjects.map((s) => DropdownMenuItem(value: s['id'].toString(), child: Text(s['name'] as String? ?? '', overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))).toList(),
-                          onChanged: (v) { if (v != null) setState(() => _selectedSubjectId = v); },
-                        ),
+                  child: SubjectSelector(
+                    value: _selectedSubjectId,
+                    onChange: (v) => setState(() => _selectedSubjectId = v),
+                    showMineOnly: true,
+                  ),
                 )),
+
+
+
+
                 const SizedBox(width: 8),
                 Expanded(child: _Field(
                   label: 'Grade Level',

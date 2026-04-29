@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_client.dart';
+import '../../../shared/widgets/subject_selector.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/lessons_provider.dart';
 
@@ -367,15 +368,10 @@ class _AiGenerateLessonSheetState
                             const SizedBox(width: 10),
                             Expanded(child: _FormField(
                               label: 'Subject *',
-                              child: DropdownButtonFormField<String>(
-                                value: _selectedSubjectId.isEmpty ? null : _selectedSubjectId,
-                                decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                                hint: const Text('Select subject...'),
-                                items: _subjects.map((s) => DropdownMenuItem(
-                                  value: s['id'].toString(),
-                                  child: Text(s['name'] as String? ?? '', overflow: TextOverflow.ellipsis),
-                                )).toList(),
-                                onChanged: (v) { if (v != null) setState(() => _selectedSubjectId = v); },
+                              child: SubjectSelector(
+                                value: _selectedSubjectId,
+                                onChange: (v) => setState(() => _selectedSubjectId = v),
+                                showMineOnly: false,
                               ),
                             )),
                           ]),
