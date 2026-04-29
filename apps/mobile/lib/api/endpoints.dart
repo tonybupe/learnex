@@ -8,7 +8,7 @@ class Endpoints {
   static const register = '/auth/register';
   static const forgotPassword = '/auth/forgot-password';
   static const resetPassword = '/auth/reset-password';
-  static const me = '/auth/me';
+  static const me = '/users/me';
 
   // Users
   static const users = '/users';
