@@ -49,7 +49,7 @@ class AppShell extends ConsumerWidget {
                   icon: Icon(i.icon),
                   activeIcon: Icon(i.activeIcon),
                   label: i.label,
-                ))
+                ),)
             .toList(),
       ),
     );

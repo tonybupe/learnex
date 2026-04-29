@@ -90,6 +90,8 @@ class _LessonCard extends StatelessWidget {
                     LessonType.video => Icons.play_circle_outline,
                     LessonType.reading => Icons.article_outlined,
                     LessonType.note => Icons.note_outlined,
+                    LessonType.live => Icons.live_tv_outlined,
+                    LessonType.assignment => Icons.assignment_outlined,
                   },
                   color: AppColors.brand,
                 ),
@@ -109,9 +111,9 @@ class _LessonCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    if (lesson.summary != null)
+                    if (lesson.description != null)
                       Text(
-                        lesson.summary!,
+                        lesson.description!,
                         style: const TextStyle(fontSize: 13),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

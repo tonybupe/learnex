@@ -7,7 +7,7 @@ import '../../../api/endpoints.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../models/post.dart';
 
-enum FeedTab { latest, trending, popular, following }
+enum FeedTab { latest, trending, popular, following, classes }
 
 class PostsApi {
   PostsApi(this._dio);

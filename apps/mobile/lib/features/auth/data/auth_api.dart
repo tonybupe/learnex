@@ -9,16 +9,23 @@ class AuthApi {
   AuthApi(this._dio);
   final Dio _dio;
 
-  Future<({String token, User user})> login(String email, String password) async {
+  Future<({String token, User user})> login(
+      String email, String password) async {
+    // Step 1: get token
     final res = await _dio.post(
       Endpoints.login,
       data: {'email': email, 'password': password},
     );
     final data = res.data as Map<String, dynamic>;
-    return (
-      token: data['access_token'] as String,
-      user: User.fromJson(data['user'] as Map<String, dynamic>),
+    final token = data['access_token'] as String;
+
+    // Step 2: fetch user profile using the new token
+    final meRes = await _dio.get(
+      Endpoints.me,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
+    final user = User.fromJson(meRes.data as Map<String, dynamic>);
+    return (token: token, user: user);
   }
 
   Future<({String token, User user})> register({
@@ -26,25 +33,39 @@ class AuthApi {
     required String email,
     required String password,
     required String role,
+    String? phone,
     String? school,
     String? gradeLevel,
   }) async {
-    final res = await _dio.post(
+    // Step 1: register
+    await _dio.post(
       Endpoints.register,
       data: {
         'full_name': fullName,
         'email': email,
         'password': password,
         'role': role,
-        if (school != null) 'school': school,
+        if (phone != null && phone.isNotEmpty) 'phone_number': phone,
+        if (school != null && school.isNotEmpty) 'school': school,
         if (gradeLevel != null) 'grade_level': gradeLevel,
       },
     );
-    final data = res.data as Map<String, dynamic>;
-    return (
-      token: data['access_token'] as String,
-      user: User.fromJson(data['user'] as Map<String, dynamic>),
+
+    // Step 2: login to get token
+    final loginRes = await _dio.post(
+      Endpoints.login,
+      data: {'email': email, 'password': password},
     );
+    final loginData = loginRes.data as Map<String, dynamic>;
+    final token = loginData['access_token'] as String;
+
+    // Step 3: fetch user profile
+    final meRes = await _dio.get(
+      Endpoints.me,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    final user = User.fromJson(meRes.data as Map<String, dynamic>);
+    return (token: token, user: user);
   }
 
   Future<void> forgotPassword(String email) async {

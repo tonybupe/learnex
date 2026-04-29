@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:learnex_mobile/main.dart';
 import 'package:learnex_mobile/app.dart';
 
 void main() {

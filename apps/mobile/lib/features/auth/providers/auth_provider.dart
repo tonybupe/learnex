@@ -85,6 +85,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String role,
+    String? phone,
     String? school,
     String? gradeLevel,
   }) async {
@@ -95,6 +96,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
         role: role,
+        phone: phone,
         school: school,
         gradeLevel: gradeLevel,
       );
