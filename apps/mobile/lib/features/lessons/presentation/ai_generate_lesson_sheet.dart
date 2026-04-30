@@ -379,7 +379,8 @@ class _AiGenerateLessonSheetState
                           _FormField(
                             label: 'Lesson Type',
                             child: DropdownButtonFormField<String>(
-                              value: _lessonType,
+                    isExpanded: true,
+                    value: _lessonType,
                               decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                               items: const [
                                 DropdownMenuItem(value: 'note', child: Text('📝 Note')),
@@ -398,7 +399,8 @@ class _AiGenerateLessonSheetState
                           Expanded(child: _FormField(
                             label: 'Status',
                             child: DropdownButtonFormField<String>(
-                              value: _status,
+                    isExpanded: true,
+                    value: _status,
                               decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                               items: const [
                                 DropdownMenuItem(value: 'draft', child: Text('Draft')),
@@ -411,7 +413,8 @@ class _AiGenerateLessonSheetState
                           Expanded(child: _FormField(
                             label: 'Visibility',
                             child: DropdownButtonFormField<String>(
-                              value: _visibility,
+                    isExpanded: true,
+                    value: _visibility,
                               decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                               items: const [
                                 DropdownMenuItem(value: 'class', child: Text('🔒 Class only')),

@@ -815,11 +815,12 @@ class _CreateClassSheetState extends ConsumerState<_CreateClassSheet> {
                 Expanded(child: _Field(
                   label: 'Visibility',
                   child: DropdownButtonFormField<String>(
+                    isExpanded: true,
                     value: _visibility,
                     decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
                     items: const [
-                      DropdownMenuItem(value: 'public', child: Text('🌐 Public', style: TextStyle(fontSize: 13))),
-                      DropdownMenuItem(value: 'private', child: Text('🔒 Private', style: TextStyle(fontSize: 13))),
+                      DropdownMenuItem(value: 'public', child: Text('🌐 Public', style: TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(value: 'private', child: Text('🔒 Private', style: TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
                     ],
                     onChanged: (v) { if (v != null) setState(() => _visibility = v); },
                   ),

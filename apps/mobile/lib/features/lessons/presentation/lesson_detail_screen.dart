@@ -287,18 +287,19 @@ class _EditingViewState extends State<_EditingView> {
                 ),
                 const SizedBox(height: 12),
 
-                // Type + Status + Visibility row
+                // Type + Status + Visibility - stacked to avoid overflow
                 Row(children: [
                   Expanded(child: _FormField(
                     label: 'Type',
                     child: DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: widget.editForm['lesson_type'],
-                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
                       items: const [
-                        DropdownMenuItem(value: 'note', child: Text('📋 Note')),
-                        DropdownMenuItem(value: 'video', child: Text('🎥 Video')),
-                        DropdownMenuItem(value: 'live', child: Text('🔴 Live')),
-                        DropdownMenuItem(value: 'assignment', child: Text('📏 Assignment')),
+                        DropdownMenuItem(value: 'note', child: Text('📋 Note', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'video', child: Text('🎥 Video', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'live', child: Text('🔴 Live', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'assignment', child: Text('📏 Assign', overflow: TextOverflow.ellipsis)),
                       ],
                       onChanged: (v) { if (v != null) widget.onFormChange('lesson_type', v); },
                     ),
@@ -307,12 +308,13 @@ class _EditingViewState extends State<_EditingView> {
                   Expanded(child: _FormField(
                     label: 'Status',
                     child: DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: widget.editForm['status'],
-                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
                       items: const [
-                        DropdownMenuItem(value: 'draft', child: Text('Draft')),
-                        DropdownMenuItem(value: 'published', child: Text('Published')),
-                        DropdownMenuItem(value: 'archived', child: Text('Archived')),
+                        DropdownMenuItem(value: 'draft', child: Text('Draft', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'published', child: Text('Published', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'archived', child: Text('Archived', overflow: TextOverflow.ellipsis)),
                       ],
                       onChanged: (v) { if (v != null) widget.onFormChange('status', v); },
                     ),
@@ -321,11 +323,12 @@ class _EditingViewState extends State<_EditingView> {
                   Expanded(child: _FormField(
                     label: 'Visibility',
                     child: DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: widget.editForm['visibility'],
-                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)),
                       items: const [
-                        DropdownMenuItem(value: 'class', child: Text('🔒 Class only')),
-                        DropdownMenuItem(value: 'public', child: Text('🌐 Public')),
+                        DropdownMenuItem(value: 'class', child: Text('🔒 Class', overflow: TextOverflow.ellipsis)),
+                        DropdownMenuItem(value: 'public', child: Text('🌐 Public', overflow: TextOverflow.ellipsis)),
                       ],
                       onChanged: (v) { if (v != null) widget.onFormChange('visibility', v); },
                     ),
