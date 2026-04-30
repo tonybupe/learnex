@@ -33,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password';
 
-      if (auth is AuthInitial) return null; // wait for bootstrap
+      if (auth is AuthInitial) return null;
       if (auth is AuthUnauthenticated || auth is AuthError) {
         return loggingIn ? null : '/login';
       }

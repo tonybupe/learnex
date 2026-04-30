@@ -89,13 +89,11 @@ class _GlassBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final safe = MediaQuery.of(context).padding.bottom;
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 60 + safe,
           decoration: BoxDecoration(
             color: isDark
                 ? AppColors.darkSurface.withValues(alpha: 0.85)
@@ -111,51 +109,51 @@ class _GlassBottomNav extends StatelessWidget {
           ),
           child: SafeArea(
             top: false,
-            child: Row(
-              children: items.asMap().entries.map((e) {
-                final i = e.key;
-                final item = e.value;
-                final selected = i == selectedIndex;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => onTap(i),
-                    behavior: HitTestBehavior.opaque,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                children: items.asMap().entries.map((e) {
+                  final i = e.key;
+                  final item = e.value;
+                  final selected = i == selectedIndex;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => onTap(i),
+                      behavior: HitTestBehavior.opaque,
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Icon with pill indicator
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
                             decoration: BoxDecoration(
                               color: selected ? AppColors.brand.withValues(alpha: 0.12) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
                               selected ? item.activeIcon : item.icon,
-                              size: 22,
+                              size: 20,
                               color: selected ? AppColors.brand : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
+                          const SizedBox(height: 1),
+                          Text(
+                            item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9,
                               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                               color: selected ? AppColors.brand : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
                             ),
-                            child: Text(item.label, maxLines: 1, overflow: TextOverflow.ellipsis),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
